@@ -1,0 +1,35 @@
+---
+- name: test
+  hosts: localhost 
+  vars:
+    my_pem: '-----BEGIN CERTIFICATE-----\nMIIErjCCApagAwIBAgIUNF2IQxaOs0ZppHhgBkoke85Ccq8wDQYJKoZIhvcNAQEL\nBQAwQzELMAkGA1UEBhMCRlIxEjAQBgNVBAoMCUV2ZXJUcnVzdDEgMB4GA1UEAwwX\nRXZlclRydXN0IFFBIElzc3VpbmcgQ0EwHhcNMjEwNjI0MTUyMDUwWhcNMjIwNjI0\nMTUyMDUwWjA0MQswCQYDVQQGEwJGUjESMBAGA1UECgwJRXZlclRydXN0MREwDwYD\nVQQDDAh0ZXN0X2FkdTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAKuL\nX4grzN0HQaLK7/NAXJiWMQkCiNgdBEtKyUfBSsqnyqcmod+6dKA6CvRZNTyLbiXm\nW6U92UNWZyoHKIpVodslmZo5GUr1LUnprFHZz2N5k8FQMo+ZtnP9RQojRydWbRsz\n1rUEvvQNkjvXzXMcs6Mn/L+yZhoj7fAjNHMkB5US2s7WlxvFHLqKxDZpFGjqC1jM\nlVO/+VGEnSAMxs3uPoygdK9d0iv2gInet2AT+ckYhrk+qwaOwWY8BMpnxDFZFUrx\nqn1Epw+2YT68IeXLFt0C/h7xO2Y3kHQPIwxmtsIrKPW55fZlesDyL4F9QAJp5+IN\nwLaDcMMDvPhZKV8woyMCAwEAAaOBqDCBpTAdBgNVHQ4EFgQUMj8sbM2bF+gN2wlJ\nQYABI83gQW4wHwYDVR0jBBgwFoAUFBDcsDMJ96AamspqCNYWV3IlwKkwDAYDVR0T\nAQH/BAIwADAdBgNVHSUEFjAUBggrBgEFBQcDAgYIKwYBBQUHAwEwDgYDVR0PAQH/\nBAQDAgWgMBMGA1UdEQQMMAqCCHRlc3RfYWR1MBEGA1UdIAQKMAgwBgYEVR0gADAN\nBgkqhkiG9w0BAQsFAAOCAgEAAopBknA1wEMbEBLCvx3OvOPVrC7qjs2O5tWVpunr\n3fP4B36YbLL6/eoBRflw5uXwIxO8PG5Z3pWl+JF5oDLDF9r1yGlxAl00mosP+Bon\nsKOFq4lW/tqbWD4SL5qv1O0a1kke7zk6OXjqO8RKmChzDVYjFy+sA+579DJ6G+tr\nwRjhukz4kiqslt7YAYiCOJOHlV78voxMarB4nkg58pOFzAcd+QEzwib1wQlIAV4I\n+FB03awJ1I1eDkFby9cd3aERpENguVdXb8XPlV2y0Yol6tR2j6VDTO56adlDq1uQ\nit10rFYffagl9yacQf3noDkrfVxvBOrwTiUnnPYRlX2qQCbBb/uuJY3oAsGpUeGo\n6M/I0hg/KM4ZXl3hPmc8azYk9NvE4OucLcv2w9it6/VWhEvZYcA9PLPeiw+klDm/\nlqPCg2+bvDvJExy7AtTuzP/T0OUr6huNA1MTwZKqN+A9FOg3q7syvJBy75bHJX+2\nuuRFexx8GGJOV+QOBGjt99NoFbNBUTtDnQzmAAlgtM/E0VMFKym8nSazTM+B3MaG\n0WdIEF4Fk9PvthlZuxeUKhS5MXrkNDWSYOVXb4N9G2McWoRwRXddXbrTz204BNlX\nr+8otNjmfbpDUy9O62ai90W5e6k1JO5B3qCSvE3pQbzwQ/q0Axd/Tgkms68o1cZw\nB40=\n-----END CERTIFICATE-----'
+  tasks:
+    - name: test horizon_lookup
+      debug:
+        msg: "{{ lookup ('evertrust.horizon.horizon_lookup', pem=my_pem, attributes='metadata', errors='strict') }}"
+    - name: test horizon_enroll
+      evertrust.horizon.horizon_enroll:
+
+        contact: "adu@evertrust.fr"
+        
+        mode: "decentralized"
+        password:
+        keyType: "rsa-2048"
+
+        x-api-id: "adu"
+        x-api-key: "qtapOfde"
+
+        profile: "DefaultSSLInternalCA"
+        module: "webra"
+
+        subject:
+          CN: "test"
+          O: "test"
+          C: "test"
+
+        sans:
+          DNSNAME: "test"
+        
+        labels:
+          snow_id: "test"
+          truc: "test"
