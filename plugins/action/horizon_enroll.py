@@ -29,16 +29,20 @@ class ActionModule(ActionBase):
     def _get_template(self):
         ''' Get the template of the certificate request on the API. '''
 
-        le_json = '{"module":"' + self.module + '", "profile":"' + \
-            self.profile + '", "workflow":"enroll"}'
+        le_json = '{"module":"' + self.module + '", "profile":"' + self.profile + '", "workflow":"enroll"}'
         data = json.loads(le_json)
 
-        endpoint = "https://horizon-demo.evertrust.fr/api/v1/requests/template"
-
         try:
-            response = requests.post(endpoint, headers=self.headers, json=data)
+            response = requests.post(self.endpoint_t, headers=self.headers, json=data)
             
-            return response.json()
+            res = response.json()
+
+            print (res)
+
+            self.passwordmode = res["webRAEnrollRequestTemplate"]["capabilities"]["p12passwordMode"]
+            self.passwordpolicy = res["webRAEnrollRequestTemplate"]["passwordPolicy"]
+
+            return res
 
         except HTTPError as http_err:
             raise AnsibleError(f'HTTP error occurred: {http_err}')
@@ -162,13 +166,11 @@ class ActionModule(ActionBase):
 
     def _post_request(self):
 
-        endpoint = "https://horizon-demo.evertrust.fr/api/v1/requests/submit"
-
     # TODO :
     # pk12 return
 
         try:
-            response = requests.post(endpoint, json=self._generate_json(), headers=self.headers)
+            response = requests.post(self.endpoint_s, json=self._generate_json(), headers=self.headers)
 
             p12 = response.json()["pkcs12"]["value"]
 
@@ -219,7 +221,7 @@ class ActionModule(ActionBase):
 
         res = {"p12": res[0], "p12_password": self.password, "certificate": res[1], "key": res[2]}
 
-        print (res)
+        # print (res)
 
         return res
 
@@ -227,9 +229,10 @@ class ActionModule(ActionBase):
     def _get_all_information(self):
         ''' Save all plugin information in self variables '''
 
+        self.endpoint_t = self._task.args.get('endpoint_template')
+        self.endpoint_s = self._task.args.get('endpoint_request')
         self.contact = self._task.args.get('contact')
         self.mode = self._task.args.get('mode')
-        self.passwordmode = self._task.args.get('password-mode')
         self.password = self._task.args.get('password')
         self.keyType = self._task.args.get('keyType')
         api_id = self._task.args.get('x-api-id')
@@ -248,17 +251,18 @@ class ActionModule(ActionBase):
     def _set_password(self):
         ''' Generate a random password if no one has been specified '''
 
-        if self.passwordmode == "manual":
-            if self.password is not None:
-                if "passwordPolicy" in self.template["webRAEnrollRequestTemplate"]:
-                    if self._check_policy(self.password):
-                        return self.password
-                else:
+        if self.passwordmode == "manual" and self.password is not None:
+            if "passwordPolicy" in self.template["webRAEnrollRequestTemplate"]:
+                if self._check_policy(self.password):
                     return self.password
+                else: 
+                # TODO: finish error
+                    raise AnsibleError(f'password : { self.password } does not match the password policy.' + 
+                    f'The password policy is : minimum { self.passwordpolicy["minChar"] } characters.')
             else:
-                raise AnsibleError(f'Password required in manual mode.')
+                return self.password
 
-        elif self.passwordmode == "automatic":
+        else:
             if self.password is not None:
                 return self.password
 
@@ -273,9 +277,6 @@ class ActionModule(ActionBase):
                     characters = string.ascii_letters + string.digits + string.punctuation
                     self.password = ''.join(random.choice(characters) for i in range(16))
                     return self.password
-
-        else:
-            raise AnsibleError(f'this password mode doesn\'t exist')
 
 
     def _check_policy(self, password):
