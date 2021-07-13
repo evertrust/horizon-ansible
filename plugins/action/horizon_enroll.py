@@ -3,13 +3,13 @@
 # Standard base includes and define this as a metaclass of type
 from __future__ import (absolute_import, division, print_function)
 
-import ansible
+from ansible_collections.evertrust.horizon.plugins.module_utils.horizon import Horizon
 
 __metaclass__ = type
 
 from ansible.errors import AnsibleError
 from ansible.plugins.action import ActionBase
-import requests, json, string, random, base64
+import requests, base64
 
 from requests.exceptions import HTTPError
 
@@ -25,30 +25,6 @@ from cryptography.hazmat.primitives.serialization import pkcs12
 class ActionModule(ActionBase):
 
     TRANSFERS_FILES = True
-
-    def _get_template(self):
-        ''' Get the template of the certificate request on the API. '''
-
-        le_json = '{"module":"' + self.module + '", "profile":"' + self.profile + '", "workflow":"enroll"}'
-        data = json.loads(le_json)
-
-        try:
-            response = requests.post(self.endpoint_t, headers=self.headers, json=data)
-            
-            res = response.json()
-
-            print (res)
-
-            self.passwordmode = res["webRAEnrollRequestTemplate"]["capabilities"]["p12passwordMode"]
-            self.passwordpolicy = res["webRAEnrollRequestTemplate"]["passwordPolicy"]
-
-            return res
-
-        except HTTPError as http_err:
-            raise AnsibleError(f'HTTP error occurred: {http_err}')
-        except Exception as err:
-            raise AnsibleError(f'Other error occurred: {err}')
-
 
     def _generate_biKey(self, keytype):
         ''' Generate a keypairs with the keytype asked '''
@@ -165,12 +141,10 @@ class ActionModule(ActionBase):
 
 
     def _post_request(self):
-
-    # TODO :
-    # pk12 return
+        ''' Send the post request to the API, and return the pkcs12 '''
 
         try:
-            response = requests.post(self.endpoint_s, json=self._generate_json(), headers=self.headers)
+            response = requests.post(self.endpoint_s, json=self._generate_json(), headers=self.horizon.headers)
 
             p12 = response.json()["pkcs12"]["value"]
 
@@ -196,12 +170,19 @@ class ActionModule(ActionBase):
 
     def run(self, tmp=None, task_vars=None):
 
-        result = super(ActionModule, self).run(tmp=tmp, task_vars=task_vars)
+        res = super(ActionModule, self).run(tmp=tmp, task_vars=task_vars)
 
         # get value from playbook
-        self._get_all_information()
-        self.template = self._get_template()
-        self._set_password()
+        self._get_all_informations()
+
+        # Initialize the class Horizon
+        self.horizon = Horizon(self.endpoint_t, self.id, self.key)
+
+        self.template = self.horizon._get_template(self.module, self.profile, "enroll")
+
+        print (self.template)
+
+        self.password = self.horizon._set_password(self.password)
 
         if self.mode == "decentralized":
             if self.keyType in self.template["webRAEnrollRequestTemplate"]["keyTypes"]:
@@ -221,12 +202,10 @@ class ActionModule(ActionBase):
 
         res = {"p12": res[0], "p12_password": self.password, "certificate": res[1], "key": res[2]}
 
-        # print (res)
-
         return res
 
 
-    def _get_all_information(self):
+    def _get_all_informations(self):
         ''' Save all plugin information in self variables '''
 
         self.endpoint_t = self._task.args.get('endpoint_template')
@@ -235,8 +214,8 @@ class ActionModule(ActionBase):
         self.mode = self._task.args.get('mode')
         self.password = self._task.args.get('password')
         self.keyType = self._task.args.get('keyType')
-        api_id = self._task.args.get('x-api-id')
-        api_key = self._task.args.get('x-api-key')
+        self.id = self._task.args.get('x-api-id')
+        self.key = self._task.args.get('x-api-key')
         self.csr = self._task.args.get('csr')
         self.profile = self._task.args.get('profile')
         self.module = self._task.args.get('module')
@@ -244,73 +223,3 @@ class ActionModule(ActionBase):
         self.sans = self._task.args.get('sans')
         self.notAfter = self._task.args.get('not-after')
         self.labels = self._task.args.get('labels')
-
-        self.headers = {"x-api-id": api_id, "x-api-key": api_key}
-
-
-    def _set_password(self):
-        ''' Generate a random password if no one has been specified '''
-
-        if self.passwordmode == "manual" and self.password is not None:
-            if "passwordPolicy" in self.template["webRAEnrollRequestTemplate"]:
-                if self._check_policy(self.password):
-                    return self.password
-                else: 
-                # TODO: finish error
-                    raise AnsibleError(f'password : { self.password } does not match the password policy.' + 
-                    f'The password policy is : minimum { self.passwordpolicy["minChar"] } characters.')
-            else:
-                return self.password
-
-        else:
-            if self.password is not None:
-                return self.password
-
-            else:
-                if "passwordPolicy" in self.template["webRAEnrollRequestTemplate"]:
-
-                    while self.password == None or self._check_policy(self.password) == False:
-                        characters = string.ascii_letters + string.digits + self.template["webRAEnrollRequestTemplate"]["passwordPolicy"]["spChar"]
-                        self.password = ''.join(random.choice(characters) for i in range(16))
-
-                else:
-                    characters = string.ascii_letters + string.digits + string.punctuation
-                    self.password = ''.join(random.choice(characters) for i in range(16))
-                    return self.password
-
-
-    def _check_policy(self, password):
-
-        minLo = self.template["webRAEnrollRequestTemplate"]["passwordPolicy"]["minLoChar"]
-        minUp = self.template["webRAEnrollRequestTemplate"]["passwordPolicy"]["minUpChar"]
-        minDi = self.template["webRAEnrollRequestTemplate"]["passwordPolicy"]["minDiChar"]
-        minSp = self.template["webRAEnrollRequestTemplate"]["passwordPolicy"]["minSpChar"]
-        whiteList = []
-        for s in self.template["webRAEnrollRequestTemplate"]["passwordPolicy"]["spChar"]:
-            whiteList.append(s)
-
-        for c in password:
-            if c in string.digits:
-                minDi -= 1
-            elif c in string.ascii_lowercase:
-                minLo -= 1
-            elif c in string.ascii_uppercase:
-                minUp -= 1 
-            elif c in whiteList:
-                minSp -= 1
-
-            else:
-                if self.passwordmode == "manual":
-                    raise AnsibleError(f'Password given doesn\'t follow the password policy : {c} is not allowed by the password policy.')
-                else:
-                    print(f'error {c} isn\'t allowed')
-                    return False
-
-        if minDi <= 0 and minLo <= 0 and minUp <= 0 and minSp<= 0:          
-            return True
-
-        else:
-            if self.passwordmode == "manual":
-                raise AnsibleError(f'password given doesn\'t follow the password policy.\nPlease try with another password.')
-            else:
-                return False
