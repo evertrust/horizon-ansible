@@ -37,8 +37,6 @@ class ActionModule(ActionBase):
         try:
             response = requests.post(self.endpoint_s, json=self._generate_json(), headers=self.horizon.headers)
 
-            print(response.json())
-
             return response.json()
 
         except HTTPError as http_err:
@@ -55,8 +53,6 @@ class ActionModule(ActionBase):
         self.horizon = Horizon(self.endpoint_t, self.id, self.key)
 
         self.template = self.horizon._get_template(self.module, self.profile, "recover")
-
-        print (self.template)
 
         self.password = self.horizon._set_password(self.password) 
 

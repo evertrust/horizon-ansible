@@ -38,8 +38,6 @@ class Horizon():
                 self.password_mode = self.template_request["passwordMode"]
                 self.password_policy = self.template_request["passwordPolicy"]
 
-            
-
             return self.template
 
         except HTTPError as http_err:
@@ -69,19 +67,19 @@ class Horizon():
                 raise AnsibleError(f'A password is required')
             
             else:
-                if "passworPolicy" in self.template["webRAEnrollRequestTemplate"]:
+                if "passworPolicy" in self.template_request:
                     whiteList = []
                     
-                    for s in self.template["webRAEnrollRequestTemplate"]["passwordPolicy"]["spChar"]:
+                    for s in self.template_request["passwordPolicy"]["spChar"]:
                         whiteList.append(s)
 
-                    for i in range (self.template["webRAEnrollRequestTemplate"]["passwordPolicy"]["minLoChar"]):
+                    for i in range (self.template_request["passwordPolicy"]["minLoChar"]):
                         self.password += random.choice(string.ascii_lowercase)
-                    for i in range (self.template["webRAEnrollRequestTemplate"]["passwordPolicy"]["minUpChar"]):
+                    for i in range (self.template_request["passwordPolicy"]["minUpChar"]):
                         self.password += random.choice(string.ascii_uppercase)
-                    for i in range (self.template["webRAEnrollRequestTemplate"]["passwordPolicy"]["minDiChar"]):
+                    for i in range (self.template_request["passwordPolicy"]["minDiChar"]):
                         self.password += random.choice(string.digits)
-                    for i in range (self.template["webRAEnrollRequestTemplate"]["passwordPolicy"]["minSpChar"]):
+                    for i in range (self.template_request["passwordPolicy"]["minSpChar"]):
                         self.password += random.choice(whiteList)
                     
                     characters = string.ascii_letters + string.digits + whiteList

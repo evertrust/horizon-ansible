@@ -180,8 +180,6 @@ class ActionModule(ActionBase):
 
         self.template = self.horizon._get_template(self.module, self.profile, "enroll")
 
-        print (self.template)
-
         self.password = self.horizon._set_password(self.password)
 
         if self.mode == "decentralized":
@@ -198,7 +196,7 @@ class ActionModule(ActionBase):
 
         elif self.mode == "centralized":
 
-            res = self._post_request()
+            req = self._post_request()
 
         res = {"p12": req[0], "p12_password": self.password, "certificate": req[1], "key": req[2]}
 

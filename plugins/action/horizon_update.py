@@ -44,8 +44,6 @@ class ActionModule(ActionBase):
         try:
             response = requests.post(self.endpoint_s, json=self._generate_json(), headers=self.horizon.headers)
 
-            print(response.json())
-
             return response.json()
 
         except HTTPError as http_err:

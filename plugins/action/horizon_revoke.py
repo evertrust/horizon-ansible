@@ -53,7 +53,7 @@ class ActionModule(ActionBase):
         # Initialize the class Horizon
         self.horizon = Horizon(self.endpoint_t, self.id, self.key)
 
-        res = self._post_request()
+        self._post_request()
 
         return res
     
