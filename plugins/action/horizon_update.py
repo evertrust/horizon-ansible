@@ -39,12 +39,14 @@ class ActionModule(ActionBase):
 
     
     def _post_request(self):
-        ''' Send the post request to the API, and return the pkcs12 '''
+        ''' Send the post request to the API'''
 
         try:
             response = requests.post(self.endpoint_s, json=self._generate_json(), headers=self.horizon.headers)
 
             print(response.json())
+
+            return response.json()
 
         except HTTPError as http_err:
             raise AnsibleError(f'HTTP error occurred: {http_err}')
@@ -61,7 +63,7 @@ class ActionModule(ActionBase):
 
         self.template = self.horizon._get_template(self.module, self.profile, "update")
 
-        self._post_request()
+        res = self._post_request()
 
         return res
     

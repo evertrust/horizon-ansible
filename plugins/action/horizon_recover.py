@@ -1,4 +1,4 @@
-# horizon_revoke.py
+# horizon_recover.py
 
 # Standard base includes and define this as a metaclass of type
 from __future__ import (absolute_import, division, print_function)
@@ -9,7 +9,7 @@ __metaclass__ = type
 
 from ansible.errors import AnsibleError
 from ansible.plugins.action import ActionBase
-import requests, base64, json
+import requests, base64
 
 from requests.exceptions import HTTPError
 
@@ -18,24 +18,28 @@ class ActionModule(ActionBase):
     TRANSFERS_FILES = True
 
     def _generate_json(self):
+
         my_json = {
-            "certificatePem": self.certificatePem,
             "module": self.module,
             "profile": self.profile,
-            "revocationReason": self.revocation_reason,
-            "workflow": "revoke"
+            "password": {
+                "value": self.password
+            },
+            "certificatePem": self.certificate_pem,
+            "workflow": "recover"
         }
 
         return my_json
-    
+
 
     def _post_request(self):
-        ''' Send the post request to the API, and return the pkcs12 '''
 
         try:
             response = requests.post(self.endpoint_s, json=self._generate_json(), headers=self.horizon.headers)
 
-            return response
+            print(response.json())
+
+            return response.json()
 
         except HTTPError as http_err:
             raise AnsibleError(f'HTTP error occurred: {http_err}')
@@ -46,12 +50,15 @@ class ActionModule(ActionBase):
     def run(self, tmp=None, task_vars=None):
 
         res = super(ActionModule, self).run(tmp=tmp, task_vars=task_vars)
-        
-        # get value from playbook
-        self._get_all_informations()
 
-        # Initialize the class Horizon
+        self._get_all_informations()
         self.horizon = Horizon(self.endpoint_t, self.id, self.key)
+
+        self.template = self.horizon._get_template(self.module, self.profile, "recover")
+
+        print (self.template)
+
+        self.password = self.horizon._set_password(self.password) 
 
         res = self._post_request()
 
@@ -64,7 +71,8 @@ class ActionModule(ActionBase):
         self.endpoint_s = self._task.args.get('endpoint_request')
         self.id = self._task.args.get('x-api-id')
         self.key = self._task.args.get('x-api-key')
-        self.certificatePem = self._task.args.get('certificatePem')
         self.module = self._task.args.get('module')
         self.profile = self._task.args.get('profile')
-        self.revocation_reason = self._task.args.get('revocationReason')
+        self.password = self._task.args.get('password')
+        self.certificate_pem = self._task.args.get('certificatePem')
+

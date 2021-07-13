@@ -191,7 +191,7 @@ class ActionModule(ActionBase):
                 if self.csr is None:
                     self.csr = self._generate_PKCS10()
 
-                res = self._post_request()
+                req = self._post_request()
 
             else:
                 raise AnsibleError(f'wrong keyType type')
@@ -200,7 +200,7 @@ class ActionModule(ActionBase):
 
             res = self._post_request()
 
-        res = {"p12": res[0], "p12_password": self.password, "certificate": res[1], "key": res[2]}
+        res = {"p12": req[0], "p12_password": self.password, "certificate": req[1], "key": req[2]}
 
         return res
 

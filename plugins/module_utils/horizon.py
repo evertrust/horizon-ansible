@@ -1,5 +1,3 @@
-# horizon.py
-
 import requests, string, random
 
 from ansible.errors import AnsibleError
@@ -21,17 +19,26 @@ class Horizon():
     def _get_template(self, module, profile, workflow):
         ''' Get the template of the certificate request on the API. '''
 
-        data =  { "module": module, 
-                    "profile": profile, 
-                    "workflow": workflow
-                }
+        data =  { 
+            "module": module, 
+            "profile": profile, 
+            "workflow": workflow
+        }
 
         try:
             self.template = requests.post(self.endpoint, headers=self.headers, json=data).json()
 
             if workflow == "enroll":
-                self.password_mode = self.template["webRAEnrollRequestTemplate"]["capabilities"]["p12passwordMode"]
-                self.password_policy = self.template["webRAEnrollRequestTemplate"]["passwordPolicy"]
+                self.template_request = self.template["webRAEnrollRequestTemplate"]
+                self.password_mode = self.template_request["capabilities"]["p12passwordMode"]
+                self.password_policy = self.template_request["passwordPolicy"]
+
+            elif workflow == "recover":
+                self.template_request = self.template["webRARecoveryRequestTemplate"]
+                self.password_mode = self.template_request["passwordMode"]
+                self.password_policy = self.template_request["passwordPolicy"]
+
+            
 
             return self.template
 
@@ -90,13 +97,13 @@ class Horizon():
     
     def _check_password_policy(self, password):
 
-        if "passwordPolicy" in self.template["webRAEnrollRequestTemplate"]:
-            minLo = self.template["webRAEnrollRequestTemplate"]["passwordPolicy"]["minLoChar"]
-            minUp = self.template["webRAEnrollRequestTemplate"]["passwordPolicy"]["minUpChar"]
-            minDi = self.template["webRAEnrollRequestTemplate"]["passwordPolicy"]["minDiChar"]
-            minSp = self.template["webRAEnrollRequestTemplate"]["passwordPolicy"]["minSpChar"]
+        if "passwordPolicy" in self.template_request:
+            minLo = self.template_request["passwordPolicy"]["minLoChar"]
+            minUp = self.template_request["passwordPolicy"]["minUpChar"]
+            minDi = self.template_request["passwordPolicy"]["minDiChar"]
+            minSp = self.template_request["passwordPolicy"]["minSpChar"]
             whiteList = []
-            for s in self.template["webRAEnrollRequestTemplate"]["passwordPolicy"]["spChar"]:
+            for s in self.template_request["passwordPolicy"]["spChar"]:
                 whiteList.append(s)
         else:
             return 1
