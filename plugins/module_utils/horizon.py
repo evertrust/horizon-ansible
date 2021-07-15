@@ -159,9 +159,22 @@ class Horizon():
         elif workflow == "enroll":
             my_json["webRAEnrollRequestTemplate"] = template
         elif workflow == "update":
-            my_json["webRAUpdateRequestTemplate"] = template
+            my_json["webRAUpdateRequestTemplate"]["labels"] = template
 
         return my_json
+
+
+    def _post_request(self, endpoint, my_json):
+
+        try:
+            response = requests.post(endpoint, json=my_json, headers=self.headers)
+
+            return response.json()
+
+        except HTTPError as http_err:
+            raise AnsibleError(f'HTTP error occurred: {http_err}')
+        except Exception as err:
+            raise AnsibleError(f'Other error occurred: {err}')
 
 
     def _generate_biKey(self, keytype):

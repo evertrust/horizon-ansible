@@ -34,33 +34,15 @@ class ActionModule(ActionBase):
         
         return my_labels
 
-    
-    def _post_request(self):
-        ''' Send the post request to the API'''
-
-        my_json = self.horizon._generate_json(module=self.module, profile=self.profile, workflow="update", template=self._set_labels(), certificate_pem=self.certificate_pem)
-
-        try:
-            response = requests.post(self.endpoint_s, json=my_json, headers=self.horizon.headers)
-
-            return response.json()
-
-        except HTTPError as http_err:
-            raise AnsibleError(f'HTTP error occurred: {http_err}')
-        except Exception as err:
-            raise AnsibleError(f'Other error occurred: {err}')
-
 
     def run(self, tmp=None, task_vars=None):
 
-        res = super(ActionModule, self).run(tmp=tmp, task_vars=task_vars)
-
         self._get_all_informations()
         self.horizon = Horizon(self.endpoint_t, self.id, self.key)
-
         self.template = self.horizon._get_template(self.module, self.profile, "update")
 
-        res = self._post_request()
+        my_json = self.horizon._generate_json(module=self.module, profile=self.profile, workflow="update", template=self._set_labels(), certificate_pem=self.certificate_pem)
+        res = self.horizon._post_request(self.endpoint_s, my_json)
 
         return res
     
@@ -74,5 +56,5 @@ class ActionModule(ActionBase):
         self.module = self._task.args.get('module')
         self.profile = self._task.args.get('profile')
         self.labels = self._task.args.get('labels')
-        self.certificate_pem = self._task.args.get('certificate')
+        self.certificate_pem = self._task.args.get('certificatePem')
 

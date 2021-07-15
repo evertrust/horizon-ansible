@@ -17,33 +17,15 @@ class ActionModule(ActionBase):
 
     TRANSFERS_FILES = True
 
-    def _post_request(self):
-        ''' Send the post request to the API, and return the pkcs12 '''
-
-        my_json = self.horizon._generate_json(module=self.module, profile=self.profile, workflow="revoke", revocation_reason=self.revocation_reason, certificate_pem=self.certificate_pem)
-
-        try:
-            response = requests.post(self.endpoint_s, json=my_json, headers=self.horizon.headers)
-
-            return response
-
-        except HTTPError as http_err:
-            raise AnsibleError(f'HTTP error occurred: {http_err}')
-        except Exception as err:
-            raise AnsibleError(f'Other error occurred: {err}')
-
-
     def run(self, tmp=None, task_vars=None):
 
-        res = super(ActionModule, self).run(tmp=tmp, task_vars=task_vars)
-        
         # get value from playbook
         self._get_all_informations()
-
         # Initialize the class Horizon
         self.horizon = Horizon(self.endpoint_t, self.id, self.key)
 
-        self._post_request()
+        my_json = self.horizon._generate_json(module=self.module, profile=self.profile, workflow="revoke", revocation_reason=self.revocation_reason, certificate_pem=self.certificate_pem)
+        res = self.horizon._post_request(self.endpoint_s, my_json)
 
         return res
     

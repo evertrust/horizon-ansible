@@ -21,9 +21,6 @@ class ActionModule(ActionBase):
 
     TRANSFERS_FILES = True
 
-    def _generate_json(self):
-        ''' Setup the json to request the API '''
-
     def _set_labels(self):
         ''' Set the labels with a format readable by the API '''
 
@@ -74,7 +71,7 @@ class ActionModule(ActionBase):
         return subject
 
 
-    def _post_request(self):
+    def _enroll(self):
         ''' Send the post request to the API, and return the pkcs12 '''
 
         enroll_request_template = {
@@ -86,20 +83,14 @@ class ActionModule(ActionBase):
             }
         my_json = self.horizon._generate_json(module=self.module, profile=self.profile, password=self.password, workflow="enroll", template=enroll_request_template)
 
-        try:
-            response = requests.post(self.endpoint_s, json=my_json, headers=self.horizon.headers)
-            p12 = response.json()["pkcs12"]["value"]
-            key = self.horizon._get_key(p12, self.password)
-            certificate = None
-            if "certificate" in response.json():
-                certificate = response.json()["certificate"]["certificate"]
-
-            return p12, certificate, key
-
-        except HTTPError as http_err:
-            raise AnsibleError(f'HTTP error occurred: {http_err}')
-        except Exception as err:
-            raise AnsibleError(f'Other error occurred: {err}')
+        response = self.horizon._post_request(self.endpoint_s, my_json)
+        p12 = response["pkcs12"]["value"]
+        key = self.horizon._get_key(p12, self.password)
+        certificate = None
+        if "certificate" in response:
+            certificate = response["certificate"]["certificate"]
+            
+        return p12, certificate, key
 
 
     def run(self, tmp=None, task_vars=None):
@@ -117,13 +108,13 @@ class ActionModule(ActionBase):
                 self.horizon._generate_biKey(self.keyType)
                 if self.csr is None:
                     self.csr = self.horizon._generate_PKCS10(self.subject)
-                req = self._post_request()
+                req = self._enroll()
 
             else:
                 raise AnsibleError(f'wrong keyType type')
 
         elif self.mode == "centralized":
-            req = self._post_request()
+            req = self._enroll()
 
         return {"p12": req[0], "p12_password": self.password, "certificate": req[1], "key": req[2]}
 
