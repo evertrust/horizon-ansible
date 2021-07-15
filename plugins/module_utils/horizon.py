@@ -1,7 +1,13 @@
-import requests, string, random
+import requests, string, random, base64
 
 from ansible.errors import AnsibleError
 from requests.exceptions import HTTPError
+
+from cryptography import x509
+from cryptography.x509.oid import NameOID
+from cryptography.hazmat.primitives import hashes, serialization
+from cryptography.hazmat.primitives.asymmetric import rsa, ec
+from cryptography.hazmat.primitives.serialization import pkcs12
 
 class Horizon():
     """ La classe Horizon """
@@ -123,3 +129,59 @@ class Horizon():
             return 1
         else:
             return 0
+
+
+    def _generate_biKey(self, keytype):
+        ''' Generate a keypairs with the keytype asked '''
+
+        type, bits = keytype.split('-')
+
+        if type == "rsa":
+            self.privateKey = rsa.generate_private_key(public_exponent=65537, key_size=int(bits))
+
+        elif type == "ec" and bits == "secp256r1":
+            self.privateKey = ec.generate_private_key(curve = ec.SECP256R1)
+        
+        elif type == "ec" and bits == "secp384r1":
+            self.privateKey = ec.generate_private_key(curve = ec.SECP384R1)
+        
+        else: 
+            raise AnsibleError("je ne devrais jamais apparaitre")
+
+        self.publicKey = self.privateKey.public_key()
+
+        return ( self.privateKey, self.publicKey )
+
+
+    def _generate_PKCS10(self, subject):
+        ''' Generate a PKCS10 '''
+
+        subject = x509.Name([
+            x509.NameAttribute(NameOID.COMMON_NAME, subject["CN"]),
+            x509.NameAttribute(NameOID.ORGANIZATION_NAME, subject["O"]),
+            x509.NameAttribute(NameOID.COUNTRY_NAME, subject["C"])
+        ])
+
+        pkcs10 = x509.CertificateSigningRequestBuilder()
+        pkcs10 = pkcs10.subject_name( subject )
+
+        csr = pkcs10.sign( self.privateKey, hashes.SHA256() )
+
+        if isinstance(csr, x509.CertificateSigningRequest):
+            return csr.public_bytes(serialization.Encoding.PEM).decode()
+        
+        else: 
+            raise AnsibleError("Error in creation of the CSR, but i don't know why and you can't do anything about it")
+        
+
+    def _get_key(self, p12, password):
+
+        encoded_key = pkcs12.load_key_and_certificates( base64.b64decode(p12), password.encode() )
+
+        key  = encoded_key[0].private_bytes(
+            encoding=serialization.Encoding.PEM,
+            format=serialization.PrivateFormat.TraditionalOpenSSL,
+            encryption_algorithm=serialization.NoEncryption()
+        ).decode()
+
+        return key

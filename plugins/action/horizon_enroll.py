@@ -13,12 +13,6 @@ import requests, base64
 
 from requests.exceptions import HTTPError
 
-from cryptography import x509
-from cryptography.x509.oid import NameOID
-from cryptography.hazmat.primitives import hashes, serialization
-from cryptography.hazmat.primitives.asymmetric import rsa, ec
-from cryptography.hazmat.primitives.serialization import pkcs12
-
 
 # todo : smartenroll
 
@@ -26,54 +20,10 @@ class ActionModule(ActionBase):
 
     TRANSFERS_FILES = True
 
-    def _generate_biKey(self, keytype):
-        ''' Generate a keypairs with the keytype asked '''
-
-        type, bits = keytype.split('-')
-
-        if type == "rsa":
-            self.privateKey = rsa.generate_private_key(public_exponent=65537, key_size=int(bits))
-
-        elif type == "ec" and bits == "secp256r1":
-            self.privateKey = ec.generate_private_key(curve = ec.SECP256R1)
-        
-        elif type == "ec" and bits == "secp384r1":
-            self.privateKey = ec.generate_private_key(curve = ec.SECP384R1)
-        
-        else: 
-            raise AnsibleError("je ne devrais jamais apparaitre")
-
-        self.publicKey = self.privateKey.public_key()
-
-        return ( self.privateKey, self.publicKey )
-
-
-    def _generate_PKCS10(self):
-        ''' Generate a PKCS10 '''
-
-        subject = x509.Name([
-            x509.NameAttribute(NameOID.COMMON_NAME, self.subject["CN"]),
-            x509.NameAttribute(NameOID.ORGANIZATION_NAME, self.subject["O"]),
-            x509.NameAttribute(NameOID.COUNTRY_NAME, self.subject["C"])
-        ])
-
-        pkcs10 = x509.CertificateSigningRequestBuilder()
-        pkcs10 = pkcs10.subject_name( subject )
-
-        csr = pkcs10.sign( self.privateKey, hashes.SHA256() )
-
-        if isinstance(csr, x509.CertificateSigningRequest):
-            return csr.public_bytes(serialization.Encoding.PEM).decode()
-        
-        else: 
-            raise AnsibleError("Error in creation of the CSR, but i don't know why and you can't do anything about it")
-        
-
     def _generate_json(self):
         ''' Setup the json to request the API '''
 
         my_json = {
-            "contact": self.contact,
             "module": self.module,
             "password": {
                 "value": self.password
@@ -113,14 +63,16 @@ class ActionModule(ActionBase):
     def _set_sans(self):
 
         sans = self.template["webRAEnrollRequestTemplate"]["sans"]
+        index = 0
 
         for san in sans:
-            if san["editable"]:
+            if san["editable"] and len(self.sans[san["sanElementType"]]) > index:
                 if san["mandatory"]:
-                    san["value"] = self.sans[san["sanElementType"]]
+                    san["value"] = self.sans[san["sanElementType"]][index]
                 else:
                     if san["sanElementType"] in self.sans:
-                        san["value"] = self.sans[san["sanElementType"]]
+                        san["value"] = self.sans[san["sanElementType"]][index]
+            index += 1
 
         return sans
 
@@ -147,14 +99,8 @@ class ActionModule(ActionBase):
             response = requests.post(self.endpoint_s, json=self._generate_json(), headers=self.horizon.headers)
 
             p12 = response.json()["pkcs12"]["value"]
-
-            encoded_key = pkcs12.load_key_and_certificates( base64.b64decode(p12), self.password.encode() )
-
-            key  = encoded_key[0].private_bytes(
-                encoding=serialization.Encoding.PEM,
-                format=serialization.PrivateFormat.TraditionalOpenSSL,
-                encryption_algorithm=serialization.NoEncryption()
-            ).decode()
+            
+            key = self.horizon._get_key(p12, self.password)
 
             certificate = None
             if "certificate" in response.json():
@@ -184,10 +130,10 @@ class ActionModule(ActionBase):
 
         if self.mode == "decentralized":
             if self.keyType in self.template["webRAEnrollRequestTemplate"]["keyTypes"]:
-                self._generate_biKey(self.keyType)
+                self.horizon._generate_biKey(self.keyType)
                 
                 if self.csr is None:
-                    self.csr = self._generate_PKCS10()
+                    self.csr = self.horizon._generate_PKCS10(self.subject)
 
                 req = self._post_request()
 

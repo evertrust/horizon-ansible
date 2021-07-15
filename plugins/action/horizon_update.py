@@ -19,6 +19,15 @@ class ActionModule(ActionBase):
 
     def _generate_json(self):
 
+        my_json = self.template
+
+        my_json["webRAUpdateRequestTemplate"]["labels"] = self._set_labels()
+        my_json["certificatePem"] = self.certificate
+
+        return my_json
+
+    
+    def _set_labels(self):
         my_labels = []
         index = 0
         for label in self.labels:
@@ -29,13 +38,8 @@ class ActionModule(ActionBase):
                 "editable": self.template["webRAUpdateRequestTemplate"]["labels"][index]["editable"]
             })
             index+=1
-
-        my_json = self.template
-
-        my_json["webRAUpdateRequestTemplate"]["labels"] = my_labels
-        my_json["certificatePem"] = self.certificate
-
-        return my_json
+        
+        return my_labels
 
     
     def _post_request(self):
