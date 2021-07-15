@@ -2,6 +2,7 @@
 
 # Standard base includes and define this as a metaclass of type
 from __future__ import (absolute_import, division, print_function)
+from tempfile import template
 
 from ansible_collections.evertrust.horizon.plugins.module_utils.horizon import Horizon
 
@@ -22,28 +23,6 @@ class ActionModule(ActionBase):
 
     def _generate_json(self):
         ''' Setup the json to request the API '''
-
-        my_json = {
-            "module": self.module,
-            "profile": self.profile,
-            "password": {
-                "value": self.password
-            },
-            "webRAEnrollRequestTemplate": {
-                "capabilities": self.template['webRAEnrollRequestTemplate']['capabilities'],
-                "keyTypes": [self.keyType],
-                "labels": self._set_labels(),
-                "sans": self._set_sans(),
-                "subject": self._set_subject()
-            },
-            "workflow": "enroll"
-        }
-
-        if self.csr is not None:
-            my_json["csr"] = self.csr
-
-        return my_json
-
 
     def _set_labels(self):
         ''' Set the labels with a format readable by the API '''
@@ -81,7 +60,7 @@ class ActionModule(ActionBase):
 
     def _set_subject(self):
         ''' Set the Subject with a format readable by the API '''
-        
+
         subject = self.template["webRAEnrollRequestTemplate"]["subject"]
 
         for element_type in subject:
@@ -98,8 +77,17 @@ class ActionModule(ActionBase):
     def _post_request(self):
         ''' Send the post request to the API, and return the pkcs12 '''
 
+        enroll_request_template = {
+                "capabilities": self.template['webRAEnrollRequestTemplate']['capabilities'],
+                "keyTypes": [self.keyType],
+                "labels": self._set_labels(),
+                "sans": self._set_sans(),
+                "subject": self._set_subject()
+            }
+        my_json = self.horizon._generate_json(module=self.module, profile=self.profile, password=self.password, workflow="enroll", template=enroll_request_template)
+
         try:
-            response = requests.post(self.endpoint_s, json=self._generate_json(), headers=self.horizon.headers)
+            response = requests.post(self.endpoint_s, json=my_json, headers=self.horizon.headers)
             p12 = response.json()["pkcs12"]["value"]
             key = self.horizon._get_key(p12, self.password)
             certificate = None

@@ -15,6 +15,7 @@ class Horizon():
     def __init__(self, endpoint, id, key):
         self.endpoint = endpoint
         self._set_headers(id, key)
+        self.template = None
 
 
     def _set_headers(self, id, key):
@@ -129,6 +130,38 @@ class Horizon():
             return 1
         else:
             return 0
+
+    
+    def _generate_json(self, module=None, profile=None, password=None, workflow=None, certificate_pem=None, revocation_reason=None, template=None, csr=None):
+        
+        if self.template is not None:
+            my_json = self.template
+        else:
+            my_json = {}
+        
+        if module != None:
+            my_json["module"] = module
+        if profile != None:
+            my_json["profile"] = profile
+        if password != None:
+            my_json["password"] = {"value": password}
+        if workflow != None:
+            my_json["workflow"] = workflow
+        if certificate_pem != None:
+            my_json["certificatePem"] = certificate_pem
+        if revocation_reason != None:
+            my_json["revocationReason"] = revocation_reason
+        if csr != None:
+            my_json["csr"] = csr
+
+        if template == None and (workflow == "enroll" or workflow == "update"):
+            raise AnsibleError(f'AAAHH j\'ai raté')
+        elif workflow == "enroll":
+            my_json["webRAEnrollRequestTemplate"] = template
+        elif workflow == "update":
+            my_json["webRAUpdateRequestTemplate"] = template
+
+        return my_json
 
 
     def _generate_biKey(self, keytype):

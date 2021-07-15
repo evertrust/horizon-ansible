@@ -2,6 +2,7 @@
 
 # Standard base includes and define this as a metaclass of type
 from __future__ import (absolute_import, division, print_function)
+from re import S
 
 from ansible_collections.evertrust.horizon.plugins.module_utils.horizon import Horizon
 
@@ -16,17 +17,6 @@ from requests.exceptions import HTTPError
 class ActionModule(ActionBase):
 
     TRANSFERS_FILES = True
-
-    def _generate_json(self):
-        ''' Setup the json to request the API '''
-
-        my_json = self.template
-
-        my_json["webRAUpdateRequestTemplate"]["labels"] = self._set_labels()
-        my_json["certificatePem"] = self.certificate
-
-        return my_json
-
     
     def _set_labels(self):
         ''' Set the labels with a format readable by the API '''
@@ -48,8 +38,10 @@ class ActionModule(ActionBase):
     def _post_request(self):
         ''' Send the post request to the API'''
 
+        my_json = self.horizon._generate_json(module=self.module, profile=self.profile, workflow="update", template=self._set_labels(), certificate_pem=self.certificate_pem)
+
         try:
-            response = requests.post(self.endpoint_s, json=self._generate_json(), headers=self.horizon.headers)
+            response = requests.post(self.endpoint_s, json=my_json, headers=self.horizon.headers)
 
             return response.json()
 
@@ -82,5 +74,5 @@ class ActionModule(ActionBase):
         self.module = self._task.args.get('module')
         self.profile = self._task.args.get('profile')
         self.labels = self._task.args.get('labels')
-        self.certificate = self._task.args.get('certificate')
+        self.certificate_pem = self._task.args.get('certificate')
 

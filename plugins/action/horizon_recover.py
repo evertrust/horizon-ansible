@@ -17,27 +17,13 @@ class ActionModule(ActionBase):
 
     TRANSFERS_FILES = True
 
-    def _generate_json(self):
-        ''' Setup the json to request the API '''
-
-        my_json = {
-            "module": self.module,
-            "profile": self.profile,
-            "password": {
-                "value": self.password
-            },
-            "certificatePem": self.certificate_pem,
-            "workflow": "recover"
-        }
-
-        return my_json
-
-
     def _post_request(self):
         ''' Send the post request to the API, and return the pkcs12 '''
 
+        my_json = self.horizon._generate_json(module=self.module, profile=self.profile, password=self.password, workflow="recover", certificate_pem=self.certificate_pem)
+
         try:
-            response = requests.post(self.endpoint_s, json=self._generate_json(), headers=self.horizon.headers)
+            response = requests.post(self.endpoint_s, json=my_json, headers=self.horizon.headers)
 
             return response.json()
 
