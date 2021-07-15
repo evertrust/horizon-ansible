@@ -18,6 +18,8 @@ class ActionModule(ActionBase):
     TRANSFERS_FILES = True
 
     def _generate_json(self):
+        ''' Setup the json to request the API '''
+
         my_json = {
             "certificatePem": self.certificatePem,
             "module": self.module,
@@ -59,7 +61,7 @@ class ActionModule(ActionBase):
     
 
     def _get_all_informations(self):
-
+        ''' Save all plugin information in self variables '''
         self.endpoint_t = self._task.args.get('endpoint_template')
         self.endpoint_s = self._task.args.get('endpoint_request')
         self.id = self._task.args.get('x-api-id')

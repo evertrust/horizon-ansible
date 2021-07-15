@@ -25,10 +25,10 @@ class ActionModule(ActionBase):
 
         my_json = {
             "module": self.module,
+            "profile": self.profile,
             "password": {
                 "value": self.password
             },
-            "profile": self.profile,
             "webRAEnrollRequestTemplate": {
                 "capabilities": self.template['webRAEnrollRequestTemplate']['capabilities'],
                 "keyTypes": [self.keyType],
@@ -46,6 +46,7 @@ class ActionModule(ActionBase):
 
 
     def _set_labels(self):
+        ''' Set the labels with a format readable by the API '''
 
         labels = self.template["webRAEnrollRequestTemplate"]["labels"]
 
@@ -61,6 +62,7 @@ class ActionModule(ActionBase):
 
 
     def _set_sans(self):
+        ''' Set the Subject alternate names with a format readable by the API '''
 
         sans = self.template["webRAEnrollRequestTemplate"]["sans"]
         index = 0
@@ -78,7 +80,8 @@ class ActionModule(ActionBase):
 
 
     def _set_subject(self):
-
+        ''' Set the Subject with a format readable by the API '''
+        
         subject = self.template["webRAEnrollRequestTemplate"]["subject"]
 
         for element_type in subject:
@@ -97,11 +100,8 @@ class ActionModule(ActionBase):
 
         try:
             response = requests.post(self.endpoint_s, json=self._generate_json(), headers=self.horizon.headers)
-
             p12 = response.json()["pkcs12"]["value"]
-            
             key = self.horizon._get_key(p12, self.password)
-
             certificate = None
             if "certificate" in response.json():
                 certificate = response.json()["certificate"]["certificate"]
@@ -116,45 +116,34 @@ class ActionModule(ActionBase):
 
     def run(self, tmp=None, task_vars=None):
 
-        res = super(ActionModule, self).run(tmp=tmp, task_vars=task_vars)
-
         # get value from playbook
         self._get_all_informations()
-
         # Initialize the class Horizon
         self.horizon = Horizon(self.endpoint_t, self.id, self.key)
-
+        # Save the template in a self variable
         self.template = self.horizon._get_template(self.module, self.profile, "enroll")
-
         self.password = self.horizon._set_password(self.password)
 
         if self.mode == "decentralized":
             if self.keyType in self.template["webRAEnrollRequestTemplate"]["keyTypes"]:
                 self.horizon._generate_biKey(self.keyType)
-                
                 if self.csr is None:
                     self.csr = self.horizon._generate_PKCS10(self.subject)
-
                 req = self._post_request()
 
             else:
                 raise AnsibleError(f'wrong keyType type')
 
         elif self.mode == "centralized":
-
             req = self._post_request()
 
-        res = {"p12": req[0], "p12_password": self.password, "certificate": req[1], "key": req[2]}
-
-        return res
+        return {"p12": req[0], "p12_password": self.password, "certificate": req[1], "key": req[2]}
 
 
     def _get_all_informations(self):
         ''' Save all plugin information in self variables '''
-
         self.endpoint_t = self._task.args.get('endpoint_template')
         self.endpoint_s = self._task.args.get('endpoint_request')
-        self.contact = self._task.args.get('contact')
         self.mode = self._task.args.get('mode')
         self.password = self._task.args.get('password')
         self.keyType = self._task.args.get('keyType')
