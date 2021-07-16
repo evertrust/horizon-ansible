@@ -5,13 +5,7 @@ from __future__ import (absolute_import, division, print_function)
 
 from ansible_collections.evertrust.horizon.plugins.module_utils.horizon import Horizon
 
-__metaclass__ = type
-
-from ansible.errors import AnsibleError
 from ansible.plugins.action import ActionBase
-import requests, base64
-
-from requests.exceptions import HTTPError
 
 class ActionModule(ActionBase):
 
@@ -19,17 +13,19 @@ class ActionModule(ActionBase):
 
     def run(self, tmp=None, task_vars=None):
 
-        res = super(ActionModule, self).run(tmp=tmp, task_vars=task_vars)
-
+        # Get value from playbook
         self._get_all_informations()
+        # Initialize the class Horizon
         self.horizon = Horizon(self.endpoint_t, self.id, self.key)
+        # Save the template in a self variable
         self.template = self.horizon._get_template(self.module, self.profile, "recover")
+        # Set or verify the password
         self.password = self.horizon._set_password(self.password) 
         
         my_json = self.horizon._generate_json(module=self.module, profile=self.profile, password=self.password, workflow="recover", certificate_pem=self.certificate_pem)
-        res = self.horizon._post_request(self.endpoint_s, my_json)
-
-        return res
+        
+        return self.horizon._post_request(self.endpoint_s, my_json)
+        
     
 
     def _get_all_informations(self):
@@ -42,4 +38,3 @@ class ActionModule(ActionBase):
         self.profile = self._task.args.get('profile')
         self.password = self._task.args.get('password')
         self.certificate_pem = self._task.args.get('certificatePem')
-

@@ -1,3 +1,5 @@
+from __future__ import print_function
+from re import sub
 import requests, string, random, base64
 
 from ansible.errors import AnsibleError
@@ -10,7 +12,6 @@ from cryptography.hazmat.primitives.asymmetric import rsa, ec
 from cryptography.hazmat.primitives.serialization import pkcs12
 
 class Horizon():
-    """ La classe Horizon """
 
     def __init__(self, endpoint, id, key):
         self.endpoint = endpoint
@@ -44,6 +45,9 @@ class Horizon():
                 self.template_request = self.template["webRARecoveryRequestTemplate"]
                 self.password_mode = self.template_request["passwordMode"]
                 self.password_policy = self.template_request["passwordPolicy"]
+            
+            elif workflow == "update":
+                self.template_request = self.template["webRAUpdateRequestTemplate"]
 
             return self.template
 
@@ -132,7 +136,7 @@ class Horizon():
             return 0
 
     
-    def _generate_json(self, module=None, profile=None, password=None, workflow=None, certificate_pem=None, revocation_reason=None, template=None, csr=None):
+    def _generate_json(self, module=None, profile=None, password=None, workflow=None, certificate_pem=None, revocation_reason=None, csr=None, labels=None, sans=None, subject=None, key_type=None):
         
         if self.template is not None:
             my_json = self.template
@@ -154,12 +158,18 @@ class Horizon():
         if csr != None:
             my_json["csr"] = csr
 
-        if template == None and (workflow == "enroll" or workflow == "update"):
-            raise AnsibleError(f'AAAHH j\'ai raté')
-        elif workflow == "enroll":
-            my_json["webRAEnrollRequestTemplate"] = template
+        if workflow == "enroll":
+            enroll_request_template = {
+                "capabilities": self.template_request['capabilities'],
+                "keyTypes": [key_type],
+                "labels": self._set_labels(labels),
+                "sans": self._set_sans(sans),
+                "subject": self._set_subject(subject)
+            }
+            my_json["webRAEnrollRequestTemplate"] = enroll_request_template
+
         elif workflow == "update":
-            my_json["webRAUpdateRequestTemplate"]["labels"] = template
+            my_json["webRAUpdateRequestTemplate"]["labels"] = self._set_labels(labels)
 
         return my_json
 
@@ -231,3 +241,53 @@ class Horizon():
         ).decode()
 
         return key
+
+    
+    def _set_labels(self, labels):
+        ''' Set the labels with a format readable by the API '''
+
+        labels_template = self.template_request["labels"]
+
+        for label_template in labels_template:
+            if label_template["editable"]:
+                if label_template["mandatory"]:
+                    label_template["value"] = labels[label_template["label"]]
+                else:
+                    if label_template["label"] in labels:
+                        label_template["value"] = labels[label_template["label"]]
+
+        return labels_template
+
+
+    def _set_sans(self, sans):
+        ''' Set the Subject alternate names with a format readable by the API '''
+
+        sans_template = self.template["webRAEnrollRequestTemplate"]["sans"]
+        index = 0
+
+        for san_template in sans_template:
+            if san_template["editable"] and len(sans[san_template["sanElementType"]]) > index:
+                if san_template["mandatory"]:
+                    san_template["value"] = sans[san_template["sanElementType"]][index]
+                else:
+                    if san_template["sanElementType"] in sans:
+                        san_template["value"] = sans[san_template["sanElementType"]][index]
+            index += 1
+
+        return sans_template
+
+
+    def _set_subject(self, subject):
+        ''' Set the Subject with a format readable by the API '''
+
+        subject_template = self.template["webRAEnrollRequestTemplate"]["subject"]
+
+        for element_type in subject_template:
+            if element_type["editable"]:
+                if element_type["mandatory"]:
+                    element_type["value"] = subject[element_type["dnElementType"]]
+                else:
+                    if element_type["dnElementType"] in subject:
+                        element_type["value"] = subject[element_type["dnElementType"]]
+
+        return subject_template

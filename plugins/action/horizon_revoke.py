@@ -5,13 +5,7 @@ from __future__ import (absolute_import, division, print_function)
 
 from ansible_collections.evertrust.horizon.plugins.module_utils.horizon import Horizon
 
-__metaclass__ = type
-
-from ansible.errors import AnsibleError
 from ansible.plugins.action import ActionBase
-import requests, base64, json
-
-from requests.exceptions import HTTPError
 
 class ActionModule(ActionBase):
 
@@ -19,16 +13,15 @@ class ActionModule(ActionBase):
 
     def run(self, tmp=None, task_vars=None):
 
-        # get value from playbook
+        # Get value from playbook
         self._get_all_informations()
         # Initialize the class Horizon
         self.horizon = Horizon(self.endpoint_t, self.id, self.key)
 
         my_json = self.horizon._generate_json(module=self.module, profile=self.profile, workflow="revoke", revocation_reason=self.revocation_reason, certificate_pem=self.certificate_pem)
-        res = self.horizon._post_request(self.endpoint_s, my_json)
 
-        return res
-    
+        return self.horizon._post_request(self.endpoint_s, my_json)
+
 
     def _get_all_informations(self):
         ''' Save all plugin information in self variables '''
