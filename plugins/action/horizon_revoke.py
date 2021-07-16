@@ -3,6 +3,8 @@
 # Standard base includes and define this as a metaclass of type
 from __future__ import (absolute_import, division, print_function)
 
+from ansible.errors import AnsibleAction
+
 from ansible_collections.evertrust.horizon.plugins.module_utils.horizon import Horizon
 
 from ansible.plugins.action import ActionBase
@@ -12,15 +14,22 @@ class ActionModule(ActionBase):
     TRANSFERS_FILES = True
 
     def run(self, tmp=None, task_vars=None):
+        result = super(ActionModule, self).run(tmp, task_vars)
 
-        # Get value from playbook
-        self._get_all_informations()
-        # Initialize the class Horizon
-        self.horizon = Horizon(self.endpoint_t, self.id, self.key)
+        try:
+            # Get value from playbook
+            self._get_all_informations()
+            # Initialize the class Horizon
+            self.horizon = Horizon(self.endpoint_t, self.id, self.key)
 
-        my_json = self.horizon._generate_json(module=self.module, profile=self.profile, workflow="revoke", revocation_reason=self.revocation_reason, certificate_pem=self.certificate_pem)
+            my_json = self.horizon._generate_json(module=self.module, profile=self.profile, workflow="revoke", revocation_reason=self.revocation_reason, certificate_pem=self.certificate_pem)
 
-        return self.horizon._post_request(self.endpoint_s, my_json)
+            result = self.horizon._post_request(self.endpoint_s, my_json)
+        
+        except AnsibleAction as e:
+            result.update(e.result)
+
+        return result
 
 
     def _get_all_informations(self):
