@@ -2,6 +2,7 @@
 
 # Standard base includes and define this as a metaclass of type
 from __future__ import (absolute_import, division, print_function)
+from tempfile import template
 
 from ansible_collections.evertrust.horizon.plugins.module_utils.horizon import Horizon
 
@@ -23,8 +24,9 @@ class ActionModule(ActionBase):
             # Save the template in a self variable
             self.template = self.horizon._get_template(self.module, self.profile, "enroll")
             # Verify the password
-            if self.password != None:
-                self.horizon._check_password_policy(self.password)
+            self.horizon._check_password_policy(self.password)
+            # Verify or assign enrollment's mode
+            self.mode = self.horizon._check_mode(self.mode)
 
             if self.mode == "decentralized":
                 if self.key_type in self.template["webRAEnrollRequestTemplate"]["keyTypes"]:
@@ -39,12 +41,15 @@ class ActionModule(ActionBase):
             certificate = None
             if "certificate" in response:
                 certificate = response["certificate"]["certificate"]
-
-            result = {"p12": response["pkcs12"]["value"], "p12_password": self.password, "certificate": certificate, "key": self.horizon._get_key(response["pkcs12"]["value"], response["password"]["value"])}
+            
+            if self.mode == "decentralized":
+                result = {"certificate": certificate}
+            else:
+                result = {"p12": response["pkcs12"]["value"], "p12_password": self.password, "certificate": certificate, "key": self.horizon._get_key(response["pkcs12"]["value"], response["password"]["value"])}
         
         except AnsibleAction as e:
             result.update(e.result)
-        
+            
         return result
 
 

@@ -24,20 +24,12 @@ class ActionModule(ActionBase):
             # Save the template in a self variable
             self.template = self.horizon._get_template(self.module, self.profile, "recover")
             # Verify the password
-            if self.password != None:
-                self.horizon._check_password_policy(self.password)
+            self.horizon._check_password_policy(self.password)
 
             my_json = self.horizon._generate_json(module=self.module, profile=self.profile, password=self.password, workflow="recover", certificate_pem=self.certificate_pem)
 
-            response = self.horizon._post_request(self.endpoint_s, my_json)
+            result = self.horizon._post_request(self.endpoint_s, my_json)
             
-            certificate = None
-            if "certificate" in response:
-                certificate = response["certificate"]["certificate"]
-
-            result = {"p12": response["pkcs12"]["value"], "p12_password": self.password, "certificate": certificate, "key": self.horizon._get_key(response["pkcs12"]["value"], response["password"]["value"])}
-        
-        
         except AnsibleAction as e:
             result.update(e.result)
         

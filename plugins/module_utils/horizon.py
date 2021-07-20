@@ -1,5 +1,7 @@
 from __future__ import print_function
-from re import sub
+from re import A, sub
+from ansible import errors
+import ansible
 import requests, string, random, base64
 
 from ansible.errors import AnsibleError
@@ -22,14 +24,19 @@ class Horizon():
     def _debug(self, response):
         ''' Return an Ansible Error if needed '''
         if isinstance(response, list):
-            if "error" in response:
-                message = ""
-                for error in response:
-                    message += f'Error: { error["error"] }, Message: { error["message"] }, Details: { error["detail"] }\n'
-                raise AnsibleError(message)
+            message = ""
+            for elmt in response:
+                if "error" in elmt:
+                    message += f'Error: { elmt["error"] }, Message: { elmt["message"] }, Details: { elmt["detail"] }, '
+            raise AnsibleError(message)
         elif "error" in response:
-            raise AnsibleError(f'Error: { response["error"] }, Message: { response["message"] }, Details: { response["detail"] }\n')
-        
+            message = f'Error: { response["error"] }'
+            if "message" in response:
+                message += f', Message: { response["message"] }'
+            if "detail" in response:
+                message += f', Details: { response["detail"] }'
+            raise AnsibleError(message)
+
         return True
 
 
@@ -72,22 +79,34 @@ class Horizon():
         except HTTPError as http_err:
             raise AnsibleError(f'HTTP error occurred: {http_err}')
         except Exception as err:
-            raise AnsibleError(f'Error occurred: {err}')
+            raise AnsibleError(f'{err}')
 
     
     def _check_password_policy(self, password):
 
         if self.password_mode == "manual" and password == None:
-            raise AnsibleError(f'A password is required.')
+            message = f'A password is required. '
+            message += f'The password has to contains between { self.password_policy["minChar"] } and { self.password_policy["maxChar"] } characters, ' 
+            message += f'it has to contains at least : { self.password_policy["minLoChar"] } lowercase letter, { self.password_policy["minUpChar"] } uppercase letter, '
+            message += f'{ self.password_policy["minDiChar"] } number ' 
+            if "spChar" in self.template_request["passwordPolicy"]:
+                f'and { self.password_policy["minSpChar"] } symbol characters in { self.password_policy["spChar"] }'
+            raise AnsibleError(message)
+                
 
         if "passwordPolicy" in self.template_request:
+            minChar = self.template_request["passwordPolicy"]["minChar"]
+            maxChar = self.template_request["passwordPolicy"]["maxChar"]
             minLo = self.template_request["passwordPolicy"]["minLoChar"]
             minUp = self.template_request["passwordPolicy"]["minUpChar"]
             minDi = self.template_request["passwordPolicy"]["minDiChar"]
-            minSp = self.template_request["passwordPolicy"]["minSpChar"]
             whiteList = []
-            for s in self.template_request["passwordPolicy"]["spChar"]:
-                whiteList.append(s)
+            if "spChar" in self.template_request["passwordPolicy"]:
+                minSp = self.template_request["passwordPolicy"]["minSpChar"]
+                for s in self.template_request["passwordPolicy"]["spChar"]:
+                    whiteList.append(s)
+            else:
+                minSp = 0
 
             for c in password:
                 if c in string.digits:
@@ -99,14 +118,18 @@ class Horizon():
                 elif c in whiteList:
                     minSp -= 1
                 else:
-                    raise AnsibleError(f'You can only use letters, digits and charactere in { self.password_policy["spChar"] }')
+                    break
 
-            if minDi > 0 or minLo > 0 or minUp > 0 or minSp > 0:
-                raise AnsibleError(f'Your password doesn\'t match with the password policy requiered. ' +
-                        f'The password has to contains between { self.password_policy["minChar"] } and { self.password_policy["maxChar"] } characters, ' +
-                        f'it has to contains at least : { self.password_policy["minLoChar"] } lowercase letter, { self.password_policy["minUpChar"] } uppercase letter, ' +
-                        f'{ self.password_policy["minDiChar"] } number and { self.password_policy["minSpChar"] } symbol characters in { self.password_policy["spChar"] } .'
-                    )
+            if minDi > 0 or minLo > 0 or minUp > 0 or minSp > 0 or len(password) < minChar or len(password) > maxChar:
+                message = f'Your password does not match the password policy. '
+                message += f'The password has to contains between { self.password_policy["minChar"] } and { self.password_policy["maxChar"] } characters, ' 
+                message += f'it has to contains at least : { self.password_policy["minLoChar"] } lowercase letter, { self.password_policy["minUpChar"] } uppercase letter, '
+                message += f'{ self.password_policy["minDiChar"] } number ' 
+                if "spChar" in self.template_request["passwordPolicy"]:
+                    message += f'and { self.password_policy["minSpChar"] } special characters in { self.password_policy["spChar"] }'
+                else:
+                    message += f'but no special characters'
+                raise AnsibleError(message)
         
         return password
 
@@ -130,8 +153,6 @@ class Horizon():
             my_json["certificatePem"] = certificate_pem
         if revocation_reason != None:
             my_json["revocationReason"] = revocation_reason
-        if csr != None:
-            my_json["csr"] = csr
 
         if workflow == "enroll":
             enroll_request_template = {
@@ -141,6 +162,9 @@ class Horizon():
                 "sans": self._set_sans(sans),
                 "subject": self._set_subject(subject)
             }
+            if "csr" != None:
+                enroll_request_template["csr"] = csr
+
             my_json["webRAEnrollRequestTemplate"] = enroll_request_template
 
         elif workflow == "update":
@@ -160,7 +184,7 @@ class Horizon():
         except HTTPError as http_err:
             raise AnsibleError(f'HTTP error occurred: {http_err}')
         except Exception as err:
-            raise AnsibleError(f'Error occurred: {err}')
+            raise AnsibleError(f'{err}')
 
 
     def _generate_biKey(self, key_type):
@@ -187,6 +211,9 @@ class Horizon():
 
     def _generate_PKCS10(self, subject, key_type):
         ''' Generate a PKCS10 '''
+
+        if not "CN" in subject:
+            raise AnsibleError(f'subject CN is mandatory')
 
         try:
             self._generate_biKey(key_type)
@@ -234,15 +261,22 @@ class Horizon():
     def _set_labels(self, labels):
         ''' Set the labels with a format readable by the API '''
 
+        for label in labels:
+            if labels[label] == "" or labels[label] == None:
+                raise AnsibleError(f'the label value for { label } is not allowed')
+
         labels_template = self.template_request["labels"]
 
-        for label_template in labels_template:
-            if label_template["editable"]:
-                if label_template["mandatory"]:
-                    label_template["value"] = labels[label_template["label"]]
+        for label in labels_template:
+            if label["editable"]:
+                if label["mandatory"]:
+                    if label["label"] in labels:
+                        label["value"] = labels[label["label"]]
+                    else:
+                        raise AnsibleError(f'The label { label["label"] } is mandatory')
                 else:
-                    if label_template["label"] in labels:
-                        label_template["value"] = labels[label_template["label"]]
+                    if label["label"] in labels:
+                        label["value"] = labels[label["label"]]
 
         return labels_template
 
@@ -279,3 +313,15 @@ class Horizon():
                         element_type["value"] = subject[element_type["dnElementType"]]
 
         return subject_template
+
+
+    def _check_mode(self, mode=None):
+        if mode == None:
+            if self.template_request["capabilities"]["centralized"]:
+                return "centralized"
+            else:
+                return "decentralized"
+        elif self.template_request["capabilities"][mode]:
+            return mode 
+        else:
+            raise AnsibleError(f'The mode: { mode } is not available.')
