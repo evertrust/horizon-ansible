@@ -13,6 +13,10 @@ from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import rsa, ec
 from cryptography.hazmat.primitives.serialization import pkcs12
 
+"""
+This module contains all the functiuns necessary for the Horizon's plugins.
+"""
+
 class Horizon():
 
     def __init__(self, endpoint, id, key):
