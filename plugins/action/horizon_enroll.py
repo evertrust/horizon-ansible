@@ -2,11 +2,118 @@
 
 # Standard base includes and define this as a metaclass of type
 from __future__ import (absolute_import, division, print_function)
-from tempfile import template
+
+DOCUMENTATION = '''
+---
+action: horizon_enroll
+short_description: enroll a certificate
+description:
+    - TODO
+options:
+  x-api-id:
+    description:
+      - Horizon identifiant
+    required: true
+    type: str
+  x-api-key:
+    description:
+      - Horizon password
+    required: true
+    type: str
+  endpoint_template:
+    description:
+      - url to get the template from the API
+    required: true
+    type: str
+  endpoint_request:
+    description:
+      - url to post the request to the API
+    required: true
+    type: str
+  profile:
+    description:
+      - Horizon certificate profile
+    required: true
+    type: str
+  module:
+    description:
+      - Horizon certificate module
+    required: true
+    type: str
+  password:
+    description:
+      - Security password for the certificate. 
+      - Can be subject of a password policy
+      - Can be riquired or not dependiing on the enrollement mode
+    required: false
+    type: str
+  keyType:
+    description:
+      - Type of key to encode
+    required: true
+    type: str
+  mode:
+    description:
+      - enrollement mode
+    required: false
+    type: str
+  subject:
+    description:
+      - subject of the certificate
+    required: true
+    type: dict (str)
+  sans:
+    description:
+      - subject alternative names of the certificate
+    required: true
+    type: dict (list (str))
+  labels:
+    description:
+      - labels of the certificate
+    required: false
+    type: dict (str)
+'''
+
+EXAMPLES = '''
+- name: Simple Enroll
+  evertrust.horizon.horizon_enroll
+    x-api-id: "myId"
+    x-api-key: "myKey"
+    endpoint_template: "https://url/of/the/api/requests/template"
+    endpoint_request: "https://url/of/the/api/requests/submit"
+    profile: "profile"
+    module: "module"
+    keyType: "rsa-2048"
+    subject:
+      CN: "myCN"
+    sans:
+      DNSNAME:
+        - "myDnsname"
+'''
+
+RETURN = '''
+p12:
+  description: pkcs12 returned by the api
+  returned: if enrollement mode is "centralized"
+  type: str
+password:
+  description: password used to enroll
+  returned: if enrollement mode is "centralized"
+  type: str
+certificate:
+  descriptioin: certificate enrolled
+  returned: always
+  type: str
+key: 
+  description: Public key of the certificate
+  returned: if enrollement mode is "centralized"
+  type: str
+'''
+
+from ansible.errors import AnsibleAction, AnsibleError
 
 from ansible_collections.evertrust.horizon.plugins.module_utils.horizon import Horizon
 
-from ansible.errors import AnsibleAction, AnsibleError
 from ansible.plugins.action import ActionBase
 
 class ActionModule(ActionBase):
