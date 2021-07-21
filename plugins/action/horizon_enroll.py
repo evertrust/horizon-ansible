@@ -116,9 +116,88 @@ from ansible_collections.evertrust.horizon.plugins.module_utils.horizon import H
 
 from ansible.plugins.action import ActionBase
 
+from cryptography import x509
+from cryptography.x509.oid import NameOID
+from cryptography.hazmat.primitives import hashes, serialization
+from cryptography.hazmat.primitives.asymmetric import rsa, ec
+from cryptography.hazmat.primitives.serialization import pkcs12
+
+import base64
+
 class ActionModule(ActionBase):
 
     TRANSFERS_FILES = True
+
+    def _generate_biKey(self, key_type):
+        ''' Generate a keypairs with the keytype asked '''
+
+        if key_type == None:
+            raise AnsibleError(f'A keyType is required')
+
+        type, bits = key_type.split('-')
+
+        if type == "rsa":
+            self.privateKey = rsa.generate_private_key(public_exponent=65537, key_size=int(bits))
+        elif type == "ec" and bits == "secp256r1":
+            self.privateKey = ec.generate_private_key(curve = ec.SECP256R1)
+        elif type == "ec" and bits == "secp384r1":
+            self.privateKey = ec.generate_private_key(curve = ec.SECP384R1)
+        else: 
+            raise AnsibleError("KeyType not known")
+
+        self.publicKey = self.privateKey.public_key()
+
+        return ( self.privateKey, self.publicKey )
+
+
+    def _generate_PKCS10(self, subject, key_type):
+        ''' Generate a PKCS10 '''
+
+        if not "CN" in subject:
+            raise AnsibleError(f'subject CN is mandatory')
+
+        try:
+            self._generate_biKey(key_type)
+
+            x509_subject = []
+            for val in subject:
+                if val == "CN":
+                    x509_subject.append(x509.NameAttribute(NameOID.COMMON_NAME, subject[val]))
+                elif val == "O":
+                    x509_subject.append(x509.NameAttribute(NameOID.ORGANIZATION_NAME, subject[val]))
+                elif val == "C":
+                    x509_subject.append(x509.NameAttribute(NameOID.COUNTRY_NAME, subject[val]))
+                elif val == "OU":
+                    for ou in subject["OU"]:
+                        x509_subject.append(x509.NameAttribute(NameOID.ORGANIZATIONAL_UNIT_NAME, ou))
+
+            pkcs10 = x509.CertificateSigningRequestBuilder()
+            pkcs10 = pkcs10.subject_name(x509.Name( x509_subject ))
+
+            csr = pkcs10.sign( self.privateKey, hashes.SHA256() )
+
+            if isinstance(csr, x509.CertificateSigningRequest):
+                return csr.public_bytes(serialization.Encoding.PEM).decode()
+
+            else: 
+                raise AnsibleError(f'Error in creation of the CSR, but i don\'t know why and you can\'t do anything about it')
+        
+        except Exception as e:
+            raise AnsibleError(f'Error in the creation of the pkcs10, be sure to fill all the fields required with decentralized mode. Error is: {e}')
+
+        
+    def _get_key(self, p12, password):
+
+        encoded_key = pkcs12.load_key_and_certificates( base64.b64decode(p12), password.encode() )
+
+        key  = encoded_key[0].private_bytes(
+            encoding=serialization.Encoding.PEM,
+            format=serialization.PrivateFormat.TraditionalOpenSSL,
+            encryption_algorithm=serialization.NoEncryption()
+        ).decode()
+
+        return key
+
 
     def run(self, tmp=None, task_vars=None):
         result = super(ActionModule, self).run(tmp, task_vars)
@@ -127,23 +206,23 @@ class ActionModule(ActionBase):
             # Get value from playbook
             self._get_all_informations()
             # Initialize the class Horizon
-            self.horizon = Horizon(self.endpoint_t, self.id, self.key)
+            horizon = Horizon(self.endpoint_t, self.id, self.key)
             # Save the template in a self variable
-            self.template = self.horizon._get_template(self.module, self.profile, "enroll")
+            self.template = horizon._get_template(self.module, self.profile, "enroll")
             # Verify the password
-            self.horizon._check_password_policy(self.password)
+            horizon._check_password_policy(self.password)
             # Verify or assign enrollment's mode
-            self.mode = self.horizon._check_mode(self.mode)
+            self.mode = horizon._check_mode(self.mode)
 
             if self.mode == "decentralized":
                 if self.key_type in self.template["webRAEnrollRequestTemplate"]["keyTypes"]:
                     if self.csr == None:
-                        self.csr = self.horizon._generate_PKCS10(self.subject, self.key_type)
+                        self.csr = self._generate_PKCS10(self.subject, self.key_type)
                 else:
                     raise AnsibleError(f'Wrong keyType type')
 
-            my_json = self.horizon._generate_json(module=self.module, profile=self.profile, password=self.password, workflow="enroll", key_type=self.key_type, labels=self.labels, sans=self.sans, subject=self.subject, csr=self.csr)
-            response = self.horizon._post_request(self.endpoint_s, my_json)
+            my_json = horizon._generate_json(module=self.module, profile=self.profile, password=self.password, workflow="enroll", key_type=self.key_type, labels=self.labels, sans=self.sans, subject=self.subject, csr=self.csr)
+            response = horizon._post_request(self.endpoint_s, my_json)
             
             certificate = None
             if "certificate" in response:
@@ -152,7 +231,7 @@ class ActionModule(ActionBase):
             if self.mode == "decentralized":
                 result = {"certificate": certificate}
             else:
-                result = {"p12": response["pkcs12"]["value"], "p12_password": self.password, "certificate": certificate, "key": self.horizon._get_key(response["pkcs12"]["value"], response["password"]["value"])}
+                result = {"p12": response["pkcs12"]["value"], "p12_password": self.password, "certificate": certificate, "key": self._get_key(response["pkcs12"]["value"], response["password"]["value"])}
         
         except AnsibleAction as e:
             result.update(e.result)

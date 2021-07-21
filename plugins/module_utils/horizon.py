@@ -7,14 +7,8 @@ import requests, string, random, base64
 from ansible.errors import AnsibleError
 from requests.exceptions import HTTPError
 
-from cryptography import x509
-from cryptography.x509.oid import NameOID
-from cryptography.hazmat.primitives import hashes, serialization
-from cryptography.hazmat.primitives.asymmetric import rsa, ec
-from cryptography.hazmat.primitives.serialization import pkcs12
-
 """
-This module contains all the functiuns necessary for the Horizon's plugins.
+This module contains all the functiuns necessary for the Horizon action plugins.
 """
 
 class Horizon():
@@ -189,77 +183,6 @@ class Horizon():
             raise AnsibleError(f'HTTP error occurred: {http_err}')
         except Exception as err:
             raise AnsibleError(f'{err}')
-
-
-    def _generate_biKey(self, key_type):
-        ''' Generate a keypairs with the keytype asked '''
-
-        if key_type == None:
-            raise AnsibleError(f'A keyType is required')
-
-        type, bits = key_type.split('-')
-
-        if type == "rsa":
-            self.privateKey = rsa.generate_private_key(public_exponent=65537, key_size=int(bits))
-        elif type == "ec" and bits == "secp256r1":
-            self.privateKey = ec.generate_private_key(curve = ec.SECP256R1)
-        elif type == "ec" and bits == "secp384r1":
-            self.privateKey = ec.generate_private_key(curve = ec.SECP384R1)
-        else: 
-            raise AnsibleError("KeyType not known")
-
-        self.publicKey = self.privateKey.public_key()
-
-        return ( self.privateKey, self.publicKey )
-
-
-    def _generate_PKCS10(self, subject, key_type):
-        ''' Generate a PKCS10 '''
-
-        if not "CN" in subject:
-            raise AnsibleError(f'subject CN is mandatory')
-
-        try:
-            self._generate_biKey(key_type)
-
-            x509_subject = []
-            for val in subject:
-                if val == "CN":
-                    x509_subject.append(x509.NameAttribute(NameOID.COMMON_NAME, subject[val]))
-                elif val == "O":
-                    x509_subject.append(x509.NameAttribute(NameOID.ORGANIZATION_NAME, subject[val]))
-                elif val == "C":
-                    x509_subject.append(x509.NameAttribute(NameOID.COUNTRY_NAME, subject[val]))
-                elif val == "OU":
-                    for ou in subject["OU"]:
-                        x509_subject.append(x509.NameAttribute(NameOID.ORGANIZATIONAL_UNIT_NAME, ou))
-
-            pkcs10 = x509.CertificateSigningRequestBuilder()
-            pkcs10 = pkcs10.subject_name(x509.Name( x509_subject ))
-
-            csr = pkcs10.sign( self.privateKey, hashes.SHA256() )
-
-            if isinstance(csr, x509.CertificateSigningRequest):
-                return csr.public_bytes(serialization.Encoding.PEM).decode()
-
-            else: 
-                raise AnsibleError(f'Error in creation of the CSR, but i don\'t know why and you can\'t do anything about it')
-        
-        except Exception as e:
-            raise AnsibleError(f'Error in the creation of the pkcs10, be sure to fill all the fields required with decentralized mode. Error is: {e}')
-        
-
-    def _get_key(self, p12, password):
-
-        encoded_key = pkcs12.load_key_and_certificates( base64.b64decode(p12), password.encode() )
-
-        key  = encoded_key[0].private_bytes(
-            encoding=serialization.Encoding.PEM,
-            format=serialization.PrivateFormat.TraditionalOpenSSL,
-            encryption_algorithm=serialization.NoEncryption()
-        ).decode()
-
-        return key
 
     
     def _set_labels(self, labels):

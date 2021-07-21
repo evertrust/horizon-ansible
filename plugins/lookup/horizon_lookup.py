@@ -13,26 +13,32 @@ description:
   - Describes attributes of your horizon certificate.
     You can specify one of the listed attribute choices or omit it to see all attributes.
 options:
+  header:
+    description: API identifiers
+  pem: 
+    description: 
   attributes:
-    description: The attribute(s) for which to get the value(s)
+    description:
     choices:
       - '_id'
       - 'labels'
       - 'module'
       - 'profile'
+      - 'serial'
 '''
 
 EXAMPLES = """
 vars:
   my_pem: <a_webra_pem_file>
+  my_header: {"x-api-id": "id", "x-api-key": "key"}
 
-  with_one: "{{ lookup('evertrust.horizon.horizon_lookup', pem=my_pem, attributes='module') }}"
+  with_one: "{{ lookup('evertrust.horizon.horizon_lookup', header=my_header, pem=my_pem, attributes='module') }}"
   # only demanded (str)
 
-  with_list: "{{ lookup('evertrust.horizon.horizon_lookup', pem=my_pem, attributes=['module', '_id']) }}"
+  with_list: "{{ lookup('evertrust.horizon.horizon_lookup', header=my_header, pem=my_pem, attributes=['module', '_id']) }}"
   # only those in list (dict)
 
-  without: "{{ lookup('evertrust.horizon.horizon_lookup', pem=my_pem) }}"
+  without: "{{ lookup('evertrust.horizon.horizon_lookup', header=my_header, pem=my_pem) }}"
   # all (dict)
 """
 
@@ -52,9 +58,8 @@ display = Display()
 
 class LookupModule(LookupBase):
 
-    def _request(self, pem):
+    def _request(self, header, pem):
 
-        header = {"x-api-id":"adu", "x-api-key":"qtapOfde"}
         endpoint = "https://horizon-demo.evertrust.fr/api/v1/certificates/" + pem
 
         try:
@@ -94,7 +99,9 @@ class LookupModule(LookupBase):
         pem = urllib.parse.quote(kwargs['pem'])
         pem = pem.replace('/', "%2F")
 
-        res = self._request(pem)
+        header = kwargs['header']
+
+        res = self._request(header, pem)
         
         if 'attributes' in kwargs:
 

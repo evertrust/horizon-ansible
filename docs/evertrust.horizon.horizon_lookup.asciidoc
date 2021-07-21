@@ -1,0 +1,63 @@
+= Evertrust.horizon.horizon_lookup
+
+== Synopsis
+- Describes attributes of your horizon certificate.
+- You can specify one of the listed attribute choices or omit it to see all attributes.
+
+== Requirements
+
+== Parameters
+
+|===
+| Parameter | Choices/Defaults | Configuration | Comments
+
+| *header*
+
+  - / required 
+
+  _dict_
+| 
+|
+| API identifiers
+
+| *pem*
+
+  _string_
+| 
+| 
+| A certificate pem
+
+| *attributes*
+
+  _string_ or _dict_
+a| * _id
+* labels
+* module
+* profile
+* serial
+| 
+| Attributes from the certificat. 
+Return value.
+
+|===
+
+== Examples
+
+``` yml
+vars:
+  my_pem: <a_webra_pem_file>
+  my_header: {"x-api-id": "id", "x-api-key": "key"}
+
+  with_one: "{{ lookup('evertrust.horizon.horizon_lookup', header=my_header, pem=my_pem, attributes='module') }}"
+  # only demanded (str)
+
+  with_list: "{{ lookup('evertrust.horizon.horizon_lookup', header=my_header, pem=my_pem, attributes=['module', 'serial']) }}"
+  # only those in list (dict)
+
+  without: "{{ lookup('evertrust.horizon.horizon_lookup', header=my_header, pem=my_pem) }}"
+  # all (dict)
+```
+
+== Status
+=== Authors
+- Adrien Ducourthial
