@@ -2,7 +2,6 @@
 
 # Standard base includes and define this as a metaclass of type
 from __future__ import (absolute_import, division, print_function)
-from os import EX_CANTCREAT
 
 DOCUMENTATON = '''
 ---
@@ -87,7 +86,7 @@ class ActionModule(ActionBase):
             # Initialize the class Horizon
             self.horizon = Horizon(self.endpoint_t, self.id, self.key)
             # Save the template in a self variable
-            self.template = self.horizon._get_template(self.module, self.profile, "recover")
+            template = self.horizon._get_template(self.module, self.profile, "recover")
             # Verify the password
             self.horizon._check_password_policy(self.password)
 

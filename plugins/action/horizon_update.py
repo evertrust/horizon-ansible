@@ -91,9 +91,9 @@ class ActionModule(ActionBase):
             # Get value from playbook
             self._get_all_informations()
             # Initialize the class Horizon
-            self.horizon = Horizon(self.endpoint_t, self.id, self.key)
+            self.horizon = Horizon(self.endpoint_s, self.id, self.key)
             # Save the template in a self variable
-            self.template = self.horizon._get_template(self.module, self.profile, "update")
+            #self.template = self.horizon._get_template(self.module, self.profile, "update")
 
             my_json = self.horizon._generate_json(module=self.module, profile=self.profile, workflow="update", certificate_pem=self.certificate_pem, labels=self.labels)
 

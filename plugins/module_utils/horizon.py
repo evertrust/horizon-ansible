@@ -1,15 +1,10 @@
 from __future__ import print_function
-from re import A, sub
-from ansible import errors
-import ansible
-import requests, string, random, base64
+from re import sub
+
+import requests, string
 
 from ansible.errors import AnsibleError
 from requests.exceptions import HTTPError
-
-"""
-This module contains all the functiuns necessary for the Horizon action plugins.
-"""
 
 class Horizon():
 
@@ -57,20 +52,14 @@ class Horizon():
             
             if self._debug(self.template):
 
-                if workflow == "enroll":
-                    self.template_request = self.template["webRAEnrollRequestTemplate"]
-                    self.password_mode = self.template_request["capabilities"]["p12passwordMode"]
-                    if "passwordPolicy" in self.template_request:
-                        self.password_policy = self.template_request["passwordPolicy"]
-
-                elif workflow == "recover":
-                    self.template_request = self.template["webRARecoveryRequestTemplate"]
+                self.template_request = self.template["template"]
+                if "capabilities" in self.template_request:
+                    if "p12passwordMode" in self.template_request["capabilities"]:
+                        self.password_mode = self.template_request["capabilities"]["p12passwordMode"]
+                if "passwordMode" in self.template_request:
                     self.password_mode = self.template_request["passwordMode"]
-                    if "passwordPolicy" in self.template_request:
-                        self.password_policy = self.template_request["passwordPolicy"]
-
-                elif workflow == "update":
-                    self.template_request = self.template["webRAUpdateRequestTemplate"]
+                if "passwordPolicy" in self.template_request:
+                    self.password_policy = self.template_request["passwordPolicy"]
 
                 return self.template
 
@@ -99,6 +88,7 @@ class Horizon():
             minUp = self.template_request["passwordPolicy"]["minUpChar"]
             minDi = self.template_request["passwordPolicy"]["minDiChar"]
             whiteList = []
+            c_not_allowed = False
             if "spChar" in self.template_request["passwordPolicy"]:
                 minSp = self.template_request["passwordPolicy"]["minSpChar"]
                 for s in self.template_request["passwordPolicy"]["spChar"]:
@@ -116,10 +106,11 @@ class Horizon():
                 elif c in whiteList:
                     minSp -= 1
                 else:
+                    c_not_allowed = True
                     break
 
-            if minDi > 0 or minLo > 0 or minUp > 0 or minSp > 0 or len(password) < minChar or len(password) > maxChar:
-                message = f'Your password does not match the password policy. '
+            if minDi > 0 or minLo > 0 or minUp > 0 or minSp > 0 or len(password) < minChar or len(password) > maxChar or c_not_allowed == True:
+                message = f'Your password does not match the password policy { self.password_policy["name"] }. '
                 message += f'The password has to contains between { self.password_policy["minChar"] } and { self.password_policy["maxChar"] } characters, ' 
                 message += f'it has to contains at least : { self.password_policy["minLoChar"] } lowercase letter, { self.password_policy["minUpChar"] } uppercase letter, '
                 message += f'{ self.password_policy["minDiChar"] } number ' 
@@ -136,37 +127,33 @@ class Horizon():
         
         if self.template is not None:
             my_json = self.template
+        elif workflow == "update":
+            my_json = {"template": {}}
         else:
             my_json = {}
+
+        my_json["workflow"] = workflow
         
         if module != None:
             my_json["module"] = module
         if profile != None:
             my_json["profile"] = profile
         if password != None:
-            my_json["password"] = {"value": password}
-        if workflow != None:
-            my_json["workflow"] = workflow
+            my_json["password"] = password
         if certificate_pem != None:
             my_json["certificatePem"] = certificate_pem
         if revocation_reason != None:
             my_json["revocationReason"] = revocation_reason
-
-        if workflow == "enroll":
-            enroll_request_template = {
-                "capabilities": self.template_request['capabilities'],
-                "keyTypes": [key_type],
-                "labels": self._set_labels(labels),
-                "sans": self._set_sans(sans),
-                "subject": self._set_subject(subject)
-            }
-            if "csr" != None:
-                enroll_request_template["csr"] = csr
-
-            my_json["webRAEnrollRequestTemplate"] = enroll_request_template
-
-        elif workflow == "update":
-            my_json["webRAUpdateRequestTemplate"]["labels"] = self._set_labels(labels)
+        if key_type != None:
+            my_json["template"]["keyTypes"] = [key_type]
+        if sans != None:
+            my_json["template"]["sans"] = self._set_sans(sans)
+        if subject != None:
+            my_json["template"]["subject"] = self._set_subject(subject)
+        if csr != None:
+            my_json["template"]["csr"] = csr
+        if labels != None:    
+            my_json["template"]["labels"] = self._set_labels(labels)
 
         return my_json
 
@@ -188,58 +175,45 @@ class Horizon():
     def _set_labels(self, labels):
         ''' Set the labels with a format readable by the API '''
 
+        my_labels = []
+
         for label in labels:
             if labels[label] == "" or labels[label] == None:
                 raise AnsibleError(f'the label value for { label } is not allowed')
 
-        labels_template = self.template_request["labels"]
+            my_labels.append({"label": label, "value": labels[label]})
 
-        for label in labels_template:
-            if label["editable"]:
-                if label["mandatory"]:
-                    if label["label"] in labels:
-                        label["value"] = labels[label["label"]]
-                    else:
-                        raise AnsibleError(f'The label { label["label"] } is mandatory')
-                else:
-                    if label["label"] in labels:
-                        label["value"] = labels[label["label"]]
-
-        return labels_template
+        return my_labels
 
 
     def _set_sans(self, sans):
         ''' Set the Subject alternate names with a format readable by the API '''
 
-        sans_template = self.template["webRAEnrollRequestTemplate"]["sans"]
-        index = 0
+        my_sans = []
 
-        for san_template in sans_template:
-            if san_template["editable"] and len(sans[san_template["sanElementType"]]) > index:
-                if san_template["mandatory"]:
-                    san_template["value"] = sans[san_template["sanElementType"]][index]
-                else:
-                    if san_template["sanElementType"] in sans:
-                        san_template["value"] = sans[san_template["sanElementType"]][index]
-            index += 1
+        for element in sans:
+            if sans[element] == "" or sans[element] == None:
+                raise AnsibleError(f'the san value for { element } is not allowed')
 
-        return sans_template
+            my_sans.append({"element": element, "value": sans[element]})
+
+        return my_sans
 
 
     def _set_subject(self, subject):
         ''' Set the Subject with a format readable by the API '''
 
-        subject_template = self.template["webRAEnrollRequestTemplate"]["subject"]
+        my_subject = []
 
-        for element_type in subject_template:
-            if element_type["editable"]:
-                if element_type["mandatory"]:
-                    element_type["value"] = subject[element_type["dnElementType"]]
-                else:
-                    if element_type["dnElementType"] in subject:
-                        element_type["value"] = subject[element_type["dnElementType"]]
+        for element in subject:
+            if subject[element] == "" or subject[element] == None:
+                raise AnsibleError(f'the subject value for { element } is not allowed')
 
-        return subject_template
+            for subject_element in self.template_request["subject"]:
+                if subject_element["element"] == element and subject_element["editable"] == True:
+                    my_subject.append({"element": element, "value": subject[element]})
+
+        return my_subject
 
 
     def _check_mode(self, mode=None):

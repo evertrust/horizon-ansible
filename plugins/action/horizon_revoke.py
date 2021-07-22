@@ -90,11 +90,11 @@ class ActionModule(ActionBase):
             # Get value from playbook
             self._get_all_informations()
             # Initialize the class Horizon
-            self.horizon = Horizon(self.endpoint_t, self.id, self.key)
+            horizon = Horizon(self.endpoint_s, self.id, self.key)
 
-            my_json = self.horizon._generate_json(module=self.module, profile=self.profile, workflow="revoke", revocation_reason=self.revocation_reason, certificate_pem=self.certificate_pem)
+            my_json = horizon._generate_json(workflow="revoke", revocation_reason=self.revocation_reason, certificate_pem=self.certificate_pem)
 
-            result = self.horizon._post_request(self.endpoint_s, my_json)
+            result = horizon._post_request(self.endpoint_s, my_json)
         
         except AnsibleAction as e:
             result.update(e.result)
@@ -104,11 +104,8 @@ class ActionModule(ActionBase):
 
     def _get_all_informations(self):
         ''' Save all plugin information in self variables '''
-        self.endpoint_t = self._task.args.get('endpoint_template')
         self.endpoint_s = self._task.args.get('endpoint_request')
         self.id = self._task.args.get('x-api-id')
         self.key = self._task.args.get('x-api-key')
         self.certificate_pem = self._task.args.get('certificatePem')
-        self.module = self._task.args.get('module')
-        self.profile = self._task.args.get('profile')
         self.revocation_reason = self._task.args.get('revocationReason')

@@ -153,14 +153,17 @@ class ActionModule(ActionBase):
     def _generate_PKCS10(self, subject, key_type):
         ''' Generate a PKCS10 '''
 
-        if not "CN" in subject:
-            raise AnsibleError(f'subject CN is mandatory')
+        if not "cn.1" in subject:
+            raise AnsibleError(f'subject cn.1 is mandatory')
 
         try:
             self._generate_biKey(key_type)
 
             x509_subject = []
-            for val in subject:
+            for element in subject:
+                
+                val, i = element.split('.')
+
                 if val == "CN":
                     x509_subject.append(x509.NameAttribute(NameOID.COMMON_NAME, subject[val]))
                 elif val == "O":
@@ -208,20 +211,20 @@ class ActionModule(ActionBase):
             # Initialize the class Horizon
             horizon = Horizon(self.endpoint_t, self.id, self.key)
             # Save the template in a self variable
-            self.template = horizon._get_template(self.module, self.profile, "enroll")
+            template = horizon._get_template("webra", self.profile, "enroll")
             # Verify the password
             horizon._check_password_policy(self.password)
             # Verify or assign enrollment's mode
             self.mode = horizon._check_mode(self.mode)
 
             if self.mode == "decentralized":
-                if self.key_type in self.template["webRAEnrollRequestTemplate"]["keyTypes"]:
+                if self.key_type in template["template"]["keyTypes"]:
                     if self.csr == None:
                         self.csr = self._generate_PKCS10(self.subject, self.key_type)
                 else:
-                    raise AnsibleError(f'Wrong keyType type')
+                    raise AnsibleError(f'KeyType not in list')
 
-            my_json = horizon._generate_json(module=self.module, profile=self.profile, password=self.password, workflow="enroll", key_type=self.key_type, labels=self.labels, sans=self.sans, subject=self.subject, csr=self.csr)
+            my_json = horizon._generate_json(module="webra", profile=self.profile, password=self.password, workflow="enroll", key_type=self.key_type, labels=self.labels, sans=self.sans, subject=self.subject, csr=self.csr)
             response = horizon._post_request(self.endpoint_s, my_json)
             
             certificate = None
@@ -250,7 +253,6 @@ class ActionModule(ActionBase):
         self.key = self._task.args.get('x-api-key')
         self.csr = self._task.args.get('csr')
         self.profile = self._task.args.get('profile')
-        self.module = self._task.args.get('module')
         self.subject = self._task.args.get('subject')
         self.sans = self._task.args.get('sans')
         self.labels = self._task.args.get('labels')
