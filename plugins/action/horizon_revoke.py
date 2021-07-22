@@ -20,31 +20,9 @@ options:
       - Horizon password
     required: true
     type: str
-  endpoint_template:
-    description:
-      - url to get the template from the API
-    required: true
-    type: str
-  endpoint_request:
+  endpoint:
     description:
       - url to post the request to the API
-    required: true
-    type: str
-  profile:
-    description:
-      - Horizon certificate profile
-    required: true
-    type: str
-  module:
-    description:
-      - Horizon certificate module
-    required: true
-    type: str
-  password:
-    description:
-      - Security password for the certificate. 
-      - Can be subject of a password policy
-      - Can be riquired or not dependiing on the enrollement mode
     required: true
     type: str
   certificatePem:
@@ -55,22 +33,20 @@ options:
   revocationReason:
     description:
       - Reason of revoke
-    required: true
+    required: false
     type: str
 '''
 
 EXAMPLES = '''
-- name: Simple Recover
-  evertrust.horizon.horizon_enroll
+- name: Simple Revoke
+  evertrust.horizon.horizon_revoke:
+
+    endpoint: "https://url-of-the-api"
+        
     x-api-id: "myId"
     x-api-key: "myKey"
-    endpoint_template: "https://url/of/the/api/requests/template"
-    endpoint_request: "https://url/of/the/api/requests/submit"
-    profile: "profile"
-    module: "module"
-    password: "pAssw0rd"
-    certificatePem: "A pem"
-    revocationReason: "superseded"
+
+    certificatePem: "a pem"
 '''
 
 from ansible.errors import AnsibleAction
@@ -90,11 +66,11 @@ class ActionModule(ActionBase):
             # Get value from playbook
             self._get_all_informations()
             # Initialize the class Horizon
-            horizon = Horizon(self.endpoint_s, self.id, self.key)
+            horizon = Horizon(endpoint=self.endpoint, id=self.id, key=self.key, ca_bundle=self.ca_bundle, client_cert=self.cilent_cert, client_key=self.cilent_key)
 
+            # Send a request to the API
             my_json = horizon._generate_json(workflow="revoke", revocation_reason=self.revocation_reason, certificate_pem=self.certificate_pem)
-
-            result = horizon._post_request(self.endpoint_s, my_json)
+            result = horizon._post_request(my_json)
         
         except AnsibleAction as e:
             result.update(e.result)
@@ -104,8 +80,12 @@ class ActionModule(ActionBase):
 
     def _get_all_informations(self):
         ''' Save all plugin information in self variables '''
-        self.endpoint_s = self._task.args.get('endpoint_request')
         self.id = self._task.args.get('x-api-id')
         self.key = self._task.args.get('x-api-key')
+        self.ca_bundle = self._task.args.get('CA_Bundle')
+        self.cilent_cert = self._task.args.get('Client_cert')
+        self.cilent_key = self._task.args.get('Client_key')
+
+        self.endpoint = self._task.args.get('endpoint')
         self.certificate_pem = self._task.args.get('certificatePem')
         self.revocation_reason = self._task.args.get('revocationReason')

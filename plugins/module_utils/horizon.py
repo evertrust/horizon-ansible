@@ -8,20 +8,37 @@ from requests.exceptions import HTTPError
 
 class Horizon():
 
-    def __init__(self, endpoint, id, key):
+    def __init__(self, endpoint, id=None, key=None, ca_bundle=None, client_cert=None, client_key=None):
+        ''' Initialize API path and authentication parameters. '''
         self.endpoint = endpoint
-        self._set_headers(id, key)
         self.template = None
+        self.headers = None
+        self.bundle = None 
+        self.cert = None
+
+        if id != None and key != None:
+            self.headers = {"x-api-id": id, "x-api-key": key}
+            self.authent = "x-api"
+        elif ca_bundle != None:
+            self.bundle = ca_bundle 
+            self.authent = "bundle"
+        elif client_cert != None and client_key != None:
+            self.cert = (client_cert, client_key)
+            self.authent = "cert"
+        else:
+            raise AnsibleError(f'You have to inform authentication parameters')
 
     
     def _debug(self, response):
-        ''' Return an Ansible Error if needed '''
+        ''' Catch the eroors returned by the API. '''
+
         if isinstance(response, list):
             message = ""
             for elmt in response:
                 if "error" in elmt:
                     message += f'Error: { elmt["error"] }, Message: { elmt["message"] }, Details: { elmt["detail"] }, '
             raise AnsibleError(message)
+
         elif "error" in response:
             message = f'Error: { response["error"] }'
             if "message" in response:
@@ -29,17 +46,13 @@ class Horizon():
             if "detail" in response:
                 message += f', Details: { response["detail"] }'
             raise AnsibleError(message)
-
-        return True
-
-
-    def _set_headers(self, id, key):
-        ''' set the headers '''
-        self.headers = {"x-api-id": id, "x-api-key": key}
+        
+        else:
+            return True
 
 
-    def _get_template(self, module, profile, workflow):
-        ''' Get the template of the certificate request on the API. '''
+    def _get_template(self, profile, workflow, module=None):
+        ''' Look for the template corresponding to the workflow. '''
 
         data =  { 
             "module": module, 
@@ -47,11 +60,16 @@ class Horizon():
             "workflow": workflow
         }
 
+        # Construct the api endpoint
+        endpoint = str(self.endpoint) + "/api/v1/requests/template"
+
         try:
-            self.template = requests.post(self.endpoint, headers=self.headers, json=data).json()
+            # Ask the API
+            self.template = requests.post(url=endpoint, headers=self.headers, verify=self.bundle, cert=self.cert, json=data).json()
             
             if self._debug(self.template):
 
+                # Assign usefull values
                 self.template_request = self.template["template"]
                 if "capabilities" in self.template_request:
                     if "p12passwordMode" in self.template_request["capabilities"]:
@@ -69,29 +87,32 @@ class Horizon():
             raise AnsibleError(f'{err}')
 
     
-    def _check_password_policy(self, password):
+    def _check_password_policy(self, password, profile=None, workflow=None):
+        ''' Verify if the password provided match the password policy. '''
+
+        if self.template == None:
+            self._get_template(profile, workflow)
 
         if self.password_mode == "manual" and password == None:
             message = f'A password is required. '
             message += f'The password has to contains between { self.password_policy["minChar"] } and { self.password_policy["maxChar"] } characters, ' 
             message += f'it has to contains at least : { self.password_policy["minLoChar"] } lowercase letter, { self.password_policy["minUpChar"] } uppercase letter, '
             message += f'{ self.password_policy["minDiChar"] } number ' 
-            if "spChar" in self.template_request["passwordPolicy"]:
+            if "spChar" in self.password_policy:
                 f'and { self.password_policy["minSpChar"] } symbol characters in { self.password_policy["spChar"] }'
             raise AnsibleError(message)
-                
 
         if "passwordPolicy" in self.template_request:
-            minChar = self.template_request["passwordPolicy"]["minChar"]
-            maxChar = self.template_request["passwordPolicy"]["maxChar"]
-            minLo = self.template_request["passwordPolicy"]["minLoChar"]
-            minUp = self.template_request["passwordPolicy"]["minUpChar"]
-            minDi = self.template_request["passwordPolicy"]["minDiChar"]
+            minChar = self.password_policy["minChar"]
+            maxChar = self.password_policy["maxChar"]
+            minLo = self.password_policy["minLoChar"]
+            minUp = self.password_policy["minUpChar"]
+            minDi = self.password_policy["minDiChar"]
             whiteList = []
             c_not_allowed = False
-            if "spChar" in self.template_request["passwordPolicy"]:
-                minSp = self.template_request["passwordPolicy"]["minSpChar"]
-                for s in self.template_request["passwordPolicy"]["spChar"]:
+            if "spChar" in self.password_policy:
+                minSp = self.password_policy["minSpChar"]
+                for s in self.password_policy["spChar"]:
                     whiteList.append(s)
             else:
                 minSp = 0
@@ -114,7 +135,7 @@ class Horizon():
                 message += f'The password has to contains between { self.password_policy["minChar"] } and { self.password_policy["maxChar"] } characters, ' 
                 message += f'it has to contains at least : { self.password_policy["minLoChar"] } lowercase letter, { self.password_policy["minUpChar"] } uppercase letter, '
                 message += f'{ self.password_policy["minDiChar"] } number ' 
-                if "spChar" in self.template_request["passwordPolicy"]:
+                if "spChar" in self.password_policy:
                     message += f'and { self.password_policy["minSpChar"] } special characters in { self.password_policy["spChar"] }'
                 else:
                     message += f'but no special characters'
@@ -124,7 +145,8 @@ class Horizon():
 
     
     def _generate_json(self, module=None, profile=None, password=None, workflow=None, certificate_pem=None, revocation_reason=None, csr=None, labels=None, sans=None, subject=None, key_type=None):
-        
+        ''' Construct the json parameter for the request. '''
+
         if self.template is not None:
             my_json = self.template
         elif workflow == "update":
@@ -158,9 +180,13 @@ class Horizon():
         return my_json
 
 
-    def _post_request(self, endpoint, my_json):
+    def _post_request(self, my_json):
+        ''' Send the request to the API. '''
+        # Construct the API endpoint
+        endpoint = str(self.endpoint) + "/api/v1/requests/submit"
 
         try:
+            # Ask the API
             response = requests.post(endpoint, json=my_json, headers=self.headers).json()
 
             if self._debug(response):
@@ -174,13 +200,9 @@ class Horizon():
     
     def _set_labels(self, labels):
         ''' Set the labels with a format readable by the API '''
-
         my_labels = []
 
         for label in labels:
-            if labels[label] == "" or labels[label] == None:
-                raise AnsibleError(f'the label value for { label } is not allowed')
-
             my_labels.append({"label": label, "value": labels[label]})
 
         return my_labels
@@ -188,7 +210,6 @@ class Horizon():
 
     def _set_sans(self, sans):
         ''' Set the Subject alternate names with a format readable by the API '''
-
         my_sans = []
 
         for element in sans:
@@ -202,7 +223,6 @@ class Horizon():
 
     def _set_subject(self, subject):
         ''' Set the Subject with a format readable by the API '''
-
         my_subject = []
 
         for element in subject:
@@ -217,6 +237,7 @@ class Horizon():
 
 
     def _check_mode(self, mode=None):
+        ''' Verify if the mode provided match with the options of the template. '''
         if mode == None:
             if self.template_request["capabilities"]["centralized"]:
                 return "centralized"

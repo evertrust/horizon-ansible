@@ -20,14 +20,9 @@ options:
       - Horizon password
     required: true
     type: str
-  endpoint_template:
+  endpoint:
     description:
-      - url to get the template from the API
-    required: true
-    type: str
-  endpoint_request:
-    description:
-      - url to post the request to the API
+      - url of the API
     required: true
     type: str
   profile:
@@ -35,16 +30,11 @@ options:
       - Horizon certificate profile
     required: true
     type: str
-  module:
-    description:
-      - Horizon certificate module
-    required: true
-    type: str
   password:
     description:
       - Security password for the certificate. 
       - Can be subject of a password policy
-      - Can be riquired or not dependiing on the enrollement mode
+      - Can be riquired or not depending on the enrollement mode
     required: false
     type: str
   keyType:
@@ -66,7 +56,7 @@ options:
     description:
       - subject alternative names of the certificate
     required: true
-    type: dict (list (str))
+    type: dict (str)
   labels:
     description:
       - labels of the certificate
@@ -76,19 +66,30 @@ options:
 
 EXAMPLES = '''
 - name: Simple Enroll
-  evertrust.horizon.horizon_enroll
+  evertrust.horizon.horizon_enroll:
+
+    endpoint: "https://url-of-the-api"
+ 
+    mode: "decentralized"
+
+    password: "pAssw0rd"
+    keyType: "rsa-2048"
+ 
     x-api-id: "myId"
     x-api-key: "myKey"
-    endpoint_template: "https://url/of/the/api/requests/template"
-    endpoint_request: "https://url/of/the/api/requests/submit"
+ 
     profile: "profile"
-    module: "module"
-    keyType: "rsa-2048"
+ 
     subject:
-      CN: "myCN"
+      cn.1: "myCN"
+ 
     sans:
-      DNSNAME:
-        - "myDnsname"
+      dnsname.1: "myDnsname"
+ 
+    labels:
+      snow_id: "value1"
+      exp_tech: "value2"
+        
 '''
 
 RETURN = '''
@@ -209,9 +210,9 @@ class ActionModule(ActionBase):
             # Get value from playbook
             self._get_all_informations()
             # Initialize the class Horizon
-            horizon = Horizon(self.endpoint_t, self.id, self.key)
+            horizon = Horizon(endpoint=self.endpoint, id=self.id, key=self.key, ca_bundle=self.ca_bundle, client_cert=self.cilent_cert, client_key=self.cilent_key)
             # Save the template in a self variable
-            template = horizon._get_template("webra", self.profile, "enroll")
+            template = horizon._get_template(self.profile, "enroll", "webra")
             # Verify the password
             horizon._check_password_policy(self.password)
             # Verify or assign enrollment's mode
@@ -224,8 +225,9 @@ class ActionModule(ActionBase):
                 else:
                     raise AnsibleError(f'KeyType not in list')
 
+            # Send a request to the API
             my_json = horizon._generate_json(module="webra", profile=self.profile, password=self.password, workflow="enroll", key_type=self.key_type, labels=self.labels, sans=self.sans, subject=self.subject, csr=self.csr)
-            response = horizon._post_request(self.endpoint_s, my_json)
+            response = horizon._post_request(my_json)
             
             certificate = None
             if "certificate" in response:
@@ -244,13 +246,16 @@ class ActionModule(ActionBase):
 
     def _get_all_informations(self):
         ''' Save all plugin information in self variables '''
-        self.endpoint_t = self._task.args.get('endpoint_template')
-        self.endpoint_s = self._task.args.get('endpoint_request')
+        self.id = self._task.args.get('x-api-id')
+        self.key = self._task.args.get('x-api-key')
+        self.ca_bundle = self._task.args.get('CA_Bundle')
+        self.cilent_cert = self._task.args.get('Client_cert')
+        self.cilent_key = self._task.args.get('Client_key')
+
+        self.endpoint = self._task.args.get('endpoint')
         self.mode = self._task.args.get('mode')
         self.password = self._task.args.get('password')
         self.key_type = self._task.args.get('keyType')
-        self.id = self._task.args.get('x-api-id')
-        self.key = self._task.args.get('x-api-key')
         self.csr = self._task.args.get('csr')
         self.profile = self._task.args.get('profile')
         self.subject = self._task.args.get('subject')
