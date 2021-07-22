@@ -8,11 +8,8 @@ DOCUMENTATION = r'''
     name: horizon_inventory_plugin
     plugin_type: inventory
     options:
-        plugin: 
-            description: Returns Ansible Inventory from API REST
-            required: true
         endpoint: 
-            description: link to the API
+            description: url of the API
             required: true
         api_id:
             description: x-api-id

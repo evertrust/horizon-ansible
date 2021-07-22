@@ -1,0 +1,81 @@
+= evertrust.horizon.horizon_inventory
+
+== Synopsis
+ - Get inventory hosts from Evertrust Horizon.
+ - Use a YAML configuration file that ends with `horizon_inventory.(yml|yaml).`
+
+== Requirements
+
+== Parameters
+|===
+| Parameter | Choices/Defaults | Configuration
+
+| *endpoint*
+
+- / requiered
+
+_string_
+| 
+| url of the API
+
+| *api_id*
+
+_string_
+|
+| x-api-id
+
+| *api_key*
+
+_string_
+|
+| x-api-key
+
+| *query*
+
+_string_
+|
+|
+
+| *fields*
+
+_list_
+|
+|
+
+| *hostnames*
+
+_list_
+| 
+a| * A list in order of precedence for hostname variables.
+* To use labels as hostnames use the syntax labels.<key>
+
+
+|===
+
+== Examples
+``` yaml
+---
+# horizon_inventory.yaml
+
+plugin: evertrust.horizon.horizon_inventory
+
+# API path
+endpoint: https://path/to/the/api
+
+# login and password to connect to the API
+api_id: my_id
+api_key: my_key
+
+
+query: "null"
+fields:
+
+# hostname destination variable, order by preference
+# values : [san.ip, san.dns, discoveryData.ip, discoveryData.Hostname, label.<key>]
+hostnames:
+  - san.dns
+```
+
+== Status
+=== Authors
+- Adrien Ducourthial

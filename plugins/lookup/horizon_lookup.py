@@ -24,21 +24,26 @@ options:
       - 'labels'
       - 'module'
       - 'profile'
-      - 'serial'
+  endpoint:
+    description:
+      - url of the API
+    required: true
+    type: str
 '''
 
 EXAMPLES = """
 vars:
   my_pem: <a_webra_pem_file>
   my_header: {"x-api-id": "id", "x-api-key": "key"}
+  my_endpoint: https://path/to/the/api
 
-  with_one: "{{ lookup('evertrust.horizon.horizon_lookup', header=my_header, pem=my_pem, attributes='module') }}"
+  with_one: "{{ lookup('evertrust.horizon.horizon_lookup', header=my_header, pem=my_pem, attributes='module', endpoint=my_endpoint) }}"
   # only demanded (str)
 
-  with_list: "{{ lookup('evertrust.horizon.horizon_lookup', header=my_header, pem=my_pem, attributes=['module', '_id']) }}"
+  with_list: "{{ lookup('evertrust.horizon.horizon_lookup', header=my_header, pem=my_pem, attributes=['module', '_id'], endpoint=my_endpoint) }}"
   # only those in list (dict)
 
-  without: "{{ lookup('evertrust.horizon.horizon_lookup', header=my_header, pem=my_pem) }}"
+  without: "{{ lookup('evertrust.horizon.horizon_lookup', header=my_header, pem=my_pem, endpoint=my_endpoint) }}"
   # all (dict)
 """
 
@@ -58,9 +63,9 @@ display = Display()
 
 class LookupModule(LookupBase):
 
-    def _request(self, header, pem):
+    def _request(self, endpoint, header, pem):
 
-        endpoint = "https://horizon-demo.evertrust.fr/api/v1/certificates/" + pem
+        endpoint = endpoint + pem
 
         try:
             response = requests.get(endpoint, headers=header)
@@ -99,9 +104,7 @@ class LookupModule(LookupBase):
         pem = urllib.parse.quote(kwargs['pem'])
         pem = pem.replace('/', "%2F")
 
-        header = kwargs['header']
-
-        res = self._request(header, pem)
+        res = self._request(kwargs['endpoint'], kwargs['header'], pem)
         
         if 'attributes' in kwargs:
 
