@@ -10,38 +10,56 @@ short_description: recover a certificate
 description: 
     - TODO
 options:
-  x-api-id:
-    description:
-      - Horizon identifiant
-    required: true
-    type: str
-  x-api-key:
-    description:
-      - Horizon password
-    required: true
-    type: str
-  endpoint_template:
-    description:
-      - url of the API
-    required: true
-    type: str
-  profile:
-    description:
-      - Horizon certificate profile
-    required: true
-    type: str
-  password:
-    description:
-      - Security password for the certificate. 
-      - Can be subject of a password policy
-      - Can be riquired or not dependiing on the enrollement mode
-    required: true
-    type: str
-  certificatePem:
-    description:
-      - Pem of the certificate to recover
-    required: true
-    type: str
+  authent values:
+    x-api-id:
+      description:
+        - Horizon identifiant
+      required: False
+      type: str
+    x-api-key:
+      description:
+        - Horizon password
+      required: Flase
+      type: str
+    CA_Bundle:
+      description:
+        - 
+      required: False
+      type: str
+    Client_cert:
+      description:
+        - 
+      required: False
+      type: str
+    Client_key:
+      description:
+        - 
+      required: False
+      type: str
+      
+  content values:
+    endpoint:
+      description:
+        - url of the API
+      required: true
+      type: str
+    profile:
+      description:
+        - Horizon certificate profile
+      required: true
+      type: str
+    password:
+      description:
+        - Security password for the certificate. 
+        - Can be subject of a password policy
+        - Can be riquired or not dependiing on the enrollement mode
+      required: true
+      type: str
+    certificatePem:
+      description:
+        - Pem of the certificate to recover
+      required: true
+      type: str
 '''
 
 EXAMPLES = '''

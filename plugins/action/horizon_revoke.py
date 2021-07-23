@@ -10,31 +10,49 @@ short_description: recover a certificate
 description: 
     - TODO
 options:
-  x-api-id:
-    description:
-      - Horizon identifiant
-    required: true
-    type: str
-  x-api-key:
-    description:
-      - Horizon password
-    required: true
-    type: str
-  endpoint:
-    description:
-      - url to post the request to the API
-    required: true
-    type: str
-  certificatePem:
-    description:
-      - Pem of the certificate to revoke
-    required: true
-    type: str
-  revocationReason:
-    description:
-      - Reason of revoke
-    required: false
-    type: str
+  authent values:
+    x-api-id:
+      description:
+        - Horizon identifiant
+      required: False
+      type: str
+    x-api-key:
+      description:
+        - Horizon password
+      required: Flase
+      type: str
+    CA_Bundle:
+      description:
+        - 
+      required: False
+      type: str
+    Client_cert:
+      description:
+        - 
+      required: False
+      type: str
+    Client_key:
+      description:
+        - 
+      required: False
+      type: str
+      
+  content values:
+    endpoint:
+      description:
+        - url to post the request to the API
+      required: true
+      type: str
+    certificatePem:
+      description:
+        - Pem of the certificate to revoke
+      required: true
+      type: str
+    revocationReason:
+      description:
+        - Reason of revoke
+      required: false
+      type: str
 '''
 
 EXAMPLES = '''
