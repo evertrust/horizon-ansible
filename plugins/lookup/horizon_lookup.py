@@ -7,11 +7,10 @@ DOCUMENTATION = '''
 lookup: horizon_lookup
 author:
   - Adrien Ducourthial <adu@evertrust.fr>
-
 short_description: Look up horizon certificate attribute
 description:
   - Describes attributes of your horizon certificate.
-    You can specify one of the listed attribute choices or omit it to see all attributes.
+  - You can specify one of the listed attribute choices or omit it to see all attributes.
 options:
   header:
     description: API identifiers

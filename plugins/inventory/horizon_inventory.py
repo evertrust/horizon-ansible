@@ -5,31 +5,39 @@ from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
 DOCUMENTATION = r'''
-    name: horizon_inventory_plugin
-    plugin_type: inventory
-    options:
-        endpoint: 
-            description: url of the API
-            required: true
-        api_id:
-            description: x-api-id
-            required: true
-        api_key:
-            description: x-api-key
-            required: true
-        query:
-            description: query to define a request
-            required: true
-        fields:
-            description: a list of fields search
-            required: false
-        hostnames:
-          description:
-              - A list in order of precedence for hostname variables.
-              - To use labels as hostnames use the syntax labels.<key>
-          type: list
-          default: []
-          required: false
+---
+name: horizon_inventory_plugin
+plugin_type: inventory
+options:
+  authent values:
+    x-api-id:
+      description:
+        - Horizon identifiant
+      required: False
+      type: str
+    x-api-key:
+      description:
+        - Horizon password
+      required: Flase
+      type: str
+      
+  content values:
+      endpoint: 
+        description: url of the API
+        required: true
+      query:
+        description: query to define a request
+        required: true
+      fields:
+        description: a list of fields search
+        required: false
+      hostnames:
+        description:
+          - A list in order of precedence for hostname variables.
+          - To use labels as hostnames use the syntax labels.<key>
+        type: list
+        default: []
+        required: false
 '''
 
 from ansible.plugins.inventory import BaseInventoryPlugin, Constructable
