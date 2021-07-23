@@ -10,58 +10,76 @@ short_description: enroll a certificate
 description:
     - TODO
 options:
-  x-api-id:
-    description:
-      - Horizon identifiant
-    required: true
-    type: str
-  x-api-key:
-    description:
-      - Horizon password
-    required: true
-    type: str
-  endpoint:
-    description:
-      - url of the API
-    required: true
-    type: str
-  profile:
-    description:
-      - Horizon certificate profile
-    required: true
-    type: str
-  password:
-    description:
-      - Security password for the certificate. 
-      - Can be subject of a password policy
-      - Can be riquired or not depending on the enrollement mode
-    required: false
-    type: str
-  keyType:
-    description:
-      - Type of key to encode
-    required: true
-    type: str
-  mode:
-    description:
-      - enrollement mode
-    required: false
-    type: str
-  subject:
-    description:
-      - subject of the certificate
-    required: true
-    type: dict (str)
-  sans:
-    description:
-      - subject alternative names of the certificate
-    required: true
-    type: dict (str)
-  labels:
-    description:
-      - labels of the certificate
-    required: false
-    type: dict (str)
+  authent values:
+    x-api-id:
+      description:
+        - Horizon identifiant
+      required: False
+      type: str
+    x-api-key:
+      description:
+        - Horizon password
+      required: Flase
+      type: str
+    CA_Bundle:
+      description:
+        - 
+      required: False
+      type: str
+    Client_cert:
+      description:
+        - 
+      required: False
+      type: str
+    Client_key:
+      description:
+        - 
+      required: False
+      type: str
+      
+  content values:
+    endpoint:
+      description:
+        - url of the API
+      required: true
+      type: str
+    profile:
+      description:
+        - Horizon certificate profile
+      required: true
+      type: str
+    password:
+      description:
+        - Security password for the certificate. 
+        - Can be subject of a password policy
+        - Can be riquired or not depending on the enrollement mode
+      required: false
+      type: str
+    keyType:
+      description:
+        - Type of key to encode
+      required: true
+      type: str
+    mode:
+      description:
+        - enrollement mode
+      required: false
+      type: str
+    subject:
+      description:
+        - subject of the certificate
+      required: true
+      type: dict (str)
+    sans:
+      description:
+        - subject alternative names of the certificate
+      required: true
+      type: dict (str)
+    labels:
+      description:
+        - labels of the certificate
+      required: false
+      type: dict (str)
 '''
 
 EXAMPLES = '''
@@ -246,12 +264,13 @@ class ActionModule(ActionBase):
 
     def _get_all_informations(self):
         ''' Save all plugin information in self variables '''
+        # Authent values
         self.id = self._task.args.get('x-api-id')
         self.key = self._task.args.get('x-api-key')
         self.ca_bundle = self._task.args.get('CA_Bundle')
         self.cilent_cert = self._task.args.get('Client_cert')
         self.cilent_key = self._task.args.get('Client_key')
-
+        # Content values
         self.endpoint = self._task.args.get('endpoint')
         self.mode = self._task.args.get('mode')
         self.password = self._task.args.get('password')

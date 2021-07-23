@@ -1,0 +1,129 @@
+= evertrust.horizon.horizon_enroll
+
+== Synopsis
+Enroll a certificate on Horizon
+
+== Requirements
+
+== Parameters
+|===
+| Parameter | Choices/Defaults | Configuration
+
+| *x-api-id*
+
+_string_
+| 
+a| * Horizon authentication id.
+* authent value
+
+| *x-api-key*
+
+_string_
+|
+a| * Horizon authentication key.
+* authent value
+
+| *CA_Bundle*
+
+_path_
+|
+a| * The location of a CA Bundle to use when validating SSL certificates.
+* authent value
+
+| *Client_cert*
+
+_path_
+|
+a| * The location of a client side certificate.
+* authent value
+
+| *Client_key*
+
+_path_
+|
+a| * The location of a client side certificate's key.
+* authent value
+
+| *endpoint*
+
+_string_
+| 
+| Url of the API.
+
+| *profile*
+
+_string_
+| 
+| Horizon profile to enroll certificate.
+
+| *password*
+
+_string_
+|
+| Horizon password to enroll certificate.
+
+| *keyType*
+
+_string_
+|
+| Key type 
+
+| *mode*
+
+_string_
+|
+| Certificate enrollement mode.
+
+| *subject*
+
+_dict_
+|
+| Certificate subject.
+
+| *sans*
+
+_dict_
+| 
+| Certificate subject alternates names.
+
+| *labels*
+
+_dict_
+| 
+| Certificate labels.
+
+|===
+
+== Examples
+``` yaml
+---
+- name: Simple Enroll
+  evertrust.horizon.horizon_enroll:
+      
+    # login and password to connect to the API
+    x-api-id: "myId"
+    x-api-key: "myKey"
+
+    endpoint: "https://url-of-the-api"
+ 
+    mode: "decentralized"
+
+    password: "pAssw0rd"
+    keyType: "rsa-2048"
+ 
+    profile: "profile"
+ 
+    subject:
+      cn.1: "myCN"
+ 
+    sans:
+      dnsname.1: "myDnsname"
+ 
+    labels:
+      snow_id: "value1"
+      exp_tech: "value2"
+```
+
+== Status
+=== Authors
+- Adrien Ducourthial
