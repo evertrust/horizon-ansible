@@ -1,12 +1,9 @@
-= evertrust.horizon.horizon_enroll
+= evertrust.horizon.horizon_update
 
 == Synopsis
-Enroll a certificate on Horizon
+Update a certificate on Horizon
 
 == Requirements
-The below requirements are needed on the host that executes this module.
-
-* cryptography
 
 == Parameters
 |===
@@ -57,38 +54,13 @@ _string_
 
 _string_
 | 
-| Horizon profile to enroll certificate.
+| Horizon profile to recover certificate.
 
-| *password*
-
-_string_
-|
-| Horizon password to enroll certificate.
-
-| *keyType*
+| *certificatePem*
 
 _string_
 |
-| Key type 
-
-| *mode*
-
-_string_
-a| * centralized
-* decentralized
-| Certificate enrollement mode.
-
-| *subject*
-
-_dict_
-|
-| Certificate subject.
-
-| *sans*
-
-_dict_
-| 
-| Certificate subject alternates names.
+| A pem file.
 
 | *labels*
 
@@ -101,31 +73,21 @@ _dict_
 == Examples
 ``` yaml
 ---
-- name: Simple Enroll
-  evertrust.horizon.horizon_enroll:
-      
-    # login and password to connect to the API
+- name: Simple Update
+  evertrust.horizon.horizon_update:
+
+    endpoint: "https://url-of-the-api"
+        
     x-api-id: "myId"
     x-api-key: "myKey"
 
-    endpoint: "https://url-of-the-api"
- 
-    mode: "decentralized"
-
-    password: "pAssw0rd"
-    keyType: "rsa-2048"
- 
     profile: "profile"
- 
-    subject:
-      cn.1: "myCN"
- 
-    sans:
-      dnsname.1: "myDnsname"
- 
+
     labels:
-      snow_id: "value1"
-      exp_tech: "value2"
+      snow_id: "test_update_ansible"
+      exp_tech: "test"
+
+    certificatePem: "A pem"
 ```
 
 == Status

@@ -1,0 +1,92 @@
+= evertrust.horizon.horizon_recover
+
+== Synopsis
+Recover a certificate on Horizon
+
+== Requirements
+
+== Parameters
+|===
+| Parameter | Choices/Defaults | Configuration
+
+| *x-api-id*
+
+_string_
+| 
+a| * Horizon authentication id.
+* authent value
+
+| *x-api-key*
+
+_string_
+|
+a| * Horizon authentication key.
+* authent value
+
+| *CA_Bundle*
+
+_path_
+|
+a| * The location of a CA Bundle to use when validating SSL certificates.
+* authent value
+
+| *Client_cert*
+
+_path_
+|
+a| * The location of a client side certificate.
+* authent value
+
+| *Client_key*
+
+_path_
+|
+a| * The location of a client side certificate's key.
+* authent value
+
+| *endpoint*
+
+_string_
+| 
+| Url of the API.
+
+| *profile*
+
+_string_
+| 
+| Horizon profile to recover certificate.
+
+| *password*
+
+_string_
+|
+| Horizon password to recover certificate.
+
+| *certificatePem*
+
+_string_
+|
+| A pem file.
+
+|===
+
+== Examples
+``` yaml
+---
+- name: Simple Recover
+  evertrust.horizon.horizon_recover:
+
+    endpoint: "https://url-of-the-api"
+        
+    x-api-id: "myId"
+    x-api-key: "myKey"
+
+    certificatePem: "A pem"
+
+    profile: "profile"
+    password: "pAssw0rd"
+```
+
+== Status
+=== Authors
+- Adrien Ducourthial

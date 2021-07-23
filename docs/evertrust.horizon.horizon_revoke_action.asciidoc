@@ -1,0 +1,83 @@
+= evertrust.horizon.horizon_revoke
+
+== Synopsis
+Revoke a certificate on Horizon
+
+== Requirements
+
+== Parameters
+|===
+| Parameter | Choices/Defaults | Configuration
+
+| *x-api-id*
+
+_string_
+| 
+a| * Horizon authentication id.
+* authent value
+
+| *x-api-key*
+
+_string_
+|
+a| * Horizon authentication key.
+* authent value
+
+| *CA_Bundle*
+
+_path_
+|
+a| * The location of a CA Bundle to use when validating SSL certificates.
+* authent value
+
+| *Client_cert*
+
+_path_
+|
+a| * The location of a client side certificate.
+* authent value
+
+| *Client_key*
+
+_path_
+|
+a| * The location of a client side certificate's key.
+* authent value
+
+| *endpoint*
+
+_string_
+| 
+| Url of the API.
+
+| *certificatePem*
+
+_string_
+|
+| A pem file.
+
+| *revocationReasons*
+
+_strinig_
+|
+| The reason of the revoke
+
+|===
+
+== Examples
+``` yaml
+---
+- name: Simple Revoke
+  evertrust.horizon.horizon_revoke:
+
+    endpoint: "https://url-of-the-api"
+        
+    x-api-id: "myId"
+    x-api-key: "myKey"
+
+    certificatePem: "a pem"
+```
+
+== Status
+=== Authors
+- Adrien Ducourthial
