@@ -8,7 +8,7 @@ namespace: evertrust
 name: horizon
 
 # The version of the collection. Must be compatible with semantic versioning
-version: 1.1.0
+version: 1.1.1
 
 # The path to the Markdown (.md) readme file. This path is relative to the root of the collection
 readme: README.md
@@ -16,7 +16,7 @@ readme: README.md
 # A list of the collection's content authors. Can be just the name or in the format 'Full Name <email> (url)
 # @nicks:irc/im.site#channel'
 authors:
-- your name <example@domain.com>
+- Adrien Ducourthial <adu@evertrust.fr>
 
 
 ### OPTIONAL but strongly recommended
@@ -34,7 +34,7 @@ license_file: ''
 
 # A list of tags you want to associate with the collection for indexing/searching. A tag name has the same character
 # requirements as 'namespace' and 'name'
-tags: []
+tags: [evertrust, horizon]
 
 # Collections that this collection requires to be installed for it to be usable. The key of the dict is the
 # collection label 'namespace.name'. The value is a version range
@@ -58,5 +58,5 @@ issues: http://example.com/issue/tracker
 # artifact. A pattern is matched from the relative path of the file or directory of the collection directory. This
 # uses 'fnmatch' to match the files or directories. Some directories and files like 'galaxy.yml', '*.pyc', '*.retry',
 # and '.git' are always filtered
-build_ignore: 
-  - .gitignore
+build_ignore:
+  - 

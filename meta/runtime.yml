@@ -1,0 +1,8 @@
+---
+requires_ansible: '>=2.9.10'
+action_groups:
+  horizon:
+    - horizon_enroll
+    - horizon_recover
+    - horizon_revoje
+    - horizon_update
