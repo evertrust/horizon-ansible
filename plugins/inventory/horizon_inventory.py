@@ -8,6 +8,9 @@ DOCUMENTATION = r'''
 ---
 name: horizon_inventory_plugin
 plugin_type: inventory
+description: 
+ - Get inventory hosts from Evertrust Horizon.
+ - Use a YAML configuration file that ends with `horizon_inventory.(yml|yaml).`
 options:
   authent values:
     x-api-id:

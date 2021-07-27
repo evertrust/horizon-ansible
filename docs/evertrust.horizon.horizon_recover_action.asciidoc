@@ -72,7 +72,7 @@ _string_
 
 == Examples
 ``` yaml
----
+--- 
 - name: Simple Recover
   evertrust.horizon.horizon_recover:
 

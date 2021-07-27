@@ -1,11 +1,11 @@
 # Evertrust Horizon Collection
 
-The Ansible Evertrust Horizon collection includes a vaiety of Ansible content to help the utilistation of Horizon instances.  
+The Ansible Evertrust Horizon collection includes a variety of Ansible content to help the utilistation of Horizon instances.  
 
 <!-- Start requires_ansible -->
 ## Ansible version compatibility
 
-This collectino has been tested against following versions >= 2.11.2.  
+This collection has been tested against following versions >= 2.11.2.  
 <!-- End requires_ansible -->
 
 ## Python version compatibility
@@ -41,7 +41,7 @@ You can install the Horizon collection wth the Ansible Galaxy CLI:
 
     ansible-collection collection install evertrust.horizon
 
-You can also nclude it in a `requirements.yml` file and install it with `ansible-galaxy collection install -r requirements.yml`, using the format:
+You can also include it in a `requirements.yml` file and install it with `ansible-galaxy collection install -r requirements.yml`, using the format:
 
 ```yaml
 ---
