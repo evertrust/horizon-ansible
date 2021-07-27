@@ -12,14 +12,14 @@ The below requirements are needed on the host that executes this module.
 |===
 | Parameter | Choices/Defaults | Configuration
 
-| *x-api-id*
+| *x_api_id*
 
 _string_
 | 
 a| * Horizon authentication id.
 * authent value
 
-| *x-api-key*
+| *x_api_key*
 
 _string_
 |
@@ -65,7 +65,7 @@ _string_
 |
 | Horizon password to enroll certificate.
 
-| *keyType*
+| *key_type*
 
 _string_
 |

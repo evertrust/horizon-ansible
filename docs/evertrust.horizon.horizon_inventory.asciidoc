@@ -18,14 +18,14 @@ _string_
 | 
 | url of the API
 
-| *x-api-id*
+| *x_api_id*
 
 _string_
 | 
 a| * Horizon authentication id.
 * authent value
 
-| *x-api-key*
+| *x_api_key*
 
 _string_
 |

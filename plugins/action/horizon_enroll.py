@@ -265,8 +265,8 @@ class ActionModule(ActionBase):
     def _get_all_informations(self):
         ''' Save all plugin information in self variables '''
         # Authent values
-        self.id = self._task.args.get('x-api-id')
-        self.key = self._task.args.get('x-api-key')
+        self.id = self._task.args.get('x_api_id')
+        self.key = self._task.args.get('x_api_key')
         self.ca_bundle = self._task.args.get('ca_bundle')
         self.cilent_cert = self._task.args.get('client_cert')
         self.cilent_key = self._task.args.get('client_key')
@@ -274,7 +274,7 @@ class ActionModule(ActionBase):
         self.endpoint = self._task.args.get('endpoint')
         self.mode = self._task.args.get('mode')
         self.password = self._task.args.get('password')
-        self.key_type = self._task.args.get('keyType')
+        self.key_type = self._task.args.get('key_type')
         self.csr = self._task.args.get('csr')
         self.profile = self._task.args.get('profile')
         self.subject = self._task.args.get('subject')

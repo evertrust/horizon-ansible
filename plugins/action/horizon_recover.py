@@ -110,8 +110,8 @@ class ActionModule(ActionBase):
 
     def _get_all_informations(self):
         ''' Save all plugin information in self variables '''
-        self.id = self._task.args.get('x-api-id')
-        self.key = self._task.args.get('x-api-key')
+        self.id = self._task.args.get('x_api_id')
+        self.key = self._task.args.get('x_api_key')
         self.ca_bundle = self._task.args.get('ca_bundle')
         self.cilent_cert = self._task.args.get('client_cert')
         self.cilent_key = self._task.args.get('client_key')
