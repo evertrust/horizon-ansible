@@ -100,10 +100,10 @@ class ActionModule(ActionBase):
         ''' Save all plugin information in self variables '''
         self.id = self._task.args.get('x-api-id')
         self.key = self._task.args.get('x-api-key')
-        self.ca_bundle = self._task.args.get('CA_Bundle')
-        self.cilent_cert = self._task.args.get('Client_cert')
-        self.cilent_key = self._task.args.get('Client_key')
+        self.ca_bundle = self._task.args.get('ca_bundle')
+        self.cilent_cert = self._task.args.get('client_cert')
+        self.cilent_key = self._task.args.get('client_key')
 
         self.endpoint = self._task.args.get('endpoint')
-        self.certificate_pem = self._task.args.get('certificatePem')
-        self.revocation_reason = self._task.args.get('revocationReason')
+        self.certificate_pem = self._task.args.get('certificate_pem')
+        self.revocation_reason = self._task.args.get('revocation_reason')

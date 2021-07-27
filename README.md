@@ -18,20 +18,20 @@ This collection requires Python 3.5 or greater.
 ### Inventory plugins
 Name | Description
 --- | ---
-[evertrust.horizon.horizon_inventory](https://github.com/EverTrust/horizon-ansible/blob/main/plugins/inventory/horizon_inventory.py) | Horizon inventory
+[evertrust.horizon.horizon_inventory](https://github.com/EverTrust/horizon-ansible/blob/main/docs/evertrust.horizon.horizon_inventory.asciidoc) | Horizon inventory
 
 ### Lookup plugins
 Name | Description
 --- | ---
-[evertrust.horizon.horizon_lookup](https://github.com/EverTrust/horizon-ansible/blob/main/plugins/lookup/horizon_lookup.py) | Look up informations about a certificate 
+[evertrust.horizon.horizon_lookup](https://github.com/EverTrust/horizon-ansible/blob/main/docs/evertrust.horizon.horizon_lookup.asciidoc) | Look up informations about a certificate 
 
 ### Action plugins
 Name | Description
 --- | ---
-[evertrust.horizon.horzon_enroll](https://github.com/EverTrust/horizon-ansible/blob/main/plugins/action/horizon_enroll.py) | Enroll a certificate
-[evertrust.horizon.horzon_recover](https://github.com/EverTrust/horizon-ansible/blob/main/plugins/action/horizon_recover.py) | Recover a certificate
-[evertrust.horizon.horzon_revoke](https://github.com/EverTrust/horizon-ansible/blob/main/plugins/action/horizon_revoke.py) | Revoke a certificate
-[evertrust.horizon.horzon_update](https://github.com/EverTrust/horizon-ansible/blob/main/plugins/action/horizon_update.py) | Update a certificate
+[evertrust.horizon.horizon_enroll](https://github.com/EverTrust/horizon-ansible/blob/main/docs/evertrust.horizon.horizon_enroll_action.asciidoc) | Enroll a certificate
+[evertrust.horizon.horizon_recover](https://github.com/EverTrust/horizon-ansible/blob/main/docs/evertrust.horizon.horizon_recover_action.asciidoc) | Recover a certificate
+[evertrust.horizon.horizon_revoke](https://github.com/EverTrust/horizon-ansible/blob/main/docs/evertrust.horizon.horizon_revoke_action.asciidoc) | Revoke a certificate
+[evertrust.horizon.horizon_update](https://github.com/EverTrust/horizon-ansible/blob/main/docs/evertrust.horizon.horizon_update_action.asciidoc) | Update a certificate
 
 <!-- End collection content -->
 

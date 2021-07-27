@@ -267,9 +267,9 @@ class ActionModule(ActionBase):
         # Authent values
         self.id = self._task.args.get('x-api-id')
         self.key = self._task.args.get('x-api-key')
-        self.ca_bundle = self._task.args.get('CA_Bundle')
-        self.cilent_cert = self._task.args.get('Client_cert')
-        self.cilent_key = self._task.args.get('Client_key')
+        self.ca_bundle = self._task.args.get('ca_bundle')
+        self.cilent_cert = self._task.args.get('client_cert')
+        self.cilent_key = self._task.args.get('client_key')
         # Content values
         self.endpoint = self._task.args.get('endpoint')
         self.mode = self._task.args.get('mode')

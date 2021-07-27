@@ -325,8 +325,8 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
         
         try:
             endpoint = self.config.get('endpoint')
-            api_id = self.config.get('api_id')
-            api_key = self.config.get('api_key')
+            api_id = self.config.get('x-api-id')
+            api_key = self.config.get('x-api-key')
             query = self.config.get('query')
             self.fields = self.config.get('fields')
             hostnames = self.config.get('hostnames')

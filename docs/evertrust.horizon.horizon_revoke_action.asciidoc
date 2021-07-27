@@ -23,21 +23,21 @@ _string_
 a| * Horizon authentication key.
 * authent value
 
-| *CA_Bundle*
+| *ca_bundle*
 
 _path_
 |
 a| * The location of a CA Bundle to use when validating SSL certificates.
 * authent value
 
-| *Client_cert*
+| *client_cert*
 
 _path_
 |
 a| * The location of a client side certificate.
 * authent value
 
-| *Client_key*
+| *client_key*
 
 _path_
 |
@@ -50,13 +50,13 @@ _string_
 | 
 | Url of the API.
 
-| *certificatePem*
+| *certificate_pem*
 
 _string_
 |
 | A pem file.
 
-| *revocationReasons*
+| *revocation_reasons*
 
 _strinig_
 |
@@ -75,7 +75,7 @@ _strinig_
     x-api-id: "myId"
     x-api-key: "myKey"
 
-    certificatePem: "a pem"
+    certificate_pem: "a pem"
 ```
 
 == Status

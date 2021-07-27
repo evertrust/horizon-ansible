@@ -26,21 +26,21 @@ _string_
 a| * Horizon authentication key.
 * authent value
 
-| *CA_Bundle*
+| *ca_bundle*
 
 _path_
 |
 a| * The location of a CA Bundle to use when validating SSL certificates.
 * authent value
 
-| *Client_cert*
+| *client_cert*
 
 _path_
 |
 a| * The location of a client side certificate.
 * authent value
 
-| *Client_key*
+| *client_key*
 
 _path_
 |
