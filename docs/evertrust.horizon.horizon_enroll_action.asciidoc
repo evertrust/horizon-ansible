@@ -105,15 +105,15 @@ _dict_
   evertrust.horizon.horizon_enroll:
       
     # login and password to connect to the API
-    x-api-id: "myId"
-    x-api-key: "myKey"
+    x_api_id: "myId"
+    x_api_key: "myKey"
 
     endpoint: "https://url-of-the-api"
  
     mode: "decentralized"
 
     password: "pAssw0rd"
-    keyType: "rsa-2048"
+    key_type: "rsa-2048"
  
     profile: "profile"
  

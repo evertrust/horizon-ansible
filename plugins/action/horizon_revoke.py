@@ -11,27 +11,27 @@ description:
     - TODO
 options:
   authent values:
-    x-api-id:
+    x_api_id:
       description:
         - Horizon identifiant
       required: False
       type: str
-    x-api-key:
+    x_api_key:
       description:
         - Horizon password
       required: Flase
       type: str
-    CA_Bundle:
+    ca_bundle:
       description:
         - 
       required: False
       type: str
-    Client_cert:
+    client_cert:
       description:
         - 
       required: False
       type: str
-    Client_key:
+    client_key:
       description:
         - 
       required: False
@@ -43,12 +43,12 @@ options:
         - url to post the request to the API
       required: true
       type: str
-    certificatePem:
+    certificate_pem:
       description:
         - Pem of the certificate to revoke
       required: true
       type: str
-    revocationReason:
+    revocation_reason:
       description:
         - Reason of revoke
       required: false
@@ -61,10 +61,10 @@ EXAMPLES = '''
 
     endpoint: "https://url-of-the-api"
         
-    x-api-id: "myId"
-    x-api-key: "myKey"
+    x_api_id: "myId"
+    x_api_key: "myKey"
 
-    certificatePem: "a pem"
+    certificate_pem: "a pem"
 '''
 
 from ansible.errors import AnsibleAction

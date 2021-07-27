@@ -66,8 +66,8 @@ plugin: evertrust.horizon.horizon_inventory
 endpoint: https://path/to/the/api
 
 # login and password to connect to the API
-api_id: my_id
-api_key: my_key
+x_api_id: my_id
+x_api_key: my_key
 
 
 query: "null"

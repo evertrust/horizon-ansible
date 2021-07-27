@@ -72,8 +72,8 @@ _strinig_
 
     endpoint: "https://url-of-the-api"
         
-    x-api-id: "myId"
-    x-api-key: "myKey"
+    x_api_id: "myId"
+    x_api_key: "myKey"
 
     certificate_pem: "a pem"
 ```

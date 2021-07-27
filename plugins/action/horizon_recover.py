@@ -11,22 +11,22 @@ description:
     - TODO
 options:
   authent values:
-    x-api-id:
+    x_api_id:
       description:
         - Horizon identifiant
       required: False
       type: str
-    x-api-key:
+    x_api_key:
       description:
         - Horizon password
       required: Flase
       type: str
-    CA_Bundle:
+    ca_bundle:
       description:
         - 
       required: False
       type: str
-    Client_cert:
+    client_cert:
       description:
         - 
       required: False
@@ -55,7 +55,7 @@ options:
         - Can be riquired or not dependiing on the enrollement mode
       required: true
       type: str
-    certificatePem:
+    certificate_pem:
       description:
         - Pem of the certificate to recover
       required: true
@@ -68,10 +68,10 @@ EXAMPLES = '''
 
     endpoint: "https://url-of-the-api"
         
-    x-api-id: "myId"
-    x-api-key: "myKey"
+    x_api_id: "myId"
+    x_api_key: "myKey"
 
-    certificatePem: "A pem"
+    certificate_pem: "A pem"
 
     profile: "profile"
     password: "pAssw0rd"

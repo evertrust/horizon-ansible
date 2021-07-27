@@ -11,27 +11,27 @@ description:
     - TODO
 options:
   authent values:
-    x-api-id:
+    x_api_id:
       description:
         - Horizon identifiant
       required: False
       type: str
-    x-api-key:
+    x_api_key:
       description:
         - Horizon password
       required: Flase
       type: str
-    CA_Bundle:
+    ca_bundle:
       description:
         - 
       required: False
       type: str
-    Client_cert:
+    client_cert:
       description:
         - 
       required: False
       type: str
-    Client_key:
+    client_key:
       description:
         - 
       required: False
@@ -55,7 +55,7 @@ options:
         - Can be riquired or not depending on the enrollement mode
       required: false
       type: str
-    keyType:
+    key_type:
       description:
         - Type of key to encode
       required: true
@@ -91,10 +91,10 @@ EXAMPLES = '''
     mode: "decentralized"
 
     password: "pAssw0rd"
-    keyType: "rsa-2048"
+    key_type: "rsa-2048"
  
-    x-api-id: "myId"
-    x-api-key: "myKey"
+    x_api_id: "myId"
+    x_api_key: "myKey"
  
     profile: "profile"
  
