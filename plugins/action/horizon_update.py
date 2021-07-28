@@ -75,7 +75,7 @@ EXAMPLES = '''
       snow_id: "test_update_ansible"
       exp_tech: "test"
 
-    certificate_pem: "A pem"
+    certificate_pem: <a_webra_pem_file>
 '''
 
 from ansible.errors import AnsibleAction

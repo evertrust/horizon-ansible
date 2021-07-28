@@ -66,8 +66,6 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
         for c in group:
             if c == '-' or c == ' ' or c == '\'':
                 my_group += '_'
-            # elif c.isdigit():
-            #     my_group += 'X'
             else:
                 my_group += c
         return my_group
@@ -327,7 +325,7 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
         self.config = self._read_config_data(path)
         
         try:
-            endpoint = self.config.get('endpoint')
+            endpoint = self.config.get('endpoint') + "/api/v1/certificates/search"
             api_id = self.config.get('x_api_id')
             api_key = self.config.get('x_api_key')
             query = self.config.get('query')

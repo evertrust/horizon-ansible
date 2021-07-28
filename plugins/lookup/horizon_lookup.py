@@ -12,12 +12,20 @@ description:
   - Describes attributes of your horizon certificate.
   - You can specify one of the listed attribute choices or omit it to see all attributes.
 options:
-  header:
-    description: API identifiers
-  pem: 
-    description: 
-  attributes:
+  x_api_id:
     description:
+      - Horizon identifiant
+    required: False
+    type: str
+  x_api_key:
+    description:
+      - Horizon password
+    required: Flase
+    type: str
+  pem: 
+    description: A certificate Pem.
+  attributes:
+    description: 
     choices:
       - '_id'
       - 'labels'
@@ -33,16 +41,17 @@ options:
 EXAMPLES = """
 vars:
   my_pem: <a_webra_pem_file>
-  my_header: {"x-api-id": "id", "x-api-key": "key"}
-  my_endpoint: https://path/to/the/api
+  x_api_id: "myId"
+  x_api_key: "myKey"
+  my_endpoint: "https://url-of-the-api"
 
-  with_one: "{{ lookup('evertrust.horizon.horizon_lookup', header=my_header, pem=my_pem, attributes='module', endpoint=my_endpoint) }}"
+  with_one: "{{ lookup('evertrust.horizon.horizon_lookup', x_api_id=x_api_id, x_api_key=x_api_key, pem=my_pem, attributes='module', endpoint=my_endpoint) }}"
   # only demanded (str)
 
-  with_list: "{{ lookup('evertrust.horizon.horizon_lookup', header=my_header, pem=my_pem, attributes=['module', '_id'], endpoint=my_endpoint) }}"
+  with_list: "{{ lookup('evertrust.horizon.horizon_lookup', x_api_id=x_api_id, x_api_key=x_api_key, pem=my_pem, attributes=['module', '_id'], endpoint=my_endpoint) }}"
   # only those in list (dict)
 
-  without: "{{ lookup('evertrust.horizon.horizon_lookup', header=my_header, pem=my_pem, endpoint=my_endpoint) }}"
+  without: "{{ lookup('evertrust.horizon.horizon_lookup', x_api_id=x_api_id, x_api_key=x_api_key, pem=my_pem, endpoint=my_endpoint) }}"
   # all (dict)
 """
 
@@ -97,13 +106,16 @@ class LookupModule(LookupBase):
 
 
     def run(self, terms, variables=None, **kwargs): 
-
+    
         self.ret = {}
 
         pem = urllib.parse.quote(kwargs['pem'])
         pem = pem.replace('/', "%2F")
 
-        res = self._request(kwargs['endpoint'], kwargs['header'], pem)
+        endpoint = kwargs['endpoint'] + "/api/v1/certificates/"
+        headers = {"x-api-id": kwargs['x_api_id'], "x-api-key": kwargs['x_api_key']}
+
+        res = self._request(endpoint, headers, pem)
         
         if 'attributes' in kwargs:
 

@@ -53,16 +53,17 @@ Return value.
 ``` yaml
 vars:
   my_pem: <a_webra_pem_file>
-  my_header: {"x-api-id": "id", "x-api-key": "key"}
-  my_endpoint: https://path/to/the/api/
+  x_api_id: "myId"
+  x_api_key: "myKey"
+  my_endpoint: "https://url-of-the-api"
 
-  with_one: "{{ lookup('evertrust.horizon.horizon_lookup', endpoint=my_endpoint, header=my_header, pem=my_pem, attributes='module') }}"
+  with_one: "{{ lookup('evertrust.horizon.horizon_lookup', x_api_id=x_api_id, x_api_key=x_api_key, pem=my_pem, attributes='module', endpoint=my_endpoint) }}"
   # only demanded (str)
 
-  with_list: "{{ lookup('evertrust.horizon.horizon_lookup', endpoint=my_endpoint header=my_header, pem=my_pem, attributes=['module', 'serial']) }}"
+  with_list: "{{ lookup('evertrust.horizon.horizon_lookup', x_api_id=x_api_id, x_api_key=x_api_key, pem=my_pem, attributes=['module', '_id'], endpoint=my_endpoint) }}"
   # only those in list (dict)
 
-  without: "{{ lookup('evertrust.horizon.horizon_lookup', endpoint=my_endpoint header=my_header, pem=my_pem) }}"
+  without: "{{ lookup('evertrust.horizon.horizon_lookup', x_api_id=x_api_id, x_api_key=x_api_key, pem=my_pem, endpoint=my_endpoint) }}"
   # all (dict)
 ```
 

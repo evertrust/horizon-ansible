@@ -71,7 +71,7 @@ EXAMPLES = '''
     x_api_id: "myId"
     x_api_key: "myKey"
 
-    certificate_pem: "A pem"
+    certificate_pem: <a_webra_pem_file>
 
     profile: "profile"
     password: "pAssw0rd"

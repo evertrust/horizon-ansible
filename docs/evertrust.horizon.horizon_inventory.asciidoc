@@ -63,12 +63,11 @@ a| * A list in order of precedence for hostname variables.
 plugin: evertrust.horizon.horizon_inventory
 
 # API path
-endpoint: https://path/to/the/api
+endpoint: "https://url-of-the-api"
 
 # login and password to connect to the API
-x_api_id: my_id
-x_api_key: my_key
-
+x_api_id: "myId"
+x_api_key: "myKey"
 
 query: "null"
 fields:

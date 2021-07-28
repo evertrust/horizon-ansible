@@ -4,5 +4,5 @@ action_groups:
   horizon:
     - horizon_enroll
     - horizon_recover
-    - horizon_revoje
+    - horizon_revoke
     - horizon_update
