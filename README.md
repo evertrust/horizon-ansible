@@ -37,7 +37,7 @@ Name | Description
 
 ## Installing the collection
 
-You can install the Horizon collection wth the Ansible Galaxy CLI:
+You can install the Horizon collection with the Ansible Galaxy CLI:
 
     ansible-collection collection install evertrust.horizon
 
