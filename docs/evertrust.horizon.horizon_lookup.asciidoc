@@ -11,14 +11,21 @@
 |===
 | Parameter | Choices/Defaults | Configuration | Comments
 
-| *header*
+| *x_api_id*
 
-  - / required 
-
-  _dict_
+_string_
 | 
 |
-| API identifiers.
+a| * Horizon authentication id.
+* authent value
+
+| *x_api_key*
+
+_string_
+|
+|
+a| * Horizon authentication key.
+* authent value
 
 | *endpoint*
 

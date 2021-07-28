@@ -84,8 +84,7 @@ _dict_
     profile: "profile"
 
     labels:
-      snow_id: "test_update_ansible"
-      exp_tech: "test"
+      label2: "test"
 
     certificate_pem: <a_webra_pem_file>
 ```

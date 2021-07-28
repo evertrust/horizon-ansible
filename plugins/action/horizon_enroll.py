@@ -8,7 +8,7 @@ DOCUMENTATION = '''
 action: horizon_enroll
 short_description: enroll a certificate
 description:
-    - TODO
+    - Enroll a certificate on Horizon.
 options:
   authent values:
     x_api_id:
@@ -105,8 +105,8 @@ EXAMPLES = '''
       dnsname.1: "myDnsname"
  
     labels:
-      snow_id: "value1"
-      exp_tech: "value2"
+      label1: "value1"
+      label2: "value2"
         
 '''
 

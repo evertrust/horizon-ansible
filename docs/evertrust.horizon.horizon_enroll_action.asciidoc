@@ -101,7 +101,60 @@ _dict_
 == Examples
 ``` yaml
 ---
-- name: Simple Enroll
+- name: Simple centralize enroll
+  evertrust.horizon.horizon_enroll:
+      
+    # login and password to connect to the API
+    x_api_id: "myId"
+    x_api_key: "myKey"
+
+    endpoint: "https://url-of-the-api"
+ 
+    mode: "centralized"
+
+    password: "pAssw0rd"
+    key_type: "rsa-2048"
+ 
+    profile: "profile"
+ 
+    subject:
+      cn.1: "myCN"
+ 
+    sans:
+      dnsname.1: "myDnsname"
+ 
+    labels:
+      snow_id: "value1"
+      exp_tech: "value2"
+
+- name: decentralize enroll with csr
+  evertrust.horizon.horizon_enroll:
+      
+    # login and password to connect to the API
+    x_api_id: "myId"
+    x_api_key: "myKey"
+
+    endpoint: "https://url-of-the-api"
+ 
+    mode: "decentralized"
+    csr: <a csr file>
+
+    password: "pAssw0rd"
+    key_type: "rsa-2048"
+ 
+    profile: "profile"
+ 
+    subject:
+      cn.1: "myCN"
+ 
+    sans:
+      dnsname.1: "myDnsname"
+ 
+    labels:
+      snow_id: "value1"
+      exp_tech: "value2"
+
+- name: decentralize enroll without csr
   evertrust.horizon.horizon_enroll:
       
     # login and password to connect to the API
