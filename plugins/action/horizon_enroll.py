@@ -8,7 +8,7 @@ DOCUMENTATION = '''
 action: horizon_enroll
 short_description: enroll a certificate
 description:
-    - Enroll a certificate on Horizon.
+    - TODO
 options:
   authent values:
     x_api_id:
@@ -147,114 +147,24 @@ class ActionModule(ActionBase):
 
     TRANSFERS_FILES = True
 
-    def _generate_biKey(self, key_type):
-        ''' Generate a keypairs with the keytype asked '''
-
-        if key_type == None:
-            raise AnsibleError(f'A keyType is required')
-
-        type, bits = key_type.split('-')
-
-        if type == "rsa":
-            self.privateKey = rsa.generate_private_key(public_exponent=65537, key_size=int(bits))
-        elif type == "ec" and bits == "secp256r1":
-            self.privateKey = ec.generate_private_key(curve = ec.SECP256R1)
-        elif type == "ec" and bits == "secp384r1":
-            self.privateKey = ec.generate_private_key(curve = ec.SECP384R1)
-        else: 
-            raise AnsibleError("KeyType not known")
-
-        self.publicKey = self.privateKey.public_key()
-
-        return ( self.privateKey, self.publicKey )
-
-
-    def _generate_PKCS10(self, subject, key_type):
-        ''' Generate a PKCS10 '''
-
-        if not "cn.1" in subject:
-            raise AnsibleError(f'subject cn.1 is mandatory')
-
-        try:
-            self._generate_biKey(key_type)
-
-            x509_subject = []
-            for element in subject:
-                
-                val, i = element.split('.')
-
-                if val == "CN":
-                    x509_subject.append(x509.NameAttribute(NameOID.COMMON_NAME, subject[val]))
-                elif val == "O":
-                    x509_subject.append(x509.NameAttribute(NameOID.ORGANIZATION_NAME, subject[val]))
-                elif val == "C":
-                    x509_subject.append(x509.NameAttribute(NameOID.COUNTRY_NAME, subject[val]))
-                elif val == "OU":
-                    for ou in subject["OU"]:
-                        x509_subject.append(x509.NameAttribute(NameOID.ORGANIZATIONAL_UNIT_NAME, ou))
-
-            pkcs10 = x509.CertificateSigningRequestBuilder()
-            pkcs10 = pkcs10.subject_name(x509.Name( x509_subject ))
-
-            csr = pkcs10.sign( self.privateKey, hashes.SHA256() )
-
-            if isinstance(csr, x509.CertificateSigningRequest):
-                return csr.public_bytes(serialization.Encoding.PEM).decode()
-
-            else: 
-                raise AnsibleError(f'Error in creation of the CSR, but i don\'t know why and you can\'t do anything about it')
-        
-        except Exception as e:
-            raise AnsibleError(f'Error in the creation of the pkcs10, be sure to fill all the fields required with decentralized mode. Error is: {e}')
-
-        
-    def _get_key(self, p12, password):
-
-        encoded_key = pkcs12.load_key_and_certificates( base64.b64decode(p12), password.encode() )
-
-        key  = encoded_key[0].private_bytes(
-            encoding=serialization.Encoding.PEM,
-            format=serialization.PrivateFormat.TraditionalOpenSSL,
-            encryption_algorithm=serialization.NoEncryption()
-        ).decode()
-
-        return key
-
-
     def run(self, tmp=None, task_vars=None):
         result = super(ActionModule, self).run(tmp, task_vars)
 
         try:
             # Get value from playbook
-            self._get_all_informations()
-            # Initialize the class Horizon
-            horizon = Horizon(endpoint=self.endpoint, id=self.id, key=self.key, ca_bundle=self.ca_bundle, client_cert=self.cilent_cert, client_key=self.cilent_key)
-            # Save the template in a self variable
-            template = horizon._get_template(self.profile, "enroll", "webra")
-            # Verify the password
-            horizon._check_password_policy(self.password)
-            # Verify or assign enrollment's mode
-            self.mode = horizon._check_mode(self.mode)
+            authent, content = self._get_all_informations()
 
-            if self.mode == "decentralized":
-                if self.key_type in template["template"]["keyTypes"]:
-                    if self.csr == None:
-                        self.csr = self._generate_PKCS10(self.subject, self.key_type)
-                else:
-                    raise AnsibleError(f'KeyType not in list')
+            horizon = Horizon(authent)
+            response = horizon.enroll(content)
 
-            # Send a request to the API
-            my_json = horizon._generate_json(module="webra", profile=self.profile, password=self.password, workflow="enroll", key_type=self.key_type, labels=self.labels, sans=self.sans, subject=self.subject, csr=self.csr)
-            response = horizon._post_request(my_json)
-            
             certificate = None
             if "certificate" in response:
                 certificate = response["certificate"]["certificate"]
             
-            if self.mode == "decentralized":
+            if content["mode"] == "decentralized":
                 result = {"certificate": certificate}
             else:
-                result = {"p12": response["pkcs12"]["value"], "p12_password": self.password, "certificate": certificate, "key": self._get_key(response["pkcs12"]["value"], response["password"]["value"])}
+                result = {"p12": response["pkcs12"]["value"], "p12_password": self.password, "certificate": certificate, "key": horizon.get_key(response["pkcs12"]["value"], response["password"]["value"])}
         
         except AnsibleAction as e:
             result.update(e.result)
@@ -265,18 +175,22 @@ class ActionModule(ActionBase):
     def _get_all_informations(self):
         ''' Save all plugin information in self variables '''
         # Authent values
-        self.id = self._task.args.get('x_api_id')
-        self.key = self._task.args.get('x_api_key')
-        self.ca_bundle = self._task.args.get('ca_bundle')
-        self.cilent_cert = self._task.args.get('client_cert')
-        self.cilent_key = self._task.args.get('client_key')
+        authent = {}
+        authent["api_id"] = self._task.args.get('x_api_id')
+        authent["api_key"] = self._task.args.get('x_api_key')
+        authent["ca_bundle"] = self._task.args.get('ca_bundle')
+        authent["client_cert"] = self._task.args.get('client_cert')
+        authent["client_key"] = self._task.args.get('client_key')
         # Content values
-        self.endpoint = self._task.args.get('endpoint')
-        self.mode = self._task.args.get('mode')
-        self.password = self._task.args.get('password')
-        self.key_type = self._task.args.get('key_type')
-        self.csr = self._task.args.get('csr')
-        self.profile = self._task.args.get('profile')
-        self.subject = self._task.args.get('subject')
-        self.sans = self._task.args.get('sans')
-        self.labels = self._task.args.get('labels')
+        content = {}
+        content["endpoint"] = self._task.args.get('endpoint')
+        content["mode"] = self._task.args.get('mode')
+        content["password"] = self._task.args.get('password')
+        content["key_type"] = self._task.args.get('key_type')
+        content["csr"] = self._task.args.get('csr')
+        content["profile"] = self._task.args.get('profile')
+        content["subject"] = self._task.args.get('subject')
+        content["sans"] = self._task.args.get('sans')
+        content["labels"] = self._task.args.get('labels')
+
+        return authent, content

@@ -6,32 +6,83 @@ import requests, string
 from ansible.errors import AnsibleError
 from requests.exceptions import HTTPError
 
+from cryptography import x509
+from cryptography.x509.oid import NameOID
+from cryptography.hazmat.primitives import hashes, serialization
+from cryptography.hazmat.primitives.asymmetric import rsa, ec
+from cryptography.hazmat.primitives.serialization import pkcs12
+
+import base64
+
+path_template = "/api/v1/requests/template"
+path_submit = "/api/v1/requests/submit"
+path_search = "/api/v1/certificates/search"
+path_feed = "/api/v1/discovery/feed"
+
 class Horizon():
 
-    def __init__(self, endpoint, id=None, key=None, ca_bundle=None, client_cert=None, client_key=None):
+    def __init__(self, authent):
         ''' Initialize API path and authentication parameters. '''
-        self.endpoint = endpoint
-        self.template = None
+        # Initialize values to avoid errors later
         self.headers = None
         self.bundle = None 
         self.cert = None
-
-        if id != None and key != None:
-            self.headers = {"x-api-id": id, "x-api-key": key}
+        # commplete the anthentication system
+        if authent["api_id"] != None and authent["api_key"] != None:
+            self.headers = {"x-api-id": authent["api_id"], "x-api-key": authent["api_key"]}
             self.authent = "x-api"
-        elif ca_bundle != None:
-            self.bundle = ca_bundle 
+        elif authent["ca_bundle"] != None:
+            self.bundle = authent["ca_bundle"] 
             self.authent = "bundle"
-        elif client_cert != None and client_key != None:
-            self.cert = (client_cert, client_key)
+        elif authent["client_cert"] != None and authent["client_key"] != None:
+            self.cert = (authent["client_cert"], authent["client_key"])
             self.authent = "cert"
         else:
             raise AnsibleError(f'You have to inform authentication parameters')
 
     
-    def _debug(self, response):
-        ''' Catch the eroors returned by the API. '''
+    def enroll(self, content):
+        template = self.__get_template(content["endpoint"], content["profile"], "enroll", "webra")
+        password = self.__check_password_policy(content["password"], template)
+        mode = self.__check_mode(template, mode=content["mode"])
 
+        if mode == "decentralized":
+            if content["key_type"] in template["template"]["keyTypes"]:
+                key_type = content["key_type"]
+                if content["csr"] == None:
+                    csr = self.__generate_PKCS10(content["subject"], key_type)
+                else: 
+                    csr = content["csr"]
+            else:
+                raise AnsibleError(f'key_type not in list')
+
+        json = self.__generate_json(workflow="enroll", template=template, module="webra", profile=content["profile"], password=password, key_type=key_type, labels=content["labels"], sans=content["sans"], subject=content["subject"], csr=csr)
+        return self.__post_request(json, content["endpoint"])
+    
+
+    def recover(self, content):
+        template = self.__get_template(content["endpoint"], content["profile"], "recover", "webra")
+        password = self.__check_password_policy(content["password"], template)
+        json = self.__generate_json(workflow="recover", template=template, profile=content["profile"], password=password, certificate_pem=content["certificate_pem"])
+        return self.__post_request(json, content["endpoint"])
+    
+
+    def revoke(self, content):
+        json = self.__generate_json(workflow="revoke", revocation_reason=content["revocation_reason"], certificate_pem=content["certificate_pem"])
+        return self.__post_request(json, content["endpoint"])
+
+    
+    def update(self, content):
+        json = self.__generate_json(workflow="update", profile=content["profile"], certificate_pem=content["certificate_pem"], labels=content["labels"])
+        return self.__post_request(json, content["endpoint"])
+
+    
+    def search(self, content):
+        return
+
+    
+    def __debug(self, response):
+        ''' Catch the eroors returned by the API. '''
         if isinstance(response, list):
             message = ""
             for elmt in response:
@@ -51,9 +102,9 @@ class Horizon():
             return True
 
 
-    def _get_template(self, profile, workflow, module=None):
+    def __get_template(self, endpoint, profile, workflow, module=None):
         ''' Look for the template corresponding to the workflow. '''
-
+        
         data =  { 
             "module": module, 
             "profile": profile, 
@@ -61,25 +112,15 @@ class Horizon():
         }
 
         # Construct the api endpoint
-        endpoint = str(self.endpoint) + "/api/v1/requests/template"
+        endpoint = endpoint + path_template
 
         try:
-            # Ask the API
-            self.template = requests.post(url=endpoint, headers=self.headers, verify=self.bundle, cert=self.cert, json=data).json()
-            
-            if self._debug(self.template):
+            # Get the template
+            template = requests.post(url=endpoint, headers=self.headers, verify=self.bundle, cert=self.cert, json=data).json()
+            # Test the response
+            self.__debug(template)
 
-                # Assign usefull values
-                self.template_request = self.template["template"]
-                if "capabilities" in self.template_request:
-                    if "p12passwordMode" in self.template_request["capabilities"]:
-                        self.password_mode = self.template_request["capabilities"]["p12passwordMode"]
-                if "passwordMode" in self.template_request:
-                    self.password_mode = self.template_request["passwordMode"]
-                if "passwordPolicy" in self.template_request:
-                    self.password_policy = self.template_request["passwordPolicy"]
-
-                return self.template
+            return template
 
         except HTTPError as http_err:
             raise AnsibleError(f'HTTP error occurred: {http_err}')
@@ -87,32 +128,37 @@ class Horizon():
             raise AnsibleError(f'{err}')
 
     
-    def _check_password_policy(self, password, profile=None, workflow=None):
+    def __check_password_policy(self, password, template):
         ''' Verify if the password provided match the password policy. '''
 
-        if self.template == None:
-            self._get_template(profile, workflow)
+        if "capabilities" in template["template"]:
+            if "p12passwordMode" in template["template"]["capabilities"]:
+                password_mode = template["template"]["capabilities"]["p12passwordMode"]
+        if "passwordMode" in template["template"]:
+            password_mode = template["template"]["passwordMode"]
+        if "passwordPolicy" in template["template"]:
+            password_policy = template["template"]["passwordPolicy"]
 
-        if self.password_mode == "manual" and password == None:
+        if password_mode == "manual" and password == None:
             message = f'A password is required. '
-            message += f'The password has to contains between { self.password_policy["minChar"] } and { self.password_policy["maxChar"] } characters, ' 
-            message += f'it has to contains at least : { self.password_policy["minLoChar"] } lowercase letter, { self.password_policy["minUpChar"] } uppercase letter, '
-            message += f'{ self.password_policy["minDiChar"] } number ' 
-            if "spChar" in self.password_policy:
-                f'and { self.password_policy["minSpChar"] } symbol characters in { self.password_policy["spChar"] }'
+            message += f'The password has to contains between { password_policy["minChar"] } and { password_policy["maxChar"] } characters, ' 
+            message += f'it has to contains at least : { password_policy["minLoChar"] } lowercase letter, { password_policy["minUpChar"] } uppercase letter, '
+            message += f'{ password_policy["minDiChar"] } number ' 
+            if "spChar" in password_policy:
+                f'and { password_policy["minSpChar"] } symbol characters in { password_policy["spChar"] }'
             raise AnsibleError(message)
 
-        if "passwordPolicy" in self.template_request:
-            minChar = self.password_policy["minChar"]
-            maxChar = self.password_policy["maxChar"]
-            minLo = self.password_policy["minLoChar"]
-            minUp = self.password_policy["minUpChar"]
-            minDi = self.password_policy["minDiChar"]
+        if "passwordPolicy" in template["template"]:
+            minChar = password_policy["minChar"]
+            maxChar = password_policy["maxChar"]
+            minLo = password_policy["minLoChar"]
+            minUp = password_policy["minUpChar"]
+            minDi = password_policy["minDiChar"]
             whiteList = []
             c_not_allowed = False
-            if "spChar" in self.password_policy:
-                minSp = self.password_policy["minSpChar"]
-                for s in self.password_policy["spChar"]:
+            if "spChar" in password_policy:
+                minSp = password_policy["minSpChar"]
+                for s in password_policy["spChar"]:
                     whiteList.append(s)
             else:
                 minSp = 0
@@ -131,12 +177,12 @@ class Horizon():
                     break
 
             if minDi > 0 or minLo > 0 or minUp > 0 or minSp > 0 or len(password) < minChar or len(password) > maxChar or c_not_allowed == True:
-                message = f'Your password does not match the password policy { self.password_policy["name"] }. '
-                message += f'The password has to contains between { self.password_policy["minChar"] } and { self.password_policy["maxChar"] } characters, ' 
-                message += f'it has to contains at least : { self.password_policy["minLoChar"] } lowercase letter, { self.password_policy["minUpChar"] } uppercase letter, '
-                message += f'{ self.password_policy["minDiChar"] } number ' 
-                if "spChar" in self.password_policy:
-                    message += f'and { self.password_policy["minSpChar"] } special characters in { self.password_policy["spChar"] }'
+                message = f'Your password does not match the password policy { password_policy["name"] }. '
+                message += f'The password has to contains between { password_policy["minChar"] } and { password_policy["maxChar"] } characters, ' 
+                message += f'it has to contains at least : { password_policy["minLoChar"] } lowercase letter, { password_policy["minUpChar"] } uppercase letter, '
+                message += f'{ password_policy["minDiChar"] } number ' 
+                if "spChar" in password_policy:
+                    message += f'and { password_policy["minSpChar"] } special characters in { password_policy["spChar"] }'
                 else:
                     message += f'but no special characters'
                 raise AnsibleError(message)
@@ -144,52 +190,67 @@ class Horizon():
         return password
 
     
-    def _generate_json(self, module=None, profile=None, password=None, workflow=None, certificate_pem=None, revocation_reason=None, csr=None, labels=None, sans=None, subject=None, key_type=None):
+    def __generate_json(self, workflow, template=None, module=None, profile=None, password=None, certificate_pem=None, revocation_reason=None, csr=None, labels=None, sans=None, subject=None, key_type=None, campaign=None, ip=None, certificate=None, hostnames=None, operating_systems=None, paths=None, usages=None):
         ''' Construct the json parameter for the request. '''
 
-        if self.template is not None:
-            my_json = self.template
+        if template != None:
+            my_json = template
         elif workflow == "update":
             my_json = {"template": {}}
         else:
             my_json = {}
-
-        my_json["workflow"] = workflow
         
-        if module != None:
-            my_json["module"] = module
-        if profile != None:
-            my_json["profile"] = profile
-        if password != None:
-            my_json["password"] = password
-        if certificate_pem != None:
-            my_json["certificatePem"] = certificate_pem
-        if revocation_reason != None:
-            my_json["revocationReason"] = revocation_reason
-        if key_type != None:
-            my_json["template"]["keyTypes"] = [key_type]
-        if sans != None:
-            my_json["template"]["sans"] = self._set_sans(sans)
-        if subject != None:
-            my_json["template"]["subject"] = self._set_subject(subject)
-        if csr != None:
-            my_json["template"]["csr"] = csr
-        if labels != None:    
-            my_json["template"]["labels"] = self._set_labels(labels)
+        if workflow != None:
+            my_json["workflow"] = workflow
+        
+            if module != None:
+                my_json["module"] = module
+            if profile != None:
+                my_json["profile"] = profile
+            if password != None:
+                my_json["password"] = password
+            if certificate_pem != None:
+                my_json["certificatePem"] = certificate_pem
+            if revocation_reason != None:
+                my_json["revocationReason"] = revocation_reason
+            if key_type != None:
+                my_json["template"]["keyTypes"] = [key_type]
+            if sans != None:
+                my_json["template"]["sans"] = self.__set_sans(sans)
+            if subject != None:
+                my_json["template"]["subject"] = self.__set_subject(subject, template)
+            if csr != None:
+                my_json["template"]["csr"] = csr
+            if labels != None:    
+                my_json["template"]["labels"] = self.__set_labels(labels)
+        
+        else:
+            my_json["campaign"] = campaign
+            my_json["certificate"] = certificate
+            my_json["hostDiscoveryData"] = {}
+            my_json["hostDiscoveryData"]["ip"] = ip
+            if hostnames != None:
+                my_json["hostDiscoveryData"]["hostnames"] = hostnames
+            if operating_systems != None:
+                my_json["hostDiscoveryData"]["operatingSystems"] = operating_systems
+            if paths != None:
+                my_json["hostDiscoveryData"]["paths"] = paths
+            if usages != None:
+                my_json["hostDiscoveryData"]["usages"] = usages
 
         return my_json
 
 
-    def _post_request(self, my_json):
+    def __post_request(self, json, endpoint):
         ''' Send the request to the API. '''
         # Construct the API endpoint
-        endpoint = str(self.endpoint) + "/api/v1/requests/submit"
+        endpoint = endpoint + path_submit
 
         try:
             # Ask the API
-            response = requests.post(endpoint, json=my_json, headers=self.headers).json()
+            response = requests.post(endpoint, json=json, headers=self.headers).json()
 
-            if self._debug(response):
+            if self.__debug(response):
                 return response
 
         except HTTPError as http_err:
@@ -198,7 +259,7 @@ class Horizon():
             raise AnsibleError(f'{err}')
 
     
-    def _set_labels(self, labels):
+    def __set_labels(self, labels):
         ''' Set the labels with a format readable by the API '''
         my_labels = []
 
@@ -208,7 +269,7 @@ class Horizon():
         return my_labels
 
 
-    def _set_sans(self, sans):
+    def __set_sans(self, sans):
         ''' Set the Subject alternate names with a format readable by the API '''
         my_sans = []
 
@@ -221,7 +282,7 @@ class Horizon():
         return my_sans
 
 
-    def _set_subject(self, subject):
+    def __set_subject(self, subject, template):
         ''' Set the Subject with a format readable by the API '''
         my_subject = []
 
@@ -229,21 +290,95 @@ class Horizon():
             if subject[element] == "" or subject[element] == None:
                 raise AnsibleError(f'the subject value for { element } is not allowed')
 
-            for subject_element in self.template_request["subject"]:
+            for subject_element in template["template"]["subject"]:
                 if subject_element["element"] == element and subject_element["editable"] == True:
                     my_subject.append({"element": element, "value": subject[element]})
 
         return my_subject
 
 
-    def _check_mode(self, mode=None):
+    def __check_mode(self, template, mode=None):
         ''' Verify if the mode provided match with the options of the template. '''
         if mode == None:
-            if self.template_request["capabilities"]["centralized"]:
+            if template["template"]["capabilities"]["centralized"]:
                 return "centralized"
             else:
                 return "decentralized"
-        elif self.template_request["capabilities"][mode]:
+        elif template["template"]["capabilities"][mode]:
             return mode 
         else:
             raise AnsibleError(f'The mode: { mode } is not available.')
+    
+
+    def __generate_PKCS10(self, subject, key_type):
+        ''' Generate a PKCS10 '''
+
+        if not "cn.1" in subject:
+            raise AnsibleError(f'subject cn.1 is mandatory')
+
+        try:
+            self.__generate_biKey(key_type)
+
+            x509_subject = []
+            for element in subject:
+                
+                val, i = element.split('.')
+
+                if val == "CN":
+                    x509_subject.append(x509.NameAttribute(NameOID.COMMON_NAME, subject[val]))
+                elif val == "O":
+                    x509_subject.append(x509.NameAttribute(NameOID.ORGANIZATION_NAME, subject[val]))
+                elif val == "C":
+                    x509_subject.append(x509.NameAttribute(NameOID.COUNTRY_NAME, subject[val]))
+                elif val == "OU":
+                    for ou in subject["OU"]:
+                        x509_subject.append(x509.NameAttribute(NameOID.ORGANIZATIONAL_UNIT_NAME, ou))
+
+            pkcs10 = x509.CertificateSigningRequestBuilder()
+            pkcs10 = pkcs10.subject_name(x509.Name( x509_subject ))
+
+            csr = pkcs10.sign( self.privateKey, hashes.SHA256() )
+
+            if isinstance(csr, x509.CertificateSigningRequest):
+                return csr.public_bytes(serialization.Encoding.PEM).decode()
+
+            else: 
+                raise AnsibleError(f'Error in creation of the CSR, but i don\'t know why and you can\'t do anything about it')
+        
+        except Exception as e:
+            raise AnsibleError(f'Error in the creation of the pkcs10, be sure to fill all the fields required with decentralized mode. Error is: {e}')
+    
+
+    def __generate_biKey(self, key_type):
+        ''' Generate a keypairs with the keytype asked '''
+
+        if key_type == None:
+            raise AnsibleError(f'A keyType is required')
+
+        type, bits = key_type.split('-')
+
+        if type == "rsa":
+            self.privateKey = rsa.generate_private_key(public_exponent=65537, key_size=int(bits))
+        elif type == "ec" and bits == "secp256r1":
+            self.privateKey = ec.generate_private_key(curve = ec.SECP256R1)
+        elif type == "ec" and bits == "secp384r1":
+            self.privateKey = ec.generate_private_key(curve = ec.SECP384R1)
+        else: 
+            raise AnsibleError("KeyType not known")
+
+        self.publicKey = self.privateKey.public_key()
+
+        return ( self.privateKey, self.publicKey )
+
+        
+    def get_key(self, p12, password):
+
+        encoded_key = pkcs12.load_key_and_certificates( base64.b64decode(p12), password.encode() )
+
+        key  = encoded_key[0].private_bytes(
+            encoding=serialization.Encoding.PEM,
+            format=serialization.PrivateFormat.TraditionalOpenSSL,
+            encryption_algorithm=serialization.NoEncryption()
+        ).decode()
+
+        return key
