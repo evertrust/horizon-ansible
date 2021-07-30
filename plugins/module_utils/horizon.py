@@ -2,9 +2,10 @@ from __future__ import print_function
 from os import pathconf_names
 from re import sub
 
-import requests, string
+import requests, string, urllib
 
 from ansible.errors import AnsibleError
+from requests.api import head
 from requests.exceptions import HTTPError
 
 from cryptography import x509
@@ -19,6 +20,7 @@ path_template = "/api/v1/requests/template"
 path_submit = "/api/v1/requests/submit"
 path_search = "/api/v1/certificates/search"
 path_feed = "/api/v1/discovery/feed"
+path_certificate= "/api/v1/certificates/"
 use_path = path_submit
 
 class Horizon():
@@ -88,13 +90,39 @@ class Horizon():
         results = []
         has_more = True
         while has_more:
-            response = self.__post_request(json, content["endpoint"])
+            response = self.__post_request(json, content["endpoint"], feed=True)
             results.append(response["results"][0])
             has_more = response["hasMore"]
             if has_more == True:
                 json["pageIndex"] += 1
 
         return results
+    
+
+    def feed(self, content):
+        global use_path
+        use_path = path_feed
+
+        json = self.__generate_json(workflow=None, campaign=content["campaign"], ip=content["ip"], certificate=content["certificate"], hostnames=content["hostnames"], operating_systems=content["operating_systems"], paths=content["paths"], usages=content["usages"])
+        return self.__post_request(json, content["endpoint"])
+
+    
+    def certificate(self, content):
+        global use_path
+        use_path = path_certificate
+
+        pem = urllib.parse.quote(content['pem'])
+        pem = pem.replace('/', "%2F")
+
+        response = self.__get_request(endpoint=content["endpoint"], param=pem)
+
+        if not "attributes" in content:
+            fields = []
+            for value in response:
+                fields.append(value)
+            return self.__format_response(response, fields)
+        else:
+            return self.__format_response(response, content["attributes"])
 
     
     def __debug(self, response):
@@ -263,15 +291,33 @@ class Horizon():
         return my_json
 
 
-    def __post_request(self, json, endpoint):
+    def __post_request(self, json, endpoint, feed=False):
         ''' Send the request to the API. '''
         # Construct the API endpoint
         endpoint = endpoint + use_path
 
         try:
             # Ask the API
-            response = requests.post(endpoint, json=json, headers=self.headers).json()
+            response = requests.post(endpoint, json=json, headers=self.headers)
 
+            if feed == False:
+                response = response.json()
+                if self.__debug(response):
+                    return response
+
+        except HTTPError as http_err:
+            raise AnsibleError(f'HTTP error occurred: {http_err}')
+        except Exception as err:
+            raise AnsibleError(f'{err}')
+
+    
+    def __get_request(self, endpoint, param):
+
+        endpoint = endpoint + use_path + param
+
+        try:
+
+            response = requests.get(endpoint, headers=self.headers).json()
             if self.__debug(response):
                 return response
 
@@ -505,3 +551,32 @@ class Horizon():
         '''
         if self.__is_label_pref(preference):
             return preference.split('.')[1]
+
+        
+    def __format_response(self, response, fields):
+
+        if not isinstance(fields, list):
+            fields = [fields]
+        
+        result = {}
+
+        for field in fields:
+
+            result[field] = []
+
+            if field == "metadata":
+                for data in response[field]:
+                    result[field].append(str(data['key']) + ': ' + str(data['value']))
+
+            elif field == "subjectAlternateNames":
+                for san in response[field]:
+                    result[field].append(str(san['sanType']) + ': ' + str(san['value']))
+
+            elif field == "labels":
+                for label in response[field]:
+                    result[field].append(str(label['key']) + ': ' + str(label['value']))
+
+            else:
+                result[field].append(response[field])
+
+        return [result]

@@ -61,11 +61,13 @@ _raw:
     returns all attributes specified, or all attributes if not.
 """
 
+from ansible_collections.evertrust.horizon.plugins.module_utils.horizon import Horizon
+
 from ansible.plugins.lookup import LookupBase
 from ansible.utils.display import Display
 import requests, urllib, json
 from requests.exceptions import HTTPError
-from ansible.errors import AnsibleError
+from ansible.errors import AnsibleError, AnsibleAction
 
 display = Display()
 
@@ -106,31 +108,30 @@ class LookupModule(LookupBase):
 
 
     def run(self, terms, variables=None, **kwargs): 
+
+        try:
+            # Get value from playbook
+            authent, content = self._get_all_informations(kwargs)
+
+            horizon = Horizon(authent)
+            result = horizon.certificate(content)
+
+        except AnsibleAction as e:
+            result.update(e.result)
+
+        return result
+
     
-        self.ret = {}
+    def _get_all_informations(self, kwargs):
+        # Authent values
+        authent = {}
+        authent["api_id"] = kwargs["x_api_id"]
+        authent["api_key"] = kwargs["x_api_key"]
+        # Content values
+        content = {}
+        content["endpoint"] = kwargs["endpoint"]
+        content["pem"] = kwargs["pem"]
+        if "attributes" in kwargs:
+            content["attributes"] = kwargs["attributes"]
 
-        pem = urllib.parse.quote(kwargs['pem'])
-        pem = pem.replace('/', "%2F")
-
-        endpoint = kwargs['endpoint'] + "/api/v1/certificates/"
-        headers = {"x-api-id": kwargs['x_api_id'], "x-api-key": kwargs['x_api_key']}
-
-        res = self._request(endpoint, headers, pem)
-        
-        if 'attributes' in kwargs:
-
-            if isinstance(kwargs["attributes"], str):
-                self._fill(res, kwargs["attributes"])
-
-            elif isinstance(kwargs["attributes"], list):
-                for attr in kwargs["attributes"]:   
-                    self._fill(res, attr)
-
-            else:
-                raise AnsibleError(f'Type error : attributes can only be a string or a list')
-
-        else:
-            for value in res:
-                self._fill(res, value)
-
-        return [self.ret]
+        return authent, content
