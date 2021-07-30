@@ -1,4 +1,5 @@
 from __future__ import print_function
+from os import pathconf_names
 from re import sub
 
 import requests, string
@@ -18,6 +19,7 @@ path_template = "/api/v1/requests/template"
 path_submit = "/api/v1/requests/submit"
 path_search = "/api/v1/certificates/search"
 path_feed = "/api/v1/discovery/feed"
+use_path = path_submit
 
 class Horizon():
 
@@ -78,7 +80,21 @@ class Horizon():
 
     
     def search(self, content):
-        return
+        global use_path
+        use_path = path_search
+
+        json = self.__generate_json(workflow=None, query=content["query"], with_count=True, fields=content["fields"])
+
+        results = []
+        has_more = True
+        while has_more:
+            response = self.__post_request(json, content["endpoint"])
+            results.append(response["results"][0])
+            has_more = response["hasMore"]
+            if has_more == True:
+                json["pageIndex"] += 1
+
+        return results
 
     
     def __debug(self, response):
@@ -190,7 +206,7 @@ class Horizon():
         return password
 
     
-    def __generate_json(self, workflow, template=None, module=None, profile=None, password=None, certificate_pem=None, revocation_reason=None, csr=None, labels=None, sans=None, subject=None, key_type=None, campaign=None, ip=None, certificate=None, hostnames=None, operating_systems=None, paths=None, usages=None):
+    def __generate_json(self, workflow, template=None, module=None, profile=None, password=None, certificate_pem=None, revocation_reason=None, csr=None, labels=None, sans=None, subject=None, key_type=None, campaign=None, ip=None, certificate=None, hostnames=None, operating_systems=None, paths=None, usages=None, query=None, fields=None, with_count=None, page_index=1):
         ''' Construct the json parameter for the request. '''
 
         if template != None:
@@ -223,6 +239,12 @@ class Horizon():
                 my_json["template"]["csr"] = csr
             if labels != None:    
                 my_json["template"]["labels"] = self.__set_labels(labels)
+
+        elif query != None:
+            my_json["query"] = self.__set_query(query)
+            my_json["withCount"] = with_count
+            my_json["pageIndex"] = page_index
+            my_json["fields"] = self.__set_fields(fields)
         
         else:
             my_json["campaign"] = campaign
@@ -244,7 +266,7 @@ class Horizon():
     def __post_request(self, json, endpoint):
         ''' Send the request to the API. '''
         # Construct the API endpoint
-        endpoint = endpoint + path_submit
+        endpoint = endpoint + use_path
 
         try:
             # Ask the API
@@ -295,6 +317,29 @@ class Horizon():
                     my_subject.append({"element": element, "value": subject[element]})
 
         return my_subject
+
+
+    def __set_query(self, query):
+        if query == 'null':
+            my_query = None
+        else:
+            my_query = '\"'
+            for c in query:
+                if c == '\"':
+                    my_query += '\\'
+                my_query += c
+            my_query += '\"'
+
+        return my_query
+
+    
+    def __set_fields(self, fields):
+
+        my_fields = ["module", "profile", "labels", "subjectAlternateNames"]
+        for field in fields:
+            my_fields.append(field)
+        
+        return my_fields
 
 
     def __check_mode(self, template, mode=None):
@@ -382,3 +427,81 @@ class Horizon():
         ).decode()
 
         return key
+
+
+    def get_hostnames(self, certificate, hostnames):
+        '''
+            :param certificate: the certificate from which we took informations
+            :param hostnames: a list of hostname destination variables in order of preference
+            :return the preferred identifer for the host
+        '''
+        if not hostnames:
+            hostnames = []
+        hostnames.append("san.dns")
+        hostnames.append("san.ip")
+
+        hostname = None
+
+        for preference in hostnames:
+            if preference == 'san.ip':
+                if 'subjectAlternateNames' in certificate:
+                    for san in certificate["subjectAlternateNames"]:
+                        if san["sanType"] == "IPADDRESS":
+                            hostname = san["value"]
+                        break
+                else:
+                    pass
+
+            elif preference == 'san.dns':
+                if 'subjectAlternateNames' in certificate:
+                    for san in certificate["subjectAlternateNames"]:
+                        if san["sanType"] == "DNSNAME":
+                            hostname = san["value"]
+                        break
+                else:
+                    pass
+
+            elif preference == 'discoveryData.ip':
+                for data in certificate["hostDiscoveryData"]:
+                    if data["ip"]:
+                        hostname = data["value"]
+                    break
+
+            elif preference == 'discoveryData.hostname':
+                for data in certificate["hostDiscoveryData"]:
+                    if data["hostname"]:
+                        hostname = data["value"]
+                    break
+
+            elif self.__is_label_pref(preference):
+                if 'labels' in certificate:
+                    label_pref = self.__get_label_pref(preference)
+                    for label in certificate["labels"]:
+                        if label["key"] == label_pref:
+                            hostname = label["value"]
+                        break
+                
+            if hostname != None:
+                break
+
+        if hostname:
+            return hostname
+
+    
+    def __is_label_pref(self, preference):
+        '''
+            :param preference: a destination hostname
+            :return True if preference look like label.<key>
+        '''
+        if not preference in ["san.ip", "san.dns", "discoveryData.ip", "discoveryData.Hostname"]:
+            return preference.split('.')[0] == 'label'
+        return False
+
+    
+    def __get_label_pref(self, preference):
+        '''
+            :param preference: a destination hostname which look like label.<key>
+            :return the <key> of the label
+        '''
+        if self.__is_label_pref(preference):
+            return preference.split('.')[1]
