@@ -28,6 +28,7 @@ Name | Description
 ### Action plugins
 Name | Description
 --- | ---
+[evertrust.horizon.horizon_feed](https://github.com/EverTrust/horizon-ansible/blob/main/docs/evertrust.horizon.horizon_feed_action.asciidoc) | Feed a certificate to Horizon
 [evertrust.horizon.horizon_enroll](https://github.com/EverTrust/horizon-ansible/blob/main/docs/evertrust.horizon.horizon_enroll_action.asciidoc) | Enroll a certificate
 [evertrust.horizon.horizon_recover](https://github.com/EverTrust/horizon-ansible/blob/main/docs/evertrust.horizon.horizon_recover_action.asciidoc) | Recover a certificate
 [evertrust.horizon.horizon_revoke](https://github.com/EverTrust/horizon-ansible/blob/main/docs/evertrust.horizon.horizon_revoke_action.asciidoc) | Revoke a certificate

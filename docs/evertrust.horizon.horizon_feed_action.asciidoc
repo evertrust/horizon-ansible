@@ -1,6 +1,7 @@
 = evertrust.horizon.horizon_feed
 
 == Synopsis
+Feed a certificate to Horizon
 
 == Requirements
 
