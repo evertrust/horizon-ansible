@@ -117,7 +117,7 @@ class LookupModule(LookupBase):
             result = horizon.certificate(content)
 
         except AnsibleAction as e:
-            result.update(e.result)
+            raise AnsibleError(f'Error: {e}')
 
         return result
 

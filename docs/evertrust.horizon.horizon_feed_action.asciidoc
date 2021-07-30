@@ -1,0 +1,105 @@
+= evertrust.horizon.horizon_feed
+
+== Synopsis
+
+== Requirements
+
+== Parameters
+|===
+| Parameter | Choices/Defaults | Configuration
+
+
+| *x_api_id*
+
+_string_
+| 
+a| * Horizon authentication id.
+* authent value
+
+| *x_api_key*
+
+_string_
+|
+a| * Horizon authentication key.
+* authent value
+
+| *ca_bundle*
+
+_path_
+|
+a| * The location of a CA Bundle to use when validating SSL certificates.
+* authent value
+
+| *client_cert*
+
+_path_
+|
+a| * The location of a client side certificate.
+* authent value
+
+| *client_key*
+
+_path_
+|
+a| * The location of a client side certificate's key.
+* authent value
+
+| *endpoint*
+
+_string_
+|
+|
+
+| *campaign*
+
+_string_
+|
+|
+
+| *ip*
+|
+|
+
+| *certificate*
+
+_string_
+|
+|
+
+| *hostnames*
+|
+|
+
+| *operating_systems*
+|
+|
+
+| *paths* 
+|
+|
+
+| *usages*
+|
+|
+
+|===
+
+== Examples
+``` yaml
+---
+- name: test discovery
+    evertrust.horizon.horizon_discovery:
+
+    x_api_id: "myId"
+    x_api_key: "myKey"
+
+    endpoint: "https://url-of-the-api"
+
+    campaign: campaign1
+    ip: localhost
+    certificate: <a_certificate_file>
+```
+
+== Status
+=== Authors
+- Adrien Ducourthial
