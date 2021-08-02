@@ -109,7 +109,7 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
 
     
     def _get_all_informations(self, path):
-        ''' Save all plugin information in self variables '''
+        ''' Save all plugin information in lists '''
         self.config = self._read_config_data(path)
         # Authent values
         authent = {}

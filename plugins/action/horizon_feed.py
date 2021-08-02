@@ -33,6 +33,7 @@ class ActionModule(ActionBase):
         return result
 
     def _get_all_informations(self):
+        ''' Save all plugin information in lists '''
         # Authent value
         authent = {}
         authent["api_id"] = self._task.args.get('x_api_id')

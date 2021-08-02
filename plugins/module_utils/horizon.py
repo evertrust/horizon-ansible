@@ -26,7 +26,10 @@ use_path = path_submit
 class Horizon():
 
     def __init__(self, authent):
-        ''' Initialize API path and authentication parameters. '''
+        ''' 
+            Initialize authentication parameters.
+            :param authent: horizon authentication parameters
+        '''
         # Initialize values to avoid errors later
         self.headers = None
         self.bundle = None 
@@ -46,6 +49,11 @@ class Horizon():
 
     
     def enroll(self, content):
+        '''
+            All steps to enroll a certificate
+            :param content: all values get from the playbook
+            :return the response of the API
+        '''
         template = self.__get_template(content["endpoint"], content["profile"], "enroll", "webra")
         password = self.__check_password_policy(content["password"], template)
         mode = self.__check_mode(template, mode=content["mode"])
@@ -65,6 +73,11 @@ class Horizon():
     
 
     def recover(self, content):
+        '''
+            All steps to recover a certificate
+            :param content: all values get from the playbook
+            :return the response of the API
+        '''
         template = self.__get_template(content["endpoint"], content["profile"], "recover", "webra")
         password = self.__check_password_policy(content["password"], template)
         json = self.__generate_json(workflow="recover", template=template, profile=content["profile"], password=password, certificate_pem=content["certificate_pem"])
@@ -72,16 +85,31 @@ class Horizon():
     
 
     def revoke(self, content):
+        '''
+            All steps to revoke a certificate
+            :param content: all values get from the playbook
+            :return the response of the API
+        '''
         json = self.__generate_json(workflow="revoke", revocation_reason=content["revocation_reason"], certificate_pem=content["certificate_pem"])
         return self.__post_request(json, content["endpoint"])
 
     
     def update(self, content):
+        '''
+            All steps to update a certificate
+            :param content: all values get from the playbook
+            :return the response of the API
+        '''
         json = self.__generate_json(workflow="update", profile=content["profile"], certificate_pem=content["certificate_pem"], labels=content["labels"])
         return self.__post_request(json, content["endpoint"])
 
     
     def search(self, content):
+        '''
+            All steps to search on horizon
+            :param content: all values get from the playbook
+            :return a list of certificate
+        '''
         global use_path
         use_path = path_search
 
@@ -90,7 +118,7 @@ class Horizon():
         results = []
         has_more = True
         while has_more:
-            response = self.__post_request(json, content["endpoint"], feed=True)
+            response = self.__post_request(json, content["endpoint"])
             results.append(response["results"][0])
             has_more = response["hasMore"]
             if has_more == True:
@@ -100,14 +128,24 @@ class Horizon():
     
 
     def feed(self, content):
+        '''
+            All steps to feed a certificate
+            :param content: all values get from the playbook
+            :return the response of the API
+        '''
         global use_path
         use_path = path_feed
 
         json = self.__generate_json(workflow=None, campaign=content["campaign"], ip=content["ip"], certificate=content["certificate"], hostnames=content["hostnames"], operating_systems=content["operating_systems"], paths=content["paths"], usages=content["usages"])
-        return self.__post_request(json, content["endpoint"])
+        return self.__post_request(json, content["endpoint"], feed=True)
 
     
     def certificate(self, content):
+        '''
+            All step to get values of a certificate
+            :param content: all values from the lookup request
+            :return the response of the API
+        '''
         global use_path
         use_path = path_certificate
 
@@ -126,7 +164,11 @@ class Horizon():
 
     
     def __debug(self, response):
-        ''' Catch the eroors returned by the API. '''
+        '''
+            Catch the errors returned by the API
+            :param response: an answer from the API
+            :return Boolean
+        '''
         if isinstance(response, list):
             message = ""
             for elmt in response:
@@ -147,8 +189,13 @@ class Horizon():
 
 
     def __get_template(self, endpoint, profile, workflow, module=None):
-        ''' Look for the template corresponding to the workflow. '''
-        
+        ''' 
+            :param endpoint: url of the API
+            :param profile: profile horizon
+            :param workflow: workflow of the request
+            :param module: module horizon
+            :return the template corresponding to the workflow
+        '''
         data =  { 
             "module": module, 
             "profile": profile, 
@@ -162,9 +209,8 @@ class Horizon():
             # Get the template
             template = requests.post(url=endpoint, headers=self.headers, verify=self.bundle, cert=self.cert, json=data).json()
             # Test the response
-            self.__debug(template)
-
-            return template
+            if self.__debug(template):
+                return template
 
         except HTTPError as http_err:
             raise AnsibleError(f'HTTP error occurred: {http_err}')
@@ -173,16 +219,20 @@ class Horizon():
 
     
     def __check_password_policy(self, password, template):
-        ''' Verify if the password provided match the password policy. '''
-
+        ''' 
+            :param password: the password from the playbook
+            :param template: the template of the request
+            :return password 
+        '''
+        # Get the password policy
         if "capabilities" in template["template"]:
             if "p12passwordMode" in template["template"]["capabilities"]:
                 password_mode = template["template"]["capabilities"]["p12passwordMode"]
-        if "passwordMode" in template["template"]:
+        elif "passwordMode" in template["template"]:
             password_mode = template["template"]["passwordMode"]
         if "passwordPolicy" in template["template"]:
             password_policy = template["template"]["passwordPolicy"]
-
+        # Check if the password is needed and given
         if password_mode == "manual" and password == None:
             message = f'A password is required. '
             message += f'The password has to contains between { password_policy["minChar"] } and { password_policy["maxChar"] } characters, ' 
@@ -191,7 +241,7 @@ class Horizon():
             if "spChar" in password_policy:
                 f'and { password_policy["minSpChar"] } symbol characters in { password_policy["spChar"] }'
             raise AnsibleError(message)
-
+        # Verify if the password follow the password policy
         if "passwordPolicy" in template["template"]:
             minChar = password_policy["minChar"]
             maxChar = password_policy["maxChar"]
@@ -235,8 +285,10 @@ class Horizon():
 
     
     def __generate_json(self, workflow, template=None, module=None, profile=None, password=None, certificate_pem=None, revocation_reason=None, csr=None, labels=None, sans=None, subject=None, key_type=None, campaign=None, ip=None, certificate=None, hostnames=None, operating_systems=None, paths=None, usages=None, query=None, fields=None, with_count=None, page_index=1):
-        ''' Construct the json parameter for the request. '''
-
+        ''' 
+            params: fields to create the json parameter to send to the API
+        '''
+        # Initialize my_json
         if template != None:
             my_json = template
         elif workflow == "update":
@@ -292,6 +344,12 @@ class Horizon():
 
 
     def __post_request(self, json, endpoint, feed=False):
+        '''
+            :param json: the json to send to the API
+            :param endpoint: url of the API
+            :param feed: Boolean
+            :return the response of the API
+        '''
         ''' Send the request to the API. '''
         # Construct the API endpoint
         endpoint = endpoint + use_path
@@ -299,7 +357,7 @@ class Horizon():
         try:
             # Ask the API
             response = requests.post(endpoint, json=json, headers=self.headers)
-
+            # Test the response
             if feed == False:
                 response = response.json()
                 if self.__debug(response):
@@ -311,13 +369,21 @@ class Horizon():
             raise AnsibleError(f'{err}')
 
     
-    def __get_request(self, endpoint, param):
-
-        endpoint = endpoint + use_path + param
+    def __get_request(self, endpoint, param=None):
+        '''
+            :param endpoint: url of the API
+            :param param: detail to add on the url
+            :return the response of the API
+        '''
+        # Construct the API endpoint
+        endpoint = endpoint + use_path
+        if param != None:
+            endpoint = endpoint + param
 
         try:
-
+            # Ask the API
             response = requests.get(endpoint, headers=self.headers).json()
+            # Test the response
             if self.__debug(response):
                 return response
 
@@ -328,7 +394,10 @@ class Horizon():
 
     
     def __set_labels(self, labels):
-        ''' Set the labels with a format readable by the API '''
+        '''
+            :param labels: a dict containing the labels of the certificate
+            return the labels with a format readable by the API
+        '''
         my_labels = []
 
         for label in labels:
@@ -338,7 +407,10 @@ class Horizon():
 
 
     def __set_sans(self, sans):
-        ''' Set the Subject alternate names with a format readable by the API '''
+        '''
+            :param sans: a dict containing the subject alternates names of the certificate
+            return the subject alternate names with a format readable by the API
+        '''
         my_sans = []
 
         for element in sans:
@@ -351,7 +423,11 @@ class Horizon():
 
 
     def __set_subject(self, subject, template):
-        ''' Set the Subject with a format readable by the API '''
+        '''
+            :param subject: a dict contaning the subject's informations of the certificate
+            :param template: the template of the request
+            :return the subject with a format readable by the API
+        '''
         my_subject = []
 
         for element in subject:
@@ -366,6 +442,10 @@ class Horizon():
 
 
     def __set_query(self, query):
+        '''
+            :param query: a request 
+            :return the query with a format readable by the API
+        '''
         if query == 'null':
             my_query = None
         else:
@@ -380,7 +460,10 @@ class Horizon():
 
     
     def __set_fields(self, fields):
-
+        '''
+            :param fields: list of fields 
+            :return a list of fields
+        '''
         my_fields = ["module", "profile", "labels", "subjectAlternateNames"]
         for field in fields:
             my_fields.append(field)
@@ -389,7 +472,11 @@ class Horizon():
 
 
     def __check_mode(self, template, mode=None):
-        ''' Verify if the mode provided match with the options of the template. '''
+        '''
+            :param template: the template of the request
+            :param mode: mode precised in the playbook
+            :return the right mode corresponding to the template
+        '''
         if mode == None:
             if template["template"]["capabilities"]["centralized"]:
                 return "centralized"
@@ -402,17 +489,19 @@ class Horizon():
     
 
     def __generate_PKCS10(self, subject, key_type):
-        ''' Generate a PKCS10 '''
-
+        ''' 
+            :param subject: a dict contaning the subject's informations of the certificate
+            :param key_type: a key format
+            :return a PKCS10 
+        '''
         if not "cn.1" in subject:
             raise AnsibleError(f'subject cn.1 is mandatory')
 
         try:
-            self.__generate_biKey(key_type)
+            private_key, public_key = self.__generate_biKey(key_type)
 
             x509_subject = []
             for element in subject:
-                
                 val, i = element.split('.')
 
                 if val == "CN":
@@ -428,42 +517,45 @@ class Horizon():
             pkcs10 = x509.CertificateSigningRequestBuilder()
             pkcs10 = pkcs10.subject_name(x509.Name( x509_subject ))
 
-            csr = pkcs10.sign( self.privateKey, hashes.SHA256() )
+            csr = pkcs10.sign( private_key, hashes.SHA256() )
 
             if isinstance(csr, x509.CertificateSigningRequest):
                 return csr.public_bytes(serialization.Encoding.PEM).decode()
-
-            else: 
-                raise AnsibleError(f'Error in creation of the CSR, but i don\'t know why and you can\'t do anything about it')
         
         except Exception as e:
             raise AnsibleError(f'Error in the creation of the pkcs10, be sure to fill all the fields required with decentralized mode. Error is: {e}')
     
 
     def __generate_biKey(self, key_type):
-        ''' Generate a keypairs with the keytype asked '''
-
+        '''
+            :param key_type: a key format
+            :return a tuple (private key, public key)
+        '''
         if key_type == None:
             raise AnsibleError(f'A keyType is required')
 
         type, bits = key_type.split('-')
 
         if type == "rsa":
-            self.privateKey = rsa.generate_private_key(public_exponent=65537, key_size=int(bits))
+            private_key = rsa.generate_private_key(public_exponent=65537, key_size=int(bits))
         elif type == "ec" and bits == "secp256r1":
-            self.privateKey = ec.generate_private_key(curve = ec.SECP256R1)
+            private_key = ec.generate_private_key(curve = ec.SECP256R1)
         elif type == "ec" and bits == "secp384r1":
-            self.privateKey = ec.generate_private_key(curve = ec.SECP384R1)
+            private_key = ec.generate_private_key(curve = ec.SECP384R1)
         else: 
             raise AnsibleError("KeyType not known")
 
-        self.publicKey = self.privateKey.public_key()
+        public_key = private_key.public_key()
 
-        return ( self.privateKey, self.publicKey )
+        return ( private_key, public_key )
 
         
     def get_key(self, p12, password):
-
+        '''
+            :param p12: a PKCS12 certificate
+            :param password: the password corresponding to the certificate
+            : return the public key of the PKCS12
+        '''
         encoded_key = pkcs12.load_key_and_certificates( base64.b64decode(p12), password.encode() )
 
         key  = encoded_key[0].private_bytes(
@@ -554,7 +646,11 @@ class Horizon():
 
         
     def __format_response(self, response, fields):
-
+        '''
+            :param response: an answer from the API
+            :param fields: list of fields
+            :return a list of fields from response
+        '''
         if not isinstance(fields, list):
             fields = [fields]
         

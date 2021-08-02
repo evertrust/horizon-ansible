@@ -137,7 +137,7 @@ _dict_
     endpoint: "https://url-of-the-api"
  
     mode: "decentralized"
-    csr: <a csr file>
+    csr: <a_csr_file>
 
     password: "pAssw0rd"
     key_type: "rsa-2048"
@@ -172,6 +172,9 @@ _dict_
  
     subject:
       cn.1: "myCN"
+      ou.1:
+        - "myFirstOU"
+        - "mySecondOU"
  
     sans:
       dnsname.1: "myDnsname"

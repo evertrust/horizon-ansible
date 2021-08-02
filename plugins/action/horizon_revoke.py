@@ -94,7 +94,7 @@ class ActionModule(ActionBase):
 
 
     def _get_all_informations(self):
-        ''' Save all plugin information in self variables '''
+        ''' Save all plugin information in lists '''
         # Authent values
         authent = {}
         authent["api_id"] = self._task.args.get('x_api_id')

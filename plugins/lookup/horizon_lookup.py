@@ -123,6 +123,7 @@ class LookupModule(LookupBase):
 
     
     def _get_all_informations(self, kwargs):
+        ''' Save all plugin information in lists '''
         # Authent values
         authent = {}
         authent["api_id"] = kwargs["x_api_id"]
