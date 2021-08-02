@@ -6,3 +6,7 @@ action_groups:
     - horizon_recover
     - horizon_revoke
     - horizon_update
+    - horizon_feed
+    - horion_inventory
+    - horizon_lookup
+    - horizon
