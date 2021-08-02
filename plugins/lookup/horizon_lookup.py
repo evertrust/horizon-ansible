@@ -73,42 +73,7 @@ display = Display()
 
 class LookupModule(LookupBase):
 
-    def _request(self, endpoint, header, pem):
-
-        endpoint = endpoint + pem
-
-        try:
-            response = requests.get(endpoint, headers=header)
-            return response.json()
-
-        except HTTPError as httperr:
-            raise AnsibleError (f"Http error : {httperr}")
-        except Exception as e:
-            raise AnsibleError (f"Other error : {e}")
-
-    
-    def _fill (self, res, value):
-
-        self.ret[value] = []
-
-        if value == "metadata":
-            for data in res[value]:
-                self.ret[value].append(str(data['key']) + ': ' + str(data['value']))
-
-        elif value == "subjectAlternateNames":
-            for san in res[value]:
-                self.ret[value].append(str(san['sanType']) + ': ' + str(san['value']))
-
-        elif value == "labels":
-            for label in res[value]:
-                self.ret[value].append(str(label['key']) + ': ' + str(label['value']))
-
-        else:
-            self.ret[value].append(res[value])
-
-
     def run(self, terms, variables=None, **kwargs): 
-
         try:
             # Get value from playbook
             authent, content = self._get_all_informations(kwargs)

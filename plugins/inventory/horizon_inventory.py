@@ -90,9 +90,7 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
  
     
     def parse(self, inventory, loader, path, cache):
-
         super().parse(inventory, loader, path, cache=cache)
-        
         try:
             # Get value from playbook
             authent, content = self._get_all_informations(path)

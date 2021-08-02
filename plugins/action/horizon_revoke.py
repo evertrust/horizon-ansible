@@ -83,7 +83,6 @@ class ActionModule(ActionBase):
         try:
             # Get value from playbook
             authent, content = self._get_all_informations()
-
             horizon = Horizon(authent)
             result = horizon.revoke(content)
         

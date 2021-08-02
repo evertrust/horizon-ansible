@@ -16,6 +16,7 @@ from cryptography.hazmat.primitives.serialization import pkcs12
 
 import base64
 
+# Global variables
 path_template = "/api/v1/requests/template"
 path_submit = "/api/v1/requests/submit"
 path_search = "/api/v1/certificates/search"
@@ -136,8 +137,8 @@ class Horizon():
         global use_path
         use_path = path_feed
 
-        json = self.__generate_json(workflow=None, campaign=content["campaign"], ip=content["ip"], certificate=content["certificate"], hostnames=content["hostnames"], operating_systems=content["operating_systems"], paths=content["paths"], usages=content["usages"])
-        return self.__post_request(json, content["endpoint"], feed=True)
+        json = self.__generate_json(workflow=None, campaign=content["campaign"], ip=content["ip"], certificate_pem=content["certificate"], hostnames=content["hostnames"], operating_systems=content["operating_systems"], paths=content["paths"], usages=content["usages"])
+        self.__post_request(json, content["endpoint"], feed=True)
 
     
     def certificate(self, content):
@@ -284,7 +285,7 @@ class Horizon():
         return password
 
     
-    def __generate_json(self, workflow, template=None, module=None, profile=None, password=None, certificate_pem=None, revocation_reason=None, csr=None, labels=None, sans=None, subject=None, key_type=None, campaign=None, ip=None, certificate=None, hostnames=None, operating_systems=None, paths=None, usages=None, query=None, fields=None, with_count=None, page_index=1):
+    def __generate_json(self, workflow, template=None, module=None, profile=None, password=None, certificate_pem=None, revocation_reason=None, csr=None, labels=None, sans=None, subject=None, key_type=None, campaign=None, ip=None, hostnames=None, operating_systems=None, paths=None, usages=None, query=None, fields=None, with_count=None, page_index=1):
         ''' 
             params: fields to create the json parameter to send to the API
         '''
@@ -328,7 +329,7 @@ class Horizon():
         
         else:
             my_json["campaign"] = campaign
-            my_json["certificate"] = certificate
+            my_json["certificate"] = certificate_pem
             my_json["hostDiscoveryData"] = {}
             my_json["hostDiscoveryData"]["ip"] = ip
             if hostnames != None:
@@ -475,7 +476,7 @@ class Horizon():
         '''
             :param template: the template of the request
             :param mode: mode precised in the playbook
-            :return the right mode corresponding to the template
+            :return the mode corresponding to the template
         '''
         if mode == None:
             if template["template"]["capabilities"]["centralized"]:
@@ -498,7 +499,7 @@ class Horizon():
             raise AnsibleError(f'subject cn.1 is mandatory')
 
         try:
-            private_key, public_key = self.__generate_biKey(key_type)
+            private_key, public_key = self.__generate_bi_key(key_type)
 
             x509_subject = []
             for element in subject:
@@ -526,7 +527,7 @@ class Horizon():
             raise AnsibleError(f'Error in the creation of the pkcs10, be sure to fill all the fields required with decentralized mode. Error is: {e}')
     
 
-    def __generate_biKey(self, key_type):
+    def __generate_bi_key(self, key_type):
         '''
             :param key_type: a key format
             :return a tuple (private key, public key)
