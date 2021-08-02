@@ -123,7 +123,7 @@ _public_
 _public_
 | certificate, hostnames
 | The preferred identifier for the host
-| 
+| Check all the hostnames and return the preferred one
 
 | *\__debug*
 
@@ -223,4 +223,29 @@ _private_
 | a key pair
 | Create a key pair
 
+| *\__is_label_pref*
+
+_private_
+| preference
+| Boolean
+| Verify the if the preference is a label
+
+| *\__get_label_pref*
+
+_private_
+| preference
+| label
+| return the label
+
+| *\__format_response*
+
+_private_
+| response, fields
+| List of fields
+| get the fields values from the response
+
 |===
+
+== Status
+=== Authors
+- Adrien Ducourtial
