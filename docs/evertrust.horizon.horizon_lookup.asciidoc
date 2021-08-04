@@ -11,38 +11,33 @@
 |===
 | Parameter | Choices/Defaults | Configuration | Comments
 
-| *x_api_id*
-
+| *x_api_id* +
 _string_
 | 
 |
 a| * Horizon authentication id.
 * authent value
 
-| *x_api_key*
-
+| *x_api_key* +
 _string_
 |
 |
 a| * Horizon authentication key.
 * authent value
 
-| *endpoint*
-
+| *endpoint* +
   _string_
 |
 |
 | Url of the API.
 
-| *pem*
-
+| *pem* +
   _string_
 | 
 | 
 | A certificate pem.
 
-| *attributes*
-
+| *attributes* +
   _string_ or _dict_
 a| * _id
 * labels

@@ -12,86 +12,73 @@ The below requirements are needed on the host that executes this module.
 |===
 | Parameter | Choices/Defaults | Configuration
 
-| *x_api_id*
-
+| *x_api_id* +
 _string_
 | 
 a| * Horizon authentication id.
 * authent value
 
-| *x_api_key*
-
+| *x_api_key* +
 _string_
 |
 a| * Horizon authentication key.
 * authent value
 
-| *ca_bundle*
-
+| *ca_bundle* +
 _path_
 |
 a| * The location of a CA Bundle to use when validating SSL certificates.
 * authent value
 
-| *client_cert*
-
+| *client_cert* +
 _path_
 |
 a| * The location of a client side certificate.
 * authent value
 
-| *client_key*
-
+| *client_key* +
 _path_
 |
 a| * The location of a client side certificate's key.
 * authent value
 
-| *endpoint*
-
+| *endpoint* +
 _string_
 | 
 | Url of the API.
 
-| *profile*
-
+| *profile* +
 _string_
 | 
 | Horizon profile to enroll certificate.
 
-| *password*
-
+| *password* +
 _string_
 |
 | Horizon password to enroll certificate.
 
-| *key_type*
-
+| *key_type* +
 _string_
 |
 | Key type 
 
-| *mode*
-
+| *mode* +
 _string_
 a| * centralized
 * decentralized
 | Certificate enrollement mode.
 
-| *subject*
-
+| *subject* +
 _dict_
 |
 | Certificate subject.
 
-| *sans*
-
+| *sans* +
 _dict_
 | 
 | Certificate subject alternates names.
 
-| *labels*
-
+| *labels* +
 _dict_
 | 
 | Certificate labels.

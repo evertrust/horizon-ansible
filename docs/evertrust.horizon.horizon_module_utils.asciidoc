@@ -12,36 +12,31 @@ The below requirements are needed on the host that executes this module.
 |===
 | Parameter | Choices/Defaults | Configuration
 
-| *x_api_id*
-
+| *x_api_id* +
 _string_
 | 
 a| * Horizon authentication id.
 * authent value
 
-| *x_api_key*
-
+| *x_api_key* +
 _string_
 |
 a| * Horizon authentication key.
 * authent value
 
-| *ca_bundle*
-
+| *ca_bundle* +
 _path_
 |
 a| * The location of a CA Bundle to use when validating SSL certificates.
 * authent value
 
-| *client_cert*
-
+| *client_cert* +
 _path_
 |
 a| * The location of a client side certificate.
 * authent value
 
-| *client_key*
-
+| *client_key* +
 _path_
 |
 a| * The location of a client side certificate's key.
@@ -53,192 +48,164 @@ a| * The location of a client side certificate's key.
 |===
 | Name | Parameters | Return | Description
 
-| *\\__init__*
-
+| *\\__init__* +
 _private_
-| authent
-
+| authent +
 _list of horizon authentication parameters_
 | 
 | Initialize the horizon authentication parameters
 
-| *enroll*
-
+| *enroll* +
 _public_
 | content
 | The response from the API
 | Follow all the steps needed to enroll a certificate on horizon
 
-| *recover*
-
+| *recover* +
 _public_
 | content
 | The response from the API
 | Follow all the steps needed to recover a certificate on horizon
 
-| *revoke*
-
+| *revoke* +
 _public_
 | content
 | The response from the API
 | Follow all the steps needed to revoke a certificate on horizon
 
-| *update*
-
+| *update* +
 _public_
 | content
 | The response from the API
 | Follow all the steps needed to update a certificate on horizon
 
-| *search*
-
+| *search* +
 _public_
 | content
 | A list of certificate
 | Follow all the steps needed to search certificates on horizon
 
-| *feed*
-
+| *feed* +
 _public_
 | content
 |
 | Follow all the steps needed to feed a certificate to horizon
 
-| *certificate*
-
+| *certificate* +
 _public_
 | content
 | Values of a certificate
 | Follow all the steps needed to look up a certificate on horizon
 
-| *get_key*
-
+| *get_key* +
 _public_
 | p12, password
 | The public key of p12
 | Get the public key from a PKCS12
 
-| *get_hostnames*
-
+| *get_hostnames* +
 _public_
 | certificate, hostnames
 | The preferred identifier for the host
 | Check all the hostnames and return the preferred one
 
-| *\__debug*
-
+| *\__debug* +
 _private_
 | response
 | Boolean
 | Catch the errors returned by the API
 
-| *\__get_template*
-
+| *\__get_template* +
 _private_
 | endpoint, profile, workflow, module
 | The template asked
 | Get a template on the API horizon
 
-| *\__check_password_policy*
-
+| *\__check_password_policy* +
 _private_
 | password, template
 | password
 | Verify if the password given follow the password policy of the template
 
-| *\__generate_json*
-
+| *\__generate_json* +
 _private_
 | workflow, template, moodule, profile, password, certificate_pem, revocation_reason, csr, labels, sans, subject, key_type, campaign, ip, hostnames, operating_systems, paths, usages, query, fields, with_count, page_index
 | dict
 | Create a dictionnary readable by the API with all the fields given
 
-| *\__post_request*
-
+| *\__post_request* +
 _private_
 | json, endpoint, feed
 | The response of the API
 | send a POST request to horizon
 
-| *\__get_request*
-
+| *\__get_request* +
 _private_
 | endpoint, param
 | The response of the API
 | send a GET request to horizon
 
-| *\__set_labels*
-
+| *\__set_labels* +
 _private_
 | labels
 | List of labels
 | Set the labels on a format readable by the API
 
-| *\__set_sans*
-
+| *\__set_sans* +
 _private_
 | sans
 | List of subject alternate names
 | Set the subject alternate names on a format readable by the API
 
-| *\__set_subject*
-
+| *\__set_subject* +
 _private_
 | subject, template
 | List of subject elements
 | Set the subjects elements on a format readable by the API
 
-| *\__set_query*
-
+| *\__set_query* +
 _private_
 | query
 | query
 | Set the query on a format readable by the API
 
-| *\__set_fields*
-
+| *\__set_fields* +
 _private_
 | fields
 | List of fields
 | Add necessary fields to optional fields
 
-| *\__check_mode*
-
+| *\__check_mode* +
 _private_
 | template, mode
 | mode
 | return the mode corresponding to the template
 
-| *\__generate_PKCS10*
-
+| *\__generate_PKCS10* +
 _private_
 | subject, key_type
 | a PKCS10
 | Create a PKCS10
 
-| *\__generate_bi_key*
-
+| *\__generate_bi_key* +
 _private_
 | key_type
 | a key pair
 | Create a key pair
 
-| *\__is_label_pref*
-
+| *\__is_label_pref* +
 _private_
 | preference
 | Boolean
 | Verify the if the preference is a label
 
-| *\__get_label_pref*
-
+| *\__get_label_pref* +
 _private_
 | preference
 | label
 | return the label
 
-| *\__format_response*
-
+| *\__format_response* +
 _private_
 | response, fields
 | List of fields

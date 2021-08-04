@@ -10,49 +10,42 @@ Feed a certificate to Horizon
 | Parameter | Choices/Defaults | Configuration
 
 
-| *x_api_id*
-
+| *x_api_id* +
 _string_
 | 
 a| * Horizon authentication id.
 * authent value
 
-| *x_api_key*
-
+| *x_api_key* +
 _string_
 |
 a| * Horizon authentication key.
 * authent value
 
-| *ca_bundle*
-
+| *ca_bundle* +
 _path_
 |
 a| * The location of a CA Bundle to use when validating SSL certificates.
 * authent value
 
-| *client_cert*
-
+| *client_cert* +
 _path_
 |
 a| * The location of a client side certificate.
 * authent value
 
-| *client_key*
-
+| *client_key* +
 _path_
 |
 a| * The location of a client side certificate's key.
 * authent value
 
-| *endpoint*
-
+| *endpoint* +
 _string_
 |
 |
 
-| *campaign*
-
+| *campaign* +
 _string_
 |
 |
@@ -61,8 +54,7 @@ _string_
 |
 |
 
-| *certificate*
-
+| *certificate* +
 _string_
 |
 |

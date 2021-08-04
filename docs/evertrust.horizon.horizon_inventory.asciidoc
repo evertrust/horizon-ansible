@@ -10,43 +10,36 @@
 |===
 | Parameter | Choices/Defaults | Configuration
 
-| *endpoint*
-
-- / requiered
-
+| *endpoint* +
+- / requiered +
 _string_
 | 
 | url of the API
 
-| *x_api_id*
-
+| *x_api_id* +
 _string_
 | 
 a| * Horizon authentication id.
 * authent value
 
-| *x_api_key*
-
+| *x_api_key* +
 _string_
 |
 a| * Horizon authentication key.
 * authent value
 
 
-| *query*
-
+| *query* +
 _string_
 |
 | 
 
-| *fields*
-
+| *fields* +
 _list_
 |
 |
 
-| *hostnames*
-
+| *hostnames* +
 _list_
 | 
 a| * A list in order of precedence for hostname variables.
