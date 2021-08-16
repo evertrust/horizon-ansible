@@ -58,4 +58,4 @@ The python module dependencies are not installed by `ansible-galaxy`. They can b
 
 GNU General Public License v3.0 or later.
 
-See [LICENSE.md]() to see the full text.
+See [LICENSE.md](https://github.com/EverTrust/horizon-ansible/blob/main/LICENSE.md) to see the full text.
