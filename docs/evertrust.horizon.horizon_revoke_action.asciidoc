@@ -49,7 +49,7 @@ _string_
 |
 | A pem file.
 
-| *revocation_reasons* +
+| *revocation_reason* +
 _strinig_
 |
 | The reason of the revoke

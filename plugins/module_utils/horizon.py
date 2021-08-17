@@ -77,9 +77,18 @@ class Horizon():
             :param content: all values get from the playbook
             :return the response of the API
         '''
-        template = self.__get_template(content["endpoint"], content["profile"], "recover", "webra")
+        global use_path
+
+        param = {
+            "endpoint": content["endpoint"],
+            "pem": content["certificate_pem"]
+        }
+        profile = self.certificate(param)[0]["profile"][0]
+        
+        template = self.__get_template(content["endpoint"], profile, "recover", "webra")
         password = self.__check_password_policy(content["password"], template)
-        json = self.__generate_json(workflow="recover", template=template, profile=content["profile"], password=password, certificate_pem=content["certificate_pem"])
+        json = self.__generate_json(workflow="recover", profile=profile, password=password, certificate_pem=content["certificate_pem"])
+        use_path = path_submit
         return self.__post_request(json, content["endpoint"])
     
 
@@ -99,7 +108,7 @@ class Horizon():
             :param content: all values get from the playbook
             :return the response of the API
         '''
-        json = self.__generate_json(workflow="update", profile=content["profile"], certificate_pem=content["certificate_pem"], labels=content["labels"])
+        json = self.__generate_json(workflow="update", certificate_pem=content["certificate_pem"], labels=content["labels"])
         return self.__post_request(json, content["endpoint"])
 
     
@@ -303,7 +312,7 @@ class Horizon():
             if profile != None:
                 my_json["profile"] = profile
             if password != None:
-                my_json["password"] = password
+                my_json["password"] = {"value": password}
             if certificate_pem != None:
                 certificate_pem = self.__set_certificate(certificate_pem)
                 my_json["certificatePem"] = certificate_pem
@@ -416,6 +425,11 @@ class Horizon():
         for element in sans:
             if sans[element] == "" or sans[element] == None:
                 raise AnsibleError(f'the san value for { element } is not allowed')
+            
+            elif isinstance(sans[element], list):
+                for i in range (len(sans[element])):
+                    san_name = element + "." + str(i+1)
+                    my_sans.append({"element": san_name, "value": sans[element][i]})
 
             my_sans.append({"element": element, "value": sans[element]})
 
@@ -433,6 +447,14 @@ class Horizon():
         for element in subject:
             if subject[element] == "" or subject[element] == None:
                 raise AnsibleError(f'the subject value for { element } is not allowed')
+
+            elif isinstance(subject[element], list):
+                for i in range (len(subject[element])):
+                    element_name = element + "." + str(i+1)
+
+                    for subject_element in template["template"]["subject"]:
+                        if subject_element["element"] == element_name and subject_element["editable"] == True:
+                            my_subject.append({"element": element_name, "value": subject[element][i]})
 
             for subject_element in template["template"]["subject"]:
                 if subject_element["element"] == element and subject_element["editable"] == True:
@@ -494,25 +516,37 @@ class Horizon():
             :param key_type: a key format
             :return a PKCS10 
         '''
-        if not "cn.1" in subject:
-            raise AnsibleError(f'subject cn.1 is mandatory')
-
         try:
             private_key, public_key = self.__generate_biKey(key_type)
 
             x509_subject = []
             for element in subject:
-                val, i = element.split('.')
 
-                if val == "CN":
-                    x509_subject.append(x509.NameAttribute(NameOID.COMMON_NAME, subject[val]))
-                elif val == "O":
-                    x509_subject.append(x509.NameAttribute(NameOID.ORGANIZATION_NAME, subject[val]))
-                elif val == "C":
-                    x509_subject.append(x509.NameAttribute(NameOID.COUNTRY_NAME, subject[val]))
-                elif val == "OU":
-                    for ou in subject["OU"]:
-                        x509_subject.append(x509.NameAttribute(NameOID.ORGANIZATIONAL_UNIT_NAME, ou))
+                if isinstance(subject[element], list):
+                    if element == "cn":
+                        for value in subject[element]:
+                            x509_subject.append(x509.NameAttribute(NameOID.COMMON_NAME, value))
+                    elif element == "o":
+                        for value in subject[element]:
+                            x509_subject.append(x509.NameAttribute(NameOID.ORGANIZATION_NAME, value))
+                    elif element == "c":
+                        for value in subject[element]:
+                            x509_subject.append(x509.NameAttribute(NameOID.COUNTRY_NAME, value))
+                    elif element == "ou":
+                        for value in subject[element]:
+                            x509_subject.append(x509.NameAttribute(NameOID.ORGANIZATIONAL_UNIT_NAME, value))
+                
+                else:
+                    val, i = element.split('.')
+
+                    if val == "cn":
+                        x509_subject.append(x509.NameAttribute(NameOID.COMMON_NAME, subject[element]))
+                    elif val == "o":
+                        x509_subject.append(x509.NameAttribute(NameOID.ORGANIZATION_NAME, subject[element]))
+                    elif val == "c":
+                        x509_subject.append(x509.NameAttribute(NameOID.COUNTRY_NAME, subject[element]))
+                    elif val == "ou":
+                        x509_subject.append(x509.NameAttribute(NameOID.ORGANIZATIONAL_UNIT_NAME, subject[element]))
 
             pkcs10 = x509.CertificateSigningRequestBuilder()
             pkcs10 = pkcs10.subject_name(x509.Name( x509_subject ))
