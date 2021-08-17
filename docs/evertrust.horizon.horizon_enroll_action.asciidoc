@@ -135,7 +135,9 @@ _dict_
       cn.1: "myCN"
  
     sans:
-      dnsname.1: "myDnsname"
+      dnsname: 
+        - "myDnsName1"
+        - "myDnsName2"
  
     labels:
       snow_id: "value1"
@@ -159,7 +161,7 @@ _dict_
  
     subject:
       cn.1: "myCN"
-      ou.1:
+      ou:
         - "myFirstOU"
         - "mySecondOU"
  
