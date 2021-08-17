@@ -211,6 +211,12 @@ _private_
 | List of fields
 | get the fields values from the response
 
+| *\set_certificate* +
+_private_
+| certificate_pem
+| a certificate pem
+| return the pem from a pem file
+
 |===
 
 == Status

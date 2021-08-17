@@ -50,7 +50,7 @@ _string_
 | A pem file.
 
 | *revocation_reason* +
-_strinig_
+_string_
 |
 | The reason of the revoke
 
@@ -68,6 +68,17 @@ _strinig_
     x_api_key: "myKey"
 
     certificate_pem: <a_webra_pem_file>
+
+- name: Simple Revoke
+  evertrust.horizon.horizon_revoke:
+
+    endpoint: "https://url-of-the-api"
+        
+    x_api_id: "myId"
+    x_api_key: "myKey"
+
+    certificate_pem: 
+      src: /path/of/a/webra/pem/file
 ```
 
 == Status

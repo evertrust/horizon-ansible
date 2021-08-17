@@ -81,7 +81,7 @@ _string_
 ``` yaml
 ---
 - name: test discovery
-    evertrust.horizon.horizon_discovery:
+  evertrust.horizon.horizon_discovery:
 
     x_api_id: "myId"
     x_api_key: "myKey"
@@ -91,6 +91,19 @@ _string_
     campaign: campaign1
     ip: localhost
     certificate: <a_certificate_file>
+
+- name: test discovery
+  evertrust.horizon.horizon_discovery:
+
+    x_api_id: "myId"
+    x_api_key: "myKey"
+
+    endpoint: "https://url-of-the-api"
+
+    campaign: campaign1
+    ip: localhost
+    certificate: 
+      src: /path/of/a/webra/pem/file
 ```
 
 == Status

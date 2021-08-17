@@ -44,11 +44,6 @@ _string_
 | 
 | Url of the API.
 
-| *profile* +
-_string_
-| 
-| Horizon profile to recover certificate.
-
 | *certificate_pem* +
 _string_
 |
@@ -72,12 +67,24 @@ _dict_
     x_api_id: "myId"
     x_api_key: "myKey"
 
-    profile: "profile"
-
     labels:
       label2: "test"
 
     certificate_pem: <a_webra_pem_file>
+
+- name: Simple Update
+  evertrust.horizon.horizon_update:
+
+    endpoint: "https://url-of-the-api"
+        
+    x_api_id: "myId"
+    x_api_key: "myKey"
+
+    labels:
+      label2: "test"
+      
+    certificate_pem: 
+      src: /path/of/a/webra/pem/file
 ```
 
 == Status
