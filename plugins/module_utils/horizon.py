@@ -35,15 +35,16 @@ class Horizon():
         self.bundle = None 
         self.cert = None
         # commplete the anthentication system
-        if authent["api_id"] != None and authent["api_key"] != None:
-            self.headers = {"x-api-id": authent["api_id"], "x-api-key": authent["api_key"]}
-            self.authent = "x-api"
+        if authent["client_cert"] != None and authent["client_key"] != None:
+            self.cert = (authent["client_cert"], authent["client_key"])
+            self.authent = "cert"
         elif authent["ca_bundle"] != None:
             self.bundle = authent["ca_bundle"] 
             self.authent = "bundle"
-        elif authent["client_cert"] != None and authent["client_key"] != None:
-            self.cert = (authent["client_cert"], authent["client_key"])
-            self.authent = "cert"
+        elif authent["api_id"] != None and authent["api_key"] != None:
+            self.headers = {"x-api-id": authent["api_id"], "x-api-key": authent["api_key"]}
+            self.authent = "x-api"
+
         else:
             raise AnsibleError(f'You have to inform authentication parameters')
 
