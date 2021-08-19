@@ -1,4 +1,11 @@
 = evertrust.horizon.horizon_feed
+Doc Writer Adrien Ducourthial <adu@evertrust.fr>
+v2.0, {docdate}
+:version: 2.0
+:imagesdir: ./images
+:title-page:
+:numbered:
+:toc:
 
 == Synopsis
 Feed a certificate to Horizon

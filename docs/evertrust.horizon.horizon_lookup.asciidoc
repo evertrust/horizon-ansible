@@ -1,4 +1,11 @@
 = Evertrust.horizon.horizon_lookup
+Doc Writer Adrien Ducourthial <adu@evertrust.fr>
+v2.0, {docdate}
+:version: 2.0
+:imagesdir: ./images
+:title-page:
+:numbered:
+:toc:
 
 == Synopsis
 - Describes attributes of your horizon certificate.

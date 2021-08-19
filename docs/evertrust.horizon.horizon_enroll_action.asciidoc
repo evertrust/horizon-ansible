@@ -1,4 +1,11 @@
 = evertrust.horizon.horizon_enroll
+Doc Writer Adrien Ducourthial <adu@evertrust.fr>
+v2.0, {docdate}
+:version: 2.0
+:imagesdir: ./images
+:title-page:
+:numbered:
+:toc:
 
 == Synopsis
 Enroll a certificate on Horizon

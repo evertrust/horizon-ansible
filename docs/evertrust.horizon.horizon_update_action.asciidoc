@@ -1,4 +1,11 @@
 = evertrust.horizon.horizon_update
+Doc Writer Adrien Ducourthial <adu@evertrust.fr>
+v2.0, {docdate}
+:version: 2.0
+:imagesdir: ./images
+:title-page:
+:numbered:
+:toc:
 
 == Synopsis
 Update a certificate on Horizon
