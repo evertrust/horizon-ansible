@@ -35,16 +35,15 @@ class Horizon():
         self.bundle = None 
         self.cert = None
         # commplete the anthentication system
-        if authent["client_cert"] != None and authent["client_key"] != None:
-            self.cert = (authent["client_cert"], authent["client_key"])
-            self.authent = "cert"
+        if authent["api_id"] != None and authent["api_key"] != None:
+            self.headers = {"x-api-id": authent["api_id"], "x-api-key": authent["api_key"]}
+            self.authent = "x-api"
         elif authent["ca_bundle"] != None:
             self.bundle = authent["ca_bundle"] 
             self.authent = "bundle"
-        elif authent["api_id"] != None and authent["api_key"] != None:
-            self.headers = {"x-api-id": authent["api_id"], "x-api-key": authent["api_key"]}
-            self.authent = "x-api"
-
+        elif authent["client_cert"] != None and authent["client_key"] != None:
+            self.cert = (authent["client_cert"], authent["client_key"])
+            self.authent = "cert"
         else:
             raise AnsibleError(f'You have to inform authentication parameters')
 
@@ -158,7 +157,8 @@ class Horizon():
         global use_path
         use_path = path_certificate
 
-        pem = urllib.parse.quote(content['pem'])
+        pem = self.__set_certificate(content["pem"])
+        pem = urllib.parse.quote(pem)
         pem = pem.replace('/', "%2F")
 
         response = self.__get_request(endpoint=content["endpoint"], param=pem)
@@ -696,16 +696,22 @@ class Horizon():
             result[field] = []
 
             if field == "metadata":
+                metadata = {}
                 for data in response[field]:
-                    result[field].append(str(data['key']) + ': ' + str(data['value']))
+                    metadata[data['key']] = data['value']
+                result[field].append(metadata)
 
             elif field == "subjectAlternateNames":
+                sans = {}
                 for san in response[field]:
-                    result[field].append(str(san['sanType']) + ': ' + str(san['value']))
+                    sans[san['sanType']] = san['value']
+                result[field].append(sans)
 
             elif field == "labels":
+                labels = {}
                 for label in response[field]:
-                    result[field].append(str(label['key']) + ': ' + str(label['value']))
+                    labels[label['key']] = label['value']
+                result[field].append(labels)
 
             else:
                 result[field].append(response[field])

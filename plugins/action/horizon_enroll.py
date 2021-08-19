@@ -163,7 +163,7 @@ class ActionModule(ActionBase):
             if content["mode"] == "decentralized":
                 result = {"certificate": certificate}
             else:
-                result = {"p12": response["pkcs12"]["value"], "p12_password": self.password, "certificate": certificate, "key": horizon.get_key(response["pkcs12"]["value"], response["password"]["value"])}
+                result = {"p12": response["pkcs12"]["value"], "p12_password": response["password"]["value"], "certificate": certificate, "key": horizon.get_key(response["pkcs12"]["value"], response["password"]["value"])}
         
         except AnsibleAction as e:
             result.update(e.result)
