@@ -68,7 +68,7 @@ a| * The location of a CA Bundle to use when validating SSL certificates.
   _string_
 | 
 | 
-| A certificate pem.
+| A certificate pem, or the path of a certificate pem file.
 
 | *attributes* +
   _string_ or _dict_
