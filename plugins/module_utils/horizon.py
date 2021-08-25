@@ -390,7 +390,7 @@ class Horizon():
 
         try:
             # Ask the API
-            response = requests.get(endpoint, headers=self.headers).json()
+            response = requests.get(endpoint, verify=self.bundle, cert=self.cert, headers=self.headers).json()
             # Test the response
             if self.__debug(response):
                 return response
