@@ -42,7 +42,7 @@ class ActionModule(ActionBase):
         authent["client_key"] = self._task.args.get('client_key')
         # Content values
         content = {}
-        content["endpoint"] = self._task.args.get('endpoint') + "/api/v1/discovery/feed"
+        content["endpoint"] = self._task.args.get('endpoint')
         content["campaign"] = self._task.args.get('campaign')
         content["ip"] = self._task.args.get('ip')
         content["certificate"] = self._task.args.get('certificate')

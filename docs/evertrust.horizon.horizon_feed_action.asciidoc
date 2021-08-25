@@ -65,12 +65,12 @@ _string_
 | *campaign* +
 _string_
 |
-|
+| Compaign of the certificate
 
 | *ip* +
 _adress_
 |
-|
+| IP adress.
 
 | *certificate* +
 _string_
@@ -79,7 +79,7 @@ _string_
 
 | *hostnames*
 |
-|
+| 
 
 | *operating_systems*
 |
