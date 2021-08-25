@@ -210,6 +210,7 @@ class Horizon():
 
         # Construct the api endpoint
         endpoint = endpoint + path_template
+        print(self.cert)
 
         try:
             # Get the template
@@ -363,7 +364,7 @@ class Horizon():
 
         try:
             # Ask the API
-            response = requests.post(endpoint, json=json, headers=self.headers)
+            response = requests.post(endpoint, verify=self.bundle, cert=self.cert, json=json, headers=self.headers)
             # Test the response
             if feed == False:
                 response = response.json()
