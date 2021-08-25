@@ -25,7 +25,7 @@ use_path = path_submit
 
 class Horizon():
 
-    def __init__(self, authent, bundle=None):
+    def __init__(self, authent):
         ''' 
             Initialize authentication parameters.
             :param authent: horizon authentication parameters
@@ -33,7 +33,7 @@ class Horizon():
         # Initialize values to avoid errors later
         self.headers = None
         self.cert = None
-        self.bundle = bundle 
+        self.bundle = authent["ca_bundle"] 
         # commplete the anthentication system
         if authent["client_cert"] != None and authent["client_key"] != None:
             self.cert = (authent["client_cert"], authent["client_key"])
