@@ -14,9 +14,9 @@ v2.0, {docdate}
 == Requirements
 
 == Parameters
-=== Authent Parameters
+=== Authentication Parameters
 
-To be authent on Horizon, you have to chose between log in with a certificate or with your login password. +
+To authenticate on Horizon, you have to chose between log in with a certificate or with your login password. +
 If you inform all the parameters, you will be log in priority by your certificate authent.
 
 |===
@@ -53,7 +53,7 @@ a| * The location of a CA Bundle to use when validating SSL certificates.
 * optionnal
 |===
 
-=== Inventory Parameters
+=== Plugin Parameters
 
 Create a request to refine your search.
 
@@ -109,4 +109,4 @@ hostnames:
 
 == Status
 === Authors
-- Adrien Ducourthial
+- Evertrust R&D

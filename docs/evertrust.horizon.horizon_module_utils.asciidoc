@@ -192,4 +192,4 @@ _private_
 
 == Status
 === Authors
-- Adrien Ducourtial
+- Evertrust R&D
