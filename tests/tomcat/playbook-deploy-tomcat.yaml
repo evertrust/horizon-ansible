@@ -1,0 +1,89 @@
+- hosts: webserver
+  become: yes
+  tasks:
+  - name: update
+    apt: update_cache=yes   
+
+  - name: add group "tomcat"
+    group: 
+      name: tomcat
+
+  - name: add user "tomcat"
+    user: 
+      name: tomcat 
+      group: tomcat 
+      createhome: yes
+    become: true
+  
+  - name: install tomcat
+    apt: 
+      name: tomcat9 
+      state: latest
+
+  - name: horizon_enroll
+    evertrust.horizon.horizon_enroll:
+      endpoint: "https://horizon-demo.evertrust.fr"
+      mode: "centralized"
+      password: "Aa1"
+      key_type: "rsa-2048"
+      x_api_id: "{{ api_id }}"
+      x_api_key: "{{ api_key }}"
+      profile: "DefaultSSLInternalCA"
+      module: "webra"
+      subject:
+        cn.1: "{{ domain }}"
+        o.1: "Evertrust"
+        c.1: "FR"
+      sans:
+        dnsname.1: "{{ domain }}"
+      labels:
+        snow_id: "needed"
+      
+    register: value
+  
+  - name: create tomcat directory
+    file:
+      path: /etc/tomcat9
+      state: directory
+      mode: '0775'
+      owner: "tomcat"
+      group: "tomcat"
+
+  - name: create ssl directory
+    file:
+      path: /etc/tomcat9/ssl-files
+      state: directory
+      mode: '0775'
+      owner: "tomcat"
+      group: "tomcat"
+
+  - name: create file crt
+    copy:
+      content: "{{ value['certificate'] }}"
+      dest: "/etc/tomcat9/ssl-files/{{ domain }}.crt"
+      mode: '0660'
+      owner: tomcat 
+      group: tomcat 
+    
+  - name: create file key
+    copy:
+      content: "{{ value['key'] }}"
+      dest: "/etc/tomcat9/ssl-files/{{ domain }}.key"
+      mode: '0660'
+      owner: tomcat 
+      group: tomcat 
+
+  - name: Configure Tomcat server
+    template: 
+      src: /Users/adrien/Playbooks_exemples/templates/tomcat.server.xml.j2
+      dest: /etc/tomcat9/server.xml
+
+  - name: Restart Tomcat
+    command: "systemctl restart tomcat9"
+    become: true
+    become_user: root
+
+  - name: wait for tomcat to start
+    wait_for: 
+      port: 8443
+

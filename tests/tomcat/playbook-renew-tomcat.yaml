@@ -1,0 +1,65 @@
+- hosts: webserver
+  become: yes
+  vars: 
+    my_pem: 
+      src: "/tmp/ubuntu/etc/tomcat/ssl-files/{{ domain }}.crt"
+    x_api_id: "{{api_id}}"
+    x_api_key: "{{api_key}}"
+
+    remaining_life: "{{remaining_life}}"
+
+  tasks:
+  - name: get certificate
+    ansible.builtin.fetch:
+      src: /etc/tomcat/ssl-files/{{domain}}.crt
+      dest: /tmp/
+
+  - name: recup certificate values
+    set_fact:
+      certificate: "{{lookup('evertrust.horizon.horizon_lookup', pem=my_pem, x_api_id=x_api_id, x_api_key=x_api_key, endpoint='https://horizon-demo.evertrust.fr')}}"
+
+  - name: calcule date
+    set_fact:
+      res_date: " {{ a|int - (b|int + (c|int *86400)) }} "
+    vars:
+      a: "{{certificate['notAfter'][0]}}"
+      b: "{{ansible_date_time.epoch}}"
+      c: "{{ remaining_life }}"
+
+  - name: renew
+    evertrust.horizon.horizon_enroll:
+      endpoint: "https://horizon-demo.evertrust.fr"
+      password: "Aa1"
+      key_type: "{{certificate['keyType'][0]}}"
+      x_api_id: "{{ x_api_id }}"
+      x_api_key: "{{ x_api_key }}"
+      profile: "{{certificate['profile'][0]}}"
+      subject:
+        cn.1: "{{ certificate['dn'][0].split(',')[0].split('=')[1] }}"
+      sans:
+        dnsname.1: "{{ certificate['subjectAlternateNames'][0]['DNSNAME'] }}"
+      labels: "{{ certificate['labels'][0] }}"
+    
+    register: value
+    
+    when: "{{ res_date|int < 0 }}"
+
+  - name: horizon_revoke
+    evertrust.horizon.horizon_revoke:
+      endpoint: "https://horizon-demo.evertrust.fr" 
+      x_api_id: "{{api_id}}"
+      x_api_key: "{{api_key}}"
+      certificate_pem: "{{ my_pem }}"
+    when: "{{ res_date|int < 0 }}"
+
+  - name: replace crt
+    copy:
+      content: "{{ value['certificate'] }}"
+      dest: "/etc/tomcat9/ssl-files/{{ domain }}.crt"
+    when: "{{ res_date|int < 0 }}"
+  
+  - name: replace key
+    copy:
+      content: "{{ value['key'] }}"
+      dest: "/etc/tomcat9/ssl-files/{{ domain }}.key"
+    when: "{{ res_date|int < 0 }}"

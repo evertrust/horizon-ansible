@@ -1,0 +1,18 @@
+<VirtualHost _default_:443>
+    DocumentRoot /var/www/{{ domain }}
+        <Directory /var/www/{{ domain }}>
+            Options -Indexes +FollowSymLinks +MultiViews
+		    AllowOverride none
+		    Require all granted
+        </Directory>
+
+        SSLEngine on
+
+        SSLProtocol All -SSLv2 -SSLv3 -TLSv1 -TLSv1.1
+
+        SSLCertificateFile /etc/apache2/ssl-files/{{ domain  }}.crt
+        SSLCertificateKeyFile /etc/apache2/ssl-files/{{ domain  }}.key
+
+        ErrorLog /var/log/apache2/{{domain}}.error.log
+
+</VirtualHost>

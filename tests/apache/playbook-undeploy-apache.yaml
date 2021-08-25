@@ -1,0 +1,37 @@
+---
+- hosts: webserver
+  become: yes
+  vars:
+    path: "/etc/apache2/ssl-files/{{domain}}.crt"
+    content: "{{ lookup('file', path) }}"
+  tasks:
+  - name: get certificate
+    ansible.builtin.fetch:
+      src: /etc/apache2/ssl-files/{{domain}}.crt
+      dest: /tmp/
+      
+  - name: Stop Apache Services
+    become: yes
+    service:
+      name: apache2
+      state: stopped
+
+  - name: Uninstall Apache
+    apt:
+      name: apache2
+      state: absent
+      purge: yes
+
+  - name: Clean
+    command: rm -r -f /etc/apache2 /var/log/apache2
+    become: true
+  
+  - name: horizon_revoke
+    evertrust.horizon.horizon_revoke:
+      endpoint: "https://horizon-demo.evertrust.fr" 
+      x_api_id: "{{api_id}}"
+      x_api_key: "{{api_key}}"
+      certificate_pem: 
+        src: "/tmp/ubuntu/etc/apache2/ssl-files/{{ domain }}.crt"
+
+  

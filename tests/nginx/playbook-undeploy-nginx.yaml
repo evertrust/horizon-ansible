@@ -1,0 +1,30 @@
+---
+- hosts: webserver
+  become: yes
+  vars:
+    path: "/etc/nginx/ssl-files/{{domain}}.crt"
+    content: "{{ lookup('file', path) }}"
+  tasks:
+  - name: get certificate
+    ansible.builtin.fetch:
+      src: /etc/nginx/ssl-files/{{domain}}.crt
+      dest: /tmp/
+
+  - name: Stop Nginx Services
+    service:
+      name: nginx
+      state: stopped
+
+  - name: Uninstall Nginx
+    become: yes
+    apt:
+      name: nginx
+      state: absent
+
+  - name: horizon_revoke
+    evertrust.horizon.horizon_revoke:
+      endpoint: "https://horizon-demo.evertrust.fr" 
+      x_api_id: "{{api_id}}"
+      x_api_key: "{{api_key}}"
+      certificate_pem: 
+        src: "/tmp/ubuntu/etc/nginx/ssl-files/{{ domain }}.crt"

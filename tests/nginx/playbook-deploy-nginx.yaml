@@ -1,0 +1,95 @@
+- hosts: webserver
+  become: yes
+  tasks:
+  - name: update
+    apt: update_cache=yes   
+  
+  - name: Install Nginx
+    apt: 
+      name: nginx 
+      state: latest
+    notify:
+      - restart nginx
+
+  - name: horizon_enroll
+    evertrust.horizon.horizon_enroll:
+      endpoint: "https://horizon-demo.evertrust.fr"
+      mode: "centralized"
+      password: "Aa1"
+      key_type: "rsa-2048"
+      x_api_id: "{{ api_id }}"
+      x_api_key: "{{ api_key }}"
+      profile: "DefaultSSLInternalCA"
+      subject:
+        cn.1: "{{ domain }}"
+        o.1: "Evertrust"
+        c.1: "FR"
+      sans:
+        dnsname.1: "{{ domain }}"
+      labels:
+        snow_id: "needed"
+      
+    register: value
+  
+  - name: create ssl directory
+    file:
+      path: /etc/nginx/ssl-files
+      state: directory
+      mode: '0775'
+      owner: "www-data"
+      group: "www-data"
+
+  - name: create file crt
+    copy:
+      content: "{{ value['certificate'] }}"
+      dest: "/etc/nginx/ssl-files/{{ domain }}.crt"
+      mode: '0660'
+      owner: "www-data"
+      group: "www-data"
+    
+  - name: create file key
+    copy:
+      content: "{{ value['key'] }}"
+      dest: "/etc/nginx/ssl-files/{{ domain }}.key"
+      mode: '0660'
+      owner: "www-data"
+      group: "www-data"
+    
+  - name: "create www directory"
+    file:
+      path: /var/www/{{ domain }}
+      state: directory
+      mode: '0775'
+      owner: "www-data"
+      group: "www-data"
+
+  - name: delete default nginx site
+    file:
+      path: /etc/nginx/sites-enabled/default
+      state: absent
+    notify: restart nginx
+
+  - name: copy nginx site.conf
+    template:
+      src: ../templates/nginx.conf.j2
+      dest: "/etc/nginx/sites-available/{{ domain }}"
+      owner: "www-data"
+      group: "www-data"
+      mode: '0644'
+    notify: restart nginx
+
+  - name: Check if sites-enabled/{{domain}} exists
+    stat: 
+      path: "/etc/nginx/sites-enabled/{{domain}}"
+    register: stat_result
+
+  - name: link {{ domain }} to sites-enabled
+    command: "ln -s /etc/nginx/sites-available/{{ domain }} /etc/nginx/sites-enabled"
+    become: true
+    when: not stat_result.stat.exists
+
+  handlers:
+    - name: restart nginx
+      service:
+        name: nginx
+        state: restarted

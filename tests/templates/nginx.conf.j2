@@ -1,0 +1,12 @@
+server {
+  listen 443 ssl;
+    ssl_certificate /etc/nginx/ssl-files/{{ domain  }}.crt;
+    ssl_certificate_key /etc/nginx/ssl-files/{{ domain  }}.key;
+    server_name {{ domain  }};
+    root /var/www/{{ domain }};
+    access_log /var/log/nginx/{{domain}}.access.log;
+    error_log /var/log/nginx/{{domain}}.error.log;
+    location / {
+      try_files $uri $uri/ =404;
+    }
+}

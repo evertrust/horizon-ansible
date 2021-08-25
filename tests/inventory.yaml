@@ -1,0 +1,6 @@
+webserver:
+  hosts:
+    ubuntu
+  vars:
+    domain: evertrust.lab
+    http_port: 80
