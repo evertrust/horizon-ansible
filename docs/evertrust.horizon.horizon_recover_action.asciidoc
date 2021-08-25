@@ -52,7 +52,7 @@ a| * The location of a CA Bundle to use when validating SSL certificates.
 * optionnal
 |===
 
-=== Enroll Parameters
+=== Recover Parameters
 
 |===
 | Parameter | Choices/Defaults | Configuration
