@@ -25,25 +25,22 @@ use_path = path_submit
 
 class Horizon():
 
-    def __init__(self, authent):
+    def __init__(self, authent, bundle=None):
         ''' 
             Initialize authentication parameters.
             :param authent: horizon authentication parameters
         '''
         # Initialize values to avoid errors later
         self.headers = None
-        self.bundle = None 
         self.cert = None
+        self.bundle = bundle 
         # commplete the anthentication system
-        if authent["api_id"] != None and authent["api_key"] != None:
-            self.headers = {"x-api-id": authent["api_id"], "x-api-key": authent["api_key"]}
-            self.authent = "x-api"
-        elif authent["ca_bundle"] != None:
-            self.bundle = authent["ca_bundle"] 
-            self.authent = "bundle"
-        elif authent["client_cert"] != None and authent["client_key"] != None:
+        if authent["client_cert"] != None and authent["client_key"] != None:
             self.cert = (authent["client_cert"], authent["client_key"])
-            self.authent = "cert"
+
+        elif authent["api_id"] != None and authent["api_key"] != None:
+            self.headers = {"x-api-id": authent["api_id"], "x-api-key": authent["api_key"]}
+
         else:
             raise AnsibleError(f'You have to inform authentication parameters')
 
