@@ -65,7 +65,7 @@ _string_
 | *campaign* +
 _string_
 |
-| Compaign of the certificate
+| 
 
 | *ip* +
 _adress_
