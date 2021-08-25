@@ -13,9 +13,25 @@ Feed a certificate to Horizon
 == Requirements
 
 == Parameters
+=== Authent Parameters
+
+To be authent on Horizon, you have to chose between log in with a certificate or with your login password. +
+If you inform all the parameters, you will be log in priority by your certificate authent.
+
 |===
 | Parameter | Choices/Defaults | Configuration
 
+| *client_cert* +
+_path_
+|
+a| * The location of a client side certificate.
+* authent value
+
+| *client_key* +
+_path_
+|
+a| * The location of a client side certificate's key.
+* authent value
 
 | *x_api_id* +
 _string_
@@ -33,38 +49,33 @@ a| * Horizon authentication key.
 _path_
 |
 a| * The location of a CA Bundle to use when validating SSL certificates.
-* authent value
+* optionnal
+|===
 
-| *client_cert* +
-_path_
-|
-a| * The location of a client side certificate.
-* authent value
+=== Feed Parameters
 
-| *client_key* +
-_path_
-|
-a| * The location of a client side certificate's key.
-* authent value
+|===
+| Parameter | Choices/Defaults | Configuration
 
 | *endpoint* +
 _string_
 |
-|
+| Url of the API.
 
 | *campaign* +
 _string_
 |
 |
 
-| *ip*
+| *ip* +
+_adress_
 |
 |
 
 | *certificate* +
 _string_
 |
-|
+| A certificate pem, or the path to the certificate pem file.
 
 | *hostnames*
 |
@@ -88,7 +99,7 @@ _string_
 ``` yaml
 ---
 - name: test discovery
-  evertrust.horizon.horizon_discovery:
+  evertrust.horizon.horizon_feed:
 
     x_api_id: "myId"
     x_api_key: "myKey"
@@ -100,7 +111,7 @@ _string_
     certificate: <a_certificate_file>
 
 - name: test discovery
-  evertrust.horizon.horizon_discovery:
+  evertrust.horizon.horizon_feed:
 
     x_api_id: "myId"
     x_api_key: "myKey"

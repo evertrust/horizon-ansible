@@ -16,8 +16,25 @@ The below requirements are needed on the host that executes this module.
 * cryptography
 
 == Parameters
+=== Authent Parameters
+
+To be authent on Horizon, you have to chose between log in with a certificate or with your login password. +
+If you inform all the parameters, you will be log in priority by your certificate authent.
+
 |===
 | Parameter | Choices/Defaults | Configuration
+
+| *client_cert* +
+_path_
+|
+a| * The location of a client side certificate.
+* authent value
+
+| *client_key* +
+_path_
+|
+a| * The location of a client side certificate's key.
+* authent value
 
 | *x_api_id* +
 _string_
@@ -35,19 +52,13 @@ a| * Horizon authentication key.
 _path_
 |
 a| * The location of a CA Bundle to use when validating SSL certificates.
-* authent value
+* optionnal
+|===
 
-| *client_cert* +
-_path_
-|
-a| * The location of a client side certificate.
-* authent value
+=== Enroll Parameters
 
-| *client_key* +
-_path_
-|
-a| * The location of a client side certificate's key.
-* authent value
+|===
+| Parameter | Choices/Defaults | Configuration
 
 | *endpoint* +
 _string_
