@@ -1,7 +1,7 @@
 - hosts: webserver
   become: yes
   vars:
-    server: apache 
+    server: "{{ server }}"
     my_pem: 
       src: "/tmp/ubuntu/etc/{{ server }}/ssl-files/{{ domain }}.crt"
     x_api_id: "{{api_id}}"

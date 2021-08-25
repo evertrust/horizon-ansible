@@ -108,7 +108,7 @@ _string_
 
     campaign: campaign1
     ip: localhost
-    certificate: <a_certificate_file>
+    certificate: <certificate_in_pem>
 
 - name: test discovery
   evertrust.horizon.horizon_feed:
@@ -121,7 +121,7 @@ _string_
     campaign: campaign1
     ip: localhost
     certificate: 
-      src: /path/of/a/webra/pem/file
+      src: pem/file/path
 ```
 
 == Status

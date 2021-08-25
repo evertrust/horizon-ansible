@@ -88,7 +88,7 @@ _dict_
     labels:
       label1: "test"
 
-    certificate_pem: <a_webra_pem_file>
+    certificate_pem: <certificate_in_pem>
 
 - name: Simple Update
   evertrust.horizon.horizon_update:
@@ -102,7 +102,7 @@ _dict_
       label1: "test"
       
     certificate_pem: 
-      src: /path/of/a/webra/pem/file
+      src: /pem/file/path
 ```
 
 == Status

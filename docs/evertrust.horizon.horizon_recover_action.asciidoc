@@ -85,7 +85,7 @@ _string_
     x_api_id: "myId"
     x_api_key: "myKey"
 
-    certificate_pem: <a_webra_pem_file>
+    certificate_pem: <certificate_in_pem>
 
     password: "pAssw0rd"
 
@@ -98,7 +98,7 @@ _string_
     x_api_key: "myKey"
 
     certificate_pem: 
-      src: /path/of/a/webra/pem/file
+      src: pem/file/path
 
     password: "pAssw0rd"
 ```
