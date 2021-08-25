@@ -14,23 +14,49 @@ v2.0, {docdate}
 == Requirements
 
 == Parameters
+=== Authent Parameters
+
+To be authent on Horizon, you have to chose between log in with a certificate or with your login password. +
+If you inform all the parameters, you will be log in priority by your certificate authent.
 
 |===
-| Parameter | Choices/Defaults | Configuration | Comments
+| Parameter | Choices/Defaults | Configuration
+
+| *client_cert* +
+_path_
+|
+a| * The location of a client side certificate.
+* authent value
+
+| *client_key* +
+_path_
+|
+a| * The location of a client side certificate's key.
+* authent value
 
 | *x_api_id* +
 _string_
 | 
-|
 a| * Horizon authentication id.
 * authent value
 
 | *x_api_key* +
 _string_
 |
-|
 a| * Horizon authentication key.
 * authent value
+
+| *ca_bundle* +
+_path_
+|
+a| * The location of a CA Bundle to use when validating SSL certificates.
+* optionnal
+|===
+
+=== Lookup Parameters
+
+|===
+| Parameter | Choices/Defaults | Configuration | Comments
 
 | *endpoint* +
   _string_

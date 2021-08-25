@@ -91,8 +91,26 @@ class LookupModule(LookupBase):
         ''' Save all plugin information in lists '''
         # Authent values
         authent = {}
-        authent["api_id"] = kwargs["x_api_id"]
-        authent["api_key"] = kwargs["x_api_key"]
+        if "x_api_id" in kwargs:
+            authent["api_id"] = kwargs["x_api_id"]
+        else:
+            authent["api_id"] = None
+        if "x_api_key" in kwargs:
+            authent["api_key"] = kwargs["x_api_key"]
+        else:
+            authent["api_key"] = None
+        if "client_cert" in kwargs:
+            authent["client_cert"] = kwargs["client_cert"]
+        else:
+            authent["client_cert"] = None
+        if "client_key" in kwargs:
+            authent["client_key"] = kwargs["client_key"]
+        else:
+            authent["client_key"] = None
+        if "ca_bundle" in kwargs:
+            authent["ca_bundle"] = kwargs["ca_bundle"]
+        else:
+            authent["ca_bundle"] = None
         # Content values
         content = {}
         content["endpoint"] = kwargs["endpoint"]

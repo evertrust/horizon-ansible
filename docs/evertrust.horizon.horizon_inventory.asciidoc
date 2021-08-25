@@ -55,19 +55,20 @@ a| * The location of a CA Bundle to use when validating SSL certificates.
 
 === Inventory Parameters
 
+Create a request to refine your search.
+
 |===
 | Parameter | Choices/Defaults | Configuration
 
 | *endpoint* +
-- / requiered +
 _string_
 | 
-| url of the API
+| Url of the API.
 
 | *query* +
 _string_
 |
-| 
+| An SQL request
 
 | *fields* +
 _list_
