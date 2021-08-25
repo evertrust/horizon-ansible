@@ -15,42 +15,6 @@ The below requirements are needed on the host that executes this module.
 
 * cryptography
 
-== Parameters
-|===
-| Parameter | Choices/Defaults | Configuration
-
-| *x_api_id* +
-_string_
-| 
-a| * Horizon authentication id.
-* authent value
-
-| *x_api_key* +
-_string_
-|
-a| * Horizon authentication key.
-* authent value
-
-| *ca_bundle* +
-_path_
-|
-a| * The location of a CA Bundle to use when validating SSL certificates.
-* authent value
-
-| *client_cert* +
-_path_
-|
-a| * The location of a client side certificate.
-* authent value
-
-| *client_key* +
-_path_
-|
-a| * The location of a client side certificate's key.
-* authent value
-
-|===
-
 == Functions
 |===
 | Name | Parameters | Return | Description
