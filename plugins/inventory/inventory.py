@@ -9,6 +9,45 @@ from ansible.errors import AnsibleError, AnsibleParserError
 import requests, json
 from requests.exceptions import HTTPError
 
+DOCUMENTATION = r'''
+---
+name: horizon_inventory_plugin
+plugin_type: inventory
+description: 
+ - Get inventory hosts from Evertrust Horizon.
+ - Use a YAML configuration file that ends with `horizon_inventory.(yml|yaml).`
+options:
+  authent values:
+    x-api-id:
+      description:
+        - Horizon identifiant
+      required: False
+      type: str
+    x-api-key:
+      description:
+        - Horizon password
+      required: Flase
+      type: str
+      
+  content values:
+      endpoint: 
+        description: url of the API
+        required: true
+      query:
+        description: query to define a request
+        required: true
+      fields:
+        description: a list of fields search
+        required: false
+      hostnames:
+        description:
+          - A list in order of precedence for hostname variables.
+          - To use labels as hostnames use the syntax labels.<key>
+        type: list
+        default: []
+        required: false
+'''
+
 class InventoryModule(BaseInventoryPlugin, Constructable):
     NAME = 'evertrust.horizon.horizon_inventory'
 
@@ -90,7 +129,9 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
  
     
     def parse(self, inventory, loader, path, cache):
+
         super().parse(inventory, loader, path, cache=cache)
+        
         try:
             # Get value from playbook
             authent, content = self._get_all_informations(path)
@@ -107,7 +148,7 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
 
     
     def _get_all_informations(self, path):
-        ''' Save all plugin information in lists '''
+        ''' Save all plugin information in self variables '''
         self.config = self._read_config_data(path)
         # Authent values
         authent = {}
