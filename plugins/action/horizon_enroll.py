@@ -115,7 +115,7 @@ p12:
   description: pkcs12 returned by the api
   returned: if enrollement mode is "centralized"
   type: str
-password:
+p12_password:
   description: password used to enroll
   returned: if enrollement mode is "centralized"
   type: str

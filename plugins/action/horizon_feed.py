@@ -2,6 +2,83 @@
 
 # Standard base includes and define this as a metaclass of type
 from __future__ import (absolute_import, division, print_function)
+
+DOCUMENTATON = '''
+--- 
+action: horizon_feed
+short_description: feed a certificate to Horizon
+options:
+  authent values:
+    x_api_id:
+      description:
+        - Horizon identifiant
+      required: False
+      type: str
+    x_api_key:
+      description:
+        - Horizon password
+      required: Flase
+      type: str
+    ca_bundle:
+      description:
+        - 
+      required: False
+      type: str
+    client_cert:
+      description:
+        - 
+      required: False
+      type: str
+    Client_key:
+      description:
+        - 
+      required: False
+      type: str
+      
+  content values:
+    endpoint:
+      description:
+        - url of the API
+      required: true
+      type: str
+    campaign: 
+      description: 
+        - 
+      required: false
+      type: string
+    ip:
+      description: 
+        - IP adress
+      required: false
+      type: adress
+    certificate:
+      description: 
+        - A certificate pem, or the path to the certificate pem file.
+      required: false
+      type: string
+    hostnames:
+      description: 
+        - 
+      required: false
+      type: 
+    operating_systems:
+      description: 
+        - 
+      required: false
+      type: 
+    paths:
+      description: 
+        - 
+      required: false
+      type: 
+    usages:
+      description: 
+        - 
+      required: false
+      type: 
+'''
+
+
 import json
 from re import M
 

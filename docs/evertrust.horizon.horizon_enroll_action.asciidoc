@@ -191,6 +191,28 @@ _dict_
       exp_tech: "value2"
 ```
 
+== Return Values
+|===
+| Key | Returned | Description
+
+| p12 
+| When enrollment mode is centralized.
+| The PKCS12 returned by the API.
+
+| p12_password
+| When enrollment mode is centralized.
+| The password used to enroll.
+
+| certificate
+| Always.
+| Certificate enrolled in pem format.
+
+| key
+| When enrollment mode is centralized.
+| Public Key of the certificate.
+
+|===
+
 == Status
 === Authors
 - Evertrust R&D

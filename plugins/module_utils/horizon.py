@@ -210,7 +210,6 @@ class Horizon():
 
         # Construct the api endpoint
         endpoint = endpoint + path_template
-        print(self.cert)
 
         try:
             # Get the template
