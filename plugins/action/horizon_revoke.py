@@ -7,8 +7,6 @@ DOCUMENTATON = '''
 ---
 action: horizon_recover
 short_description: recover a certificate
-description: 
-    - TODO
 options:
   authent values:
     x_api_id:

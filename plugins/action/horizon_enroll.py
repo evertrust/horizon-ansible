@@ -7,8 +7,6 @@ DOCUMENTATION = '''
 ---
 action: horizon_enroll
 short_description: enroll a certificate
-description:
-    - TODO
 options:
   authent values:
     x_api_id:

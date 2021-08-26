@@ -44,7 +44,7 @@ options:
     campaign: 
       description: 
         - 
-      required: false
+      required: true
       type: string
     ip:
       description: 
@@ -78,6 +78,33 @@ options:
       type: 
 '''
 
+EXEMPLES = '''
+---
+- name: test discovery
+  evertrust.horizon.horizon_feed:
+
+    x_api_id: "myId"
+    x_api_key: "myKey"
+
+    endpoint: "https://url-of-the-api"
+
+    campaign: campaign1
+    ip: localhost
+    certificate: <certificate_in_pem>
+
+- name: test discovery
+  evertrust.horizon.horizon_feed:
+
+    x_api_id: "myId"
+    x_api_key: "myKey"
+
+    endpoint: "https://url-of-the-api"
+
+    campaign: campaign1
+    ip: localhost
+    certificate: 
+      src: pem/file/path
+'''
 
 import json
 from re import M
