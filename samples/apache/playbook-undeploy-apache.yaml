@@ -1,14 +1,11 @@
 ---
 - hosts: webserver
   become: yes
-  vars:
-    path: "/etc/apache2/ssl-files/{{domain}}.crt"
-    content: "{{ lookup('file', path) }}"
+  
   tasks:
   - name: get certificate
-    ansible.builtin.fetch:
-      src: /etc/apache2/ssl-files/{{domain}}.crt
-      dest: /tmp/
+    shell: "cat /etc/apache2/ssl-files/{{domain}}.crt"
+    register: data
       
   - name: Stop Apache Services
     become: yes
@@ -31,7 +28,6 @@
       endpoint: "https://horizon-demo.evertrust.fr" 
       x_api_id: "{{api_id}}"
       x_api_key: "{{api_key}}"
-      certificate_pem: 
-        src: "/tmp/ubuntu/etc/apache2/ssl-files/{{ domain }}.crt"
+      certificate_pem: "{{ data['stdout'] }}"
 
   

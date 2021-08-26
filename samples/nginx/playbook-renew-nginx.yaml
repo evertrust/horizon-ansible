@@ -1,8 +1,6 @@
 - hosts: webserver
   become: yes
   vars: 
-    my_pem: 
-      src: "/tmp/ubuntu/etc/nginx/ssl-files/{{ domain }}.crt"
     x_api_id: "{{api_id}}"
     x_api_key: "{{api_key}}"
 
@@ -10,13 +8,12 @@
 
   tasks:
   - name: get certificate
-    ansible.builtin.fetch:
-      src: /etc/nginx/ssl-files/{{domain}}.crt
-      dest: /tmp/
+    shell: "cat /etc/nginx/ssl-files/{{domain}}.crt"
+    register: data
 
   - name: recup certificate values
     set_fact:
-      certificate: "{{lookup('evertrust.horizon.horizon_lookup', pem=my_pem, x_api_id=x_api_id, x_api_key=x_api_key, endpoint='https://horizon-demo.evertrust.fr')}}"
+      certificate: "{{lookup('evertrust.horizon.horizon_lookup', pem=data[stdout], x_api_id=x_api_id, x_api_key=x_api_key, endpoint='https://horizon-demo.evertrust.fr')}}"
 
   - name: calcule date
     set_fact:
@@ -49,7 +46,7 @@
       endpoint: "https://horizon-demo.evertrust.fr" 
       x_api_id: "{{api_id}}"
       x_api_key: "{{api_key}}"
-      certificate_pem: "{{ my_pem }}"
+      certificate_pem: "{{ data[stdout] }}"
     when: "{{ res_date|int < 0 }}"
 
   - name: replace crt
