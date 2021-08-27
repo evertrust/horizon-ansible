@@ -1,4 +1,4 @@
-#horizon_inventory.py
+#inventory.py
 
 from __future__ import (absolute_import, division, print_function)
 
@@ -11,7 +11,7 @@ from requests.exceptions import HTTPError
 
 DOCUMENTATION = r'''
 ---
-name: horizon_inventory_plugin
+name: inventory
 plugin_type: inventory
 description: 
  - Get inventory hosts from Evertrust Horizon.
@@ -49,12 +49,10 @@ options:
 '''
 
 class InventoryModule(BaseInventoryPlugin, Constructable):
-    NAME = 'evertrust.horizon.horizon_inventory'
+    NAME = 'evertrust.horizon.inventory'
 
     def __init__(self):
         super(InventoryModule, self).__init__()
-
-        self.group_prefix = 'horizon_'
 
     def _populate(self, certificates, hostnames, fields):
         '''

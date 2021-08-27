@@ -4,7 +4,7 @@ from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
 DOCUMENTATION = '''
-lookup: horizon_lookup
+lookup: lookup
 author:
   - Adrien Ducourthial <adu@evertrust.fr>
 short_description: Look up horizon certificate attribute
@@ -45,13 +45,13 @@ vars:
   x_api_key: "myKey"
   my_endpoint: "https://url-of-the-api"
 
-  with_one: "{{ lookup('evertrust.horizon.horizon_lookup', x_api_id=x_api_id, x_api_key=x_api_key, pem=my_pem, attributes='module', endpoint=my_endpoint) }}"
+  with_one: "{{ lookup('evertrust.horizon.lookup', x_api_id=x_api_id, x_api_key=x_api_key, pem=my_pem, attributes='module', endpoint=my_endpoint) }}"
   # only demanded (str)
 
-  with_list: "{{ lookup('evertrust.horizon.horizon_lookup', x_api_id=x_api_id, x_api_key=x_api_key, pem=my_pem, attributes=['module', '_id'], endpoint=my_endpoint) }}"
+  with_list: "{{ lookup('evertrust.horizon.lookup', x_api_id=x_api_id, x_api_key=x_api_key, pem=my_pem, attributes=['module', '_id'], endpoint=my_endpoint) }}"
   # only those in list (dict)
 
-  without: "{{ lookup('evertrust.horizon.horizon_lookup', x_api_id=x_api_id, x_api_key=x_api_key, pem=my_pem, endpoint=my_endpoint) }}"
+  without: "{{ lookup('evertrust.horizon.lookup', x_api_id=x_api_id, x_api_key=x_api_key, pem=my_pem, endpoint=my_endpoint) }}"
   # all (dict)
 """
 

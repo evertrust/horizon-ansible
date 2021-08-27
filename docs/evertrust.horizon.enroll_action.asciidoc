@@ -1,4 +1,4 @@
-= evertrust.horizon.horizon_enroll
+= evertrust.horizon.enroll
 Doc Writer Adrien Ducourthial <adu@evertrust.fr>
 v2.0, {docdate}
 :version: 2.0
@@ -107,7 +107,7 @@ _dict_
 ``` yaml
 ---
 - name: Simple centralize enroll
-  evertrust.horizon.horizon_enroll:
+  evertrust.horizon.enroll:
       
     # login and password to connect to the API
     x_api_id: "myId"
@@ -133,7 +133,7 @@ _dict_
       exp_tech: "value2"
 
 - name: decentralize enroll with csr
-  evertrust.horizon.horizon_enroll:
+  evertrust.horizon.enroll:
       
     # login and password to connect to the API
     x_api_id: "myId"
@@ -162,7 +162,7 @@ _dict_
       exp_tech: "value2"
 
 - name: decentralize enroll without csr
-  evertrust.horizon.horizon_enroll:
+  evertrust.horizon.enroll:
       
     # login and password to connect to the API
     x_api_id: "myId"

@@ -1,11 +1,11 @@
-# horizon_enroll.py
+# enroll.py
 
 # Standard base includes and define this as a metaclass of type
 from __future__ import (absolute_import, division, print_function)
 
 DOCUMENTATION = '''
 ---
-action: horizon_enroll
+action: enroll
 short_description: enroll a certificate
 options:
   authent values:
@@ -82,7 +82,7 @@ options:
 
 EXAMPLES = '''
 - name: Simple Enroll
-  evertrust.horizon.horizon_enroll:
+  evertrust.horizon.enroll:
 
     endpoint: "https://url-of-the-api"
  

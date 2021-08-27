@@ -1,11 +1,11 @@
-# horizon_feed.py
+# feed.py
 
 # Standard base includes and define this as a metaclass of type
 from __future__ import (absolute_import, division, print_function)
 
 DOCUMENTATON = '''
 --- 
-action: horizon_feed
+action: feed
 short_description: feed a certificate to Horizon
 options:
   authent values:
@@ -81,7 +81,7 @@ options:
 EXEMPLES = '''
 ---
 - name: test discovery
-  evertrust.horizon.horizon_feed:
+  evertrust.horizon.feed:
 
     x_api_id: "myId"
     x_api_key: "myKey"
@@ -93,7 +93,7 @@ EXEMPLES = '''
     certificate: <certificate_in_pem>
 
 - name: test discovery
-  evertrust.horizon.horizon_feed:
+  evertrust.horizon.feed:
 
     x_api_id: "myId"
     x_api_key: "myKey"

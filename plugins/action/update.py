@@ -1,11 +1,11 @@
-# horizon_update.py
+# update.py
 
 # Standard base includes and define this as a metaclass of type
 from __future__ import (absolute_import, division, print_function)
 
 DOCUMENTATON = '''
 ---
-action: horizon_recover
+action: recover
 short_description: recover a certificate
 options:
   authent values:
@@ -60,7 +60,7 @@ options:
 
 EXAMPLES = '''
 - name: Simple Update
-  evertrust.horizon.horizon_update:
+  evertrust.horizon.update:
 
     endpoint: "https://url-of-the-api"
         

@@ -1,4 +1,4 @@
-= evertrust.horizon.horizon_recover
+= evertrust.horizon.recover
 Doc Writer Adrien Ducourthial <adu@evertrust.fr>
 v2.0, {docdate}
 :version: 2.0
@@ -78,7 +78,7 @@ _string_
 ``` yaml
 --- 
 - name: Simple Recover
-  evertrust.horizon.horizon_recover:
+  evertrust.horizon.recover:
 
     endpoint: "https://url-of-the-api"
         
@@ -90,7 +90,7 @@ _string_
     password: "pAssw0rd"
 
 - name: Simple Recover
-  evertrust.horizon.horizon_recover:
+  evertrust.horizon.recover:
 
     endpoint: "https://url-of-the-api"
         

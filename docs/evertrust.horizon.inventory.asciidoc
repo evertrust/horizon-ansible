@@ -1,4 +1,4 @@
-= evertrust.horizon.horizon_inventory
+= evertrust.horizon.inventory
 Doc Writer Adrien Ducourthial <adu@evertrust.fr>
 v2.0, {docdate}
 :version: 2.0
@@ -89,7 +89,7 @@ a| * A list in order of precedence for hostname variables.
 ---
 # horizon_inventory.yaml
 
-plugin: evertrust.horizon.horizon_inventory
+plugin: evertrust.horizon.inventory
 
 # API path
 endpoint: "https://url-of-the-api"
