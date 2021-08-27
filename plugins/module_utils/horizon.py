@@ -504,6 +504,9 @@ class Horizon():
             :param fields: list of fields 
             :return a list of fields
         '''
+        if fields == None:
+            fields = []
+            
         my_fields = ["module", "profile", "labels", "subjectAlternateNames"]
         for field in fields:
             my_fields.append(field)
