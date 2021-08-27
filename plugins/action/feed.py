@@ -6,104 +6,104 @@ from __future__ import (absolute_import, division, print_function)
 DOCUMENTATON = '''
 --- 
 action: feed
-short_description: feed a certificate to Horizon
+short_description: Evertrust horizon feed plugin
+description:
+    - Feed a certificate to Horizon.
 options:
-  authent values:
     x_api_id:
-      description:
-        - Horizon identifiant
-      required: False
-      type: str
+        description:
+            - Horizon identifiant
+        required: false
+        type: str
     x_api_key:
-      description:
-        - Horizon password
-      required: Flase
-      type: str
+        description:
+            - Horizon password
+        required: false
+        type: str
     ca_bundle:
-      description:
-        - 
-      required: False
-      type: str
+        description:
+            - The location of a CA Bundle to use when validating SSL certificates.
+        required: false
+        type: str
     client_cert:
-      description:
-        - 
-      required: False
-      type: str
-    Client_key:
-      description:
-        - 
-      required: False
-      type: str
-      
-  content values:
+        description:
+            - The location of a client side certificate.
+        required: false
+        type: str
+    client_key:
+        description:
+            - The location of a client side certificate's key.
+        required: false
+        type: str
+
     endpoint:
-      description:
-        - url of the API
-      required: true
-      type: str
+        description:
+            - url of the API
+        required: true
+        type: str
     campaign: 
-      description: 
-        - 
-      required: true
-      type: string
+        description: 
+            - Name of the discovery campaign.
+        required: true
+        type: str
     ip:
-      description: 
-        - IP adress
-      required: false
-      type: adress
+        description: 
+            - IP adress
+        required: false
+        type: str
     certificate:
-      description: 
-        - A certificate pem, or the path to the certificate pem file.
-      required: false
-      type: string
+        description: 
+            - A certificate pem, or the path to the certificate pem file.
+        required: false
+        type: str
     hostnames:
-      description: 
-        - 
-      required: false
-      type: 
+        description: 
+            - Hostname of the discovered host.
+        required: false
+        type: list
     operating_systems:
-      description: 
-        - 
-      required: false
-      type: 
+        description: 
+            - Operating system of the discovered host.
+        required: false
+        type: list
     paths:
-      description: 
-        - 
-      required: false
-      type: 
+        description: 
+            - Path where the certificate was discovered.
+        required: false
+        type: str
     usages:
-      description: 
-        - 
-      required: false
-      type: 
+        description: 
+            - Free field usally used to indicate configuration files making use of the certificate.
+        required: false
+        type: str
 '''
 
 EXEMPLES = '''
 ---
 - name: test discovery
-  evertrust.horizon.feed:
+    evertrust.horizon.feed:
 
-    x_api_id: "myId"
-    x_api_key: "myKey"
-
-    endpoint: "https://url-of-the-api"
-
-    campaign: campaign1
-    ip: localhost
-    certificate: <certificate_in_pem>
+        x_api_id: "myId"
+        x_api_key: "myKey"
+    
+        endpoint: "https://url-of-the-api"
+    
+        campaign: campaign1
+        ip: localhost
+        certificate: <certificate_in_pem>
 
 - name: test discovery
-  evertrust.horizon.feed:
+    evertrust.horizon.feed:
 
-    x_api_id: "myId"
-    x_api_key: "myKey"
+        x_api_id: "myId"
+        x_api_key: "myKey"
 
-    endpoint: "https://url-of-the-api"
+        endpoint: "https://url-of-the-api"
 
-    campaign: campaign1
-    ip: localhost
-    certificate: 
-      src: pem/file/path
+        campaign: campaign1
+        ip: localhost
+        certificate: 
+            src: pem/file/path
 '''
 
 import json

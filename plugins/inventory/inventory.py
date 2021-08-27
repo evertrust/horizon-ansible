@@ -1,6 +1,7 @@
 #inventory.py
 
 from __future__ import (absolute_import, division, print_function)
+from plugins.action.feed import EXEMPLES
 
 from ansible_collections.evertrust.horizon.plugins.module_utils.horizon import Horizon
 
@@ -11,41 +12,77 @@ from requests.exceptions import HTTPError
 
 DOCUMENTATION = r'''
 ---
-name: inventory
+name: evertrust.horizon.inventory
 plugin_type: inventory
+short_description: Evertrust horizon inventory plugin
 description: 
- - Get inventory hosts from Evertrust Horizon.
- - Use a YAML configuration file that ends with `horizon_inventory.(yml|yaml).`
+    - Get inventory hosts from Evertrust Horizon.
+    - Use a YAML configuration file that ends with C(horizon_inventory.(yml|yaml)).
 options:
-  authent values:
-    x-api-id:
-      description:
-        - Horizon identifiant
-      required: False
-      type: str
-    x-api-key:
-      description:
-        - Horizon password
-      required: Flase
-      type: str
-      
-  content values:
-      endpoint: 
+    x_api_id:
+        description:
+            - Horizon identifiant
+        required: false
+        type: str
+    x_api_key:
+        description:
+            - Horizon password
+        required: false
+        type: str
+    ca_bundle:
+        description:
+            - The location of a CA Bundle to use when validating SSL certificates.
+        required: false
+        type: str
+    client_cert:
+        description:
+            - The location of a client side certificate.
+        required: false
+        type: str
+    client_key:
+        description:
+            - The location of a client side certificate's key.
+        required: false
+        type: str
+    
+    endpoint: 
         description: url of the API
         required: true
-      query:
+    query:
         description: query to define a request
         required: true
-      fields:
+    fields:
         description: a list of fields search
         required: false
-      hostnames:
+    hostnames:
         description:
-          - A list in order of precedence for hostname variables.
-          - To use labels as hostnames use the syntax labels.<key>
+            - A list in order of precedence for hostname variables.
+            - To use labels as hostnames use the syntax labels.<key>
         type: list
         default: []
         required: false
+'''
+
+EXEMPLES = '''
+---
+# horizon_inventory.yaml
+
+plugin: evertrust.horizon.inventory
+
+# API path
+endpoint: "https://url-of-the-api"
+
+# login and password to connect to the API
+x_api_id: "myId"
+x_api_key: "myKey"
+
+query: "null"
+fields:
+
+# hostname destination variable, order by preference
+# values : [san.ip, san.dns, discoveryData.ip, discoveryData.Hostname, label.<key>]
+hostnames:
+  - san.dns
 '''
 
 class InventoryModule(BaseInventoryPlugin, Constructable):

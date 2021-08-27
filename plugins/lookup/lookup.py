@@ -3,62 +3,80 @@ from __future__ import (absolute_import, division, print_function)
 
 __metaclass__ = type
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 lookup: lookup
 author:
-  - Adrien Ducourthial <adu@evertrust.fr>
-short_description: Look up horizon certificate attribute
+    - Adrien Ducourthial <adu@evertrust.fr>
+short_description: Evertrust horizon lookup plugin
 description:
-  - Describes attributes of your horizon certificate.
-  - You can specify one of the listed attribute choices or omit it to see all attributes.
+    - Describes attributes of your horizon certificate.
+    - You can specify one of the listed attribute choices or omit it to see all attributes.
 options:
-  x_api_id:
-    description:
-      - Horizon identifiant
-    required: False
-    type: str
-  x_api_key:
-    description:
-      - Horizon password
-    required: Flase
-    type: str
-  pem: 
-    description: A certificate Pem.
-  attributes:
-    description: 
-    choices:
-      - '_id'
-      - 'labels'
-      - 'module'
-      - 'profile'
-  endpoint:
-    description:
-      - url of the API
-    required: true
-    type: str
+    x_api_id:
+        description:
+            - Horizon identifiant
+        required: false
+        type: str
+    x_api_key:
+        description:
+            - Horizon password
+        required: false
+        type: str
+    ca_bundle:
+        description:
+            - The location of a CA Bundle to use when validating SSL certificates.
+        required: false
+        type: str
+    client_cert:
+        description:
+            - The location of a client side certificate.
+        required: false
+        type: str
+    client_key:
+        description:
+            - The location of a client side certificate's key.
+        required: false
+        type: str
+
+    pem: 
+        description: A certificate Pem.
+    attributes:
+        description: 
+        choices:
+            - '_id'
+            - 'labels'
+            - 'module'
+            - 'profile'
+    endpoint:
+        description:
+            - url of the API
+        required: true
+        type: str
 '''
 
 EXAMPLES = """
 vars:
-  my_pem: <a_webra_pem_file>
-  x_api_id: "myId"
-  x_api_key: "myKey"
-  my_endpoint: "https://url-of-the-api"
+    my_pem: <a_webra_pem_file>
+    pem_path: 
+        src: /pem/file/path
+    x_api_id: "myId"
+    x_api_key: "myKey"
+    horizon_endpoint: "https://url-of-the-api"
 
-  with_one: "{{ lookup('evertrust.horizon.lookup', x_api_id=x_api_id, x_api_key=x_api_key, pem=my_pem, attributes='module', endpoint=my_endpoint) }}"
-  # only demanded (str)
+    with_one: "{{ lookup('evertrust.horizon.lookup', x_api_id=x_api_id, x_api_key=x_api_key, pem=my_pem, attributes='module', endpoint=horizon_endpoint) }}"
+    # only demanded (str)
 
-  with_list: "{{ lookup('evertrust.horizon.lookup', x_api_id=x_api_id, x_api_key=x_api_key, pem=my_pem, attributes=['module', '_id'], endpoint=my_endpoint) }}"
-  # only those in list (dict)
+    with_list: "{{ lookup('evertrust.horizon.lookup', x_api_id=x_api_id, x_api_key=x_api_key, pem=my_pem, attributes=['module', '_id'], endpoint=horizon_endpoint) }}"
+    # only those in list (dict)
 
-  without: "{{ lookup('evertrust.horizon.lookup', x_api_id=x_api_id, x_api_key=x_api_key, pem=my_pem, endpoint=my_endpoint) }}"
-  # all (dict)
+    without: "{{ lookup('evertrust.horizon.lookup', x_api_id=x_api_id, x_api_key=x_api_key, pem=pem_path, endpoint=horizon_endpoint) }}"
+    # all (dict)
 """
 
 RETURN = """
 _raw:
-  description:
-    returns all attributes specified, or all attributes if not.
+    description:
+        returns all attributes specified, or all attributes if not.
 """
 
 from ansible_collections.evertrust.horizon.plugins.module_utils.horizon import Horizon

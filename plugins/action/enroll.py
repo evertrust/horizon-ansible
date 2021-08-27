@@ -6,125 +6,186 @@ from __future__ import (absolute_import, division, print_function)
 DOCUMENTATION = '''
 ---
 action: enroll
-short_description: enroll a certificate
+short_description: Evertrust horizon enroll plugin
+description: 
+    - Enroll a certificate
 options:
-  authent values:
     x_api_id:
-      description:
-        - Horizon identifiant
-      required: False
-      type: str
+        description:
+            - Horizon identifiant
+        required: false
+        type: str
     x_api_key:
-      description:
-        - Horizon password
-      required: Flase
-      type: str
+        description:
+            - Horizon password
+        required: false
+        type: str
     ca_bundle:
-      description:
-        - 
-      required: False
-      type: str
+        description:
+            - The location of a CA Bundle to use when validating SSL certificates.
+        required: false
+        type: str
     client_cert:
-      description:
-        - 
-      required: False
-      type: str
+        description:
+            - The location of a client side certificate.
+        required: false
+        type: str
     client_key:
-      description:
-        - 
-      required: False
-      type: str
-      
-  content values:
+        description:
+            - The location of a client side certificate's key.
+        required: false
+        type: str
+
     endpoint:
-      description:
-        - url of the API
-      required: true
-      type: str
+        description:
+            - url of the API
+        required: true
+        type: str
     profile:
-      description:
-        - Horizon certificate profile
-      required: true
-      type: str
+        description:
+            - Horizon certificate profile
+        required: true
+        type: str
     password:
-      description:
-        - Security password for the certificate. 
-        - Can be subject of a password policy
-        - Can be riquired or not depending on the enrollement mode
-      required: false
-      type: str
+        description:
+            - Security password for the certificate. 
+            - Can be subject of a password policy
+            - Can be riquired or not depending on the enrollement mode
+        required: false
+        type: str
     key_type:
-      description:
-        - Type of key to encode
-      required: true
-      type: str
+        description:
+            - Type of key to encode
+        required: true
+        type: str
     mode:
-      description:
-        - enrollement mode
-      required: false
-      type: str
+        description:
+            - enrollement mode
+        required: false
+        type: str
     subject:
-      description:
-        - subject of the certificate
-      required: true
-      type: dict (str)
+        description:
+            - subject of the certificate
+        required: true
+        type: dict (str)
     sans:
-      description:
-        - subject alternative names of the certificate
-      required: true
-      type: dict (str)
+        description:
+            - subject alternative names of the certificate
+        required: true
+        type: dict (str)
     labels:
-      description:
-        - labels of the certificate
-      required: false
-      type: dict (str)
+        description:
+            - labels of the certificate
+        required: false
+        type: dict (str)
 '''
 
 EXAMPLES = '''
-- name: Simple Enroll
-  evertrust.horizon.enroll:
+---
+- name: Simple centralize enroll
+    evertrust.horizon.enroll:
+      
+        # login and password to connect to the API
+        x_api_id: "myId"
+        x_api_key: "myKey"
 
-    endpoint: "https://url-of-the-api"
- 
-    mode: "decentralized"
+        endpoint: "https://url-of-the-api"
 
-    password: "pAssw0rd"
-    key_type: "rsa-2048"
- 
-    x_api_id: "myId"
-    x_api_key: "myKey"
- 
-    profile: "profile"
- 
-    subject:
-      cn.1: "myCN"
- 
-    sans:
-      dnsname.1: "myDnsname"
- 
-    labels:
-      label1: "value1"
-      label2: "value2"
-        
+        mode: "centralized"
+
+        password: "pAssw0rd"
+        key_type: "rsa-2048"
+
+        profile: "profile"
+
+        subject:
+            cn.1: "myCN"
+
+        sans:
+            dnsname.1: "myDnsname"
+
+        labels:
+            snow_id: "value1"
+            exp_tech: "value2"
+
+- name: decentralize enroll with csr
+    evertrust.horizon.enroll:
+      
+        # login and password to connect to the API
+        x_api_id: "myId"
+        x_api_key: "myKey"
+
+        endpoint: "https://url-of-the-api"
+
+        mode: "decentralized"
+        csr: <a_csr_file>
+
+        password: "pAssw0rd"
+        key_type: "rsa-2048"
+
+        profile: "profile"
+
+        subject:
+            cn.1: "myCN"
+            ou.1: "myFirstOU"
+            ou.2: "mySecondOU"
+
+        sans:
+            dnsname: 
+                - "myDnsName1"
+                - "myDnsName2"
+
+        labels:
+            snow_id: "value1"
+            exp_tech: "value2"
+
+- name: decentralize enroll without csr
+    evertrust.horizon.enroll:
+      
+        # login and password to connect to the API
+        x_api_id: "myId"
+        x_api_key: "myKey"
+
+        endpoint: "https://url-of-the-api"
+
+        mode: "decentralized"
+
+        password: "pAssw0rd"
+        key_type: "rsa-2048"
+
+        profile: "profile"
+
+        subject:
+            cn.1: "myCN"
+            ou:
+                - "myFirstOU"
+                - "mySecondOU"
+
+        sans:
+            dnsname.1: "myDnsname"
+
+        labels:
+            snow_id: "value1"
+            exp_tech: "value2"
 '''
 
 RETURN = '''
 p12:
-  description: pkcs12 returned by the api
-  returned: if enrollement mode is "centralized"
-  type: str
+    description: pkcs12 returned by the api
+    returned: if enrollement mode is "centralized"
+    type: str
 p12_password:
-  description: password used to enroll
-  returned: if enrollement mode is "centralized"
-  type: str
+    description: password used to enroll
+    returned: if enrollement mode is "centralized"
+    type: str
 certificate:
-  descriptioin: certificate enrolled
-  returned: always
-  type: str
+    descriptioin: certificate enrolled
+    returned: always
+    type: str
 key: 
-  description: Public key of the certificate
-  returned: if enrollement mode is "centralized"
-  type: str
+    description: Public key of the certificate
+    returned: if enrollement mode is "centralized"
+    type: str
 '''
 
 from ansible.errors import AnsibleAction, AnsibleError

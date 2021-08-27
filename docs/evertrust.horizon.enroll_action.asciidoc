@@ -88,8 +88,10 @@ a| * centralized
 
 | *subject* +
 _dict_
-|
-| Certificate subject.
+| 
+a| * Certificate subject.
+* You can give the description of the subject, or you can give the dn.
+* If you give the dn, other values won't be taken.
 
 | *sans* +
 _dict_
@@ -151,6 +153,8 @@ _dict_
  
     subject:
       cn.1: "myCN"
+      ou.1: "myFirstOU"
+      ou.2: "mySecondOU"
  
     sans:
       dnsname: 

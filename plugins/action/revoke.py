@@ -6,63 +6,75 @@ from __future__ import (absolute_import, division, print_function)
 DOCUMENTATON = '''
 ---
 action: recover
-short_description: recover a certificate
+short_description: rEvertrust horizon revoke plugin
+dexcription:
+    - Revoke a certificate
 options:
-  authent values:
     x_api_id:
-      description:
-        - Horizon identifiant
-      required: False
-      type: str
+        description:
+            - Horizon identifiant
+        required: false
+        type: str
     x_api_key:
-      description:
-        - Horizon password
-      required: Flase
-      type: str
+        description:
+            - Horizon password
+        required: false
+        type: str
     ca_bundle:
-      description:
-        - 
-      required: False
-      type: str
+        description:
+            - The location of a CA Bundle to use when validating SSL certificates.
+        required: false
+        type: str
     client_cert:
-      description:
-        - 
-      required: False
-      type: str
+        description:
+            - The location of a client side certificate.
+        required: false
+        type: str
     client_key:
-      description:
-        - 
-      required: False
-      type: str
-      
-  content values:
+        description:
+            - The location of a client side certificate's key.
+        required: false
+        type: str
+
     endpoint:
-      description:
-        - url to post the request to the API
-      required: true
-      type: str
+        description:
+            - url to post the request to the API
+        required: true
+        type: str
     certificate_pem:
-      description:
-        - Pem of the certificate to revoke
-      required: true
-      type: str
+        description:
+            - Pem of the certificate to revoke
+        required: true
+        type: str
     revocation_reason:
-      description:
-        - Reason of revoke
-      required: false
-      type: str
+        description:
+            - Reason of revoke
+        required: false
+        type: str
 '''
 
 EXAMPLES = '''
+---
 - name: Simple Revoke
-  evertrust.horizon.revoke:
+    evertrust.horizon.revoke:
 
-    endpoint: "https://url-of-the-api"
-        
-    x_api_id: "myId"
-    x_api_key: "myKey"
+      endpoint: "https://url-of-the-api"
 
-    certificate_pem: <a_webra_pem_file>
+      x_api_id: "myId"
+      x_api_key: "myKey"
+
+      certificate_pem: <certificate_in_pem>
+
+- name: Simple Revoke
+    evertrust.horizon.revoke:
+
+      endpoint: "https://url-of-the-api"
+
+      x_api_id: "myId"
+      x_api_key: "myKey"
+
+      certificate_pem: 
+          src: /pem/file/path
 '''
 
 from ansible.errors import AnsibleAction

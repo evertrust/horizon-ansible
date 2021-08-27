@@ -6,73 +6,86 @@ from __future__ import (absolute_import, division, print_function)
 DOCUMENTATON = '''
 ---
 action: recover
-short_description: recover a certificate
+short_description: Evertrust horizon recover plugin
+dexcription:
+    - Recover a certificate
 options:
-  authent values:
     x_api_id:
-      description:
-        - Horizon identifiant
-      required: False
-      type: str
+        description:
+            - Horizon identifiant
+        required: false
+        type: str
     x_api_key:
-      description:
-        - Horizon password
-      required: Flase
-      type: str
+        description:
+            - Horizon password
+        required: false
+        type: str
     ca_bundle:
-      description:
-        - 
-      required: False
-      type: str
+        description:
+            - The location of a CA Bundle to use when validating SSL certificates.
+        required: false
+        type: str
     client_cert:
-      description:
-        - 
-      required: False
-      type: str
-    Client_key:
-      description:
-        - 
-      required: False
-      type: str
-      
-  content values:
+        description:
+            - The location of a client side certificate.
+        required: false
+        type: str
+    client_key:
+        description:
+            - The location of a client side certificate's key.
+        required: false
+        type: str
+
     endpoint:
-      description:
-        - url of the API
-      required: true
-      type: str
+        description:
+            - url of the API
+        required: true
+        type: str
     profile:
-      description:
-        - Horizon certificate profile
-      required: true
-      type: str
+        description:
+            - Horizon certificate profile
+        required: true
+        type: str
     password:
-      description:
-        - Security password for the certificate. 
-        - Can be subject of a password policy
-        - Can be riquired or not dependiing on the enrollement mode
-      required: true
-      type: str
+        description:
+            - Security password for the certificate. 
+            - Can be subject of a password policy
+            - Can be riquired or not dependiing on the enrollement mode
+        required: true
+        type: str
     certificate_pem:
-      description:
-        - Pem of the certificate to recover
-      required: true
-      type: str
+        description:
+            - Pem of the certificate to recover
+        required: true
+        type: str
 '''
 
 EXAMPLES = '''
+--- 
 - name: Simple Recover
-  evertrust.horizon.recover:
+    evertrust.horizon.recover:
 
-    endpoint: "https://url-of-the-api"
-        
-    x_api_id: "myId"
-    x_api_key: "myKey"
+        endpoint: "https://url-of-the-api"
 
-    certificate_pem: <a_webra_pem_file>
+        x_api_id: "myId"
+        x_api_key: "myKey"
 
-    profile: "profile"
-    password: "pAssw0rd"
+        certificate_pem: <certificate_in_pem>
+
+        password: "pAssw0rd"
+
+- name: Simple Recover
+    evertrust.horizon.recover:
+
+        endpoint: "https://url-of-the-api"
+
+        x_api_id: "myId"
+        x_api_key: "myKey"
+
+        certificate_pem: 
+            src: pem/file/path
+
+        password: "pAssw0rd"
 '''
 
 from ansible.errors import AnsibleAction

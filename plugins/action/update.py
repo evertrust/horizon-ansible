@@ -3,77 +3,89 @@
 # Standard base includes and define this as a metaclass of type
 from __future__ import (absolute_import, division, print_function)
 
-DOCUMENTATON = '''
+DOCUMENTATON = r'''
 ---
 action: recover
-short_description: recover a certificate
+short_description: Evertrust horizon update plugin
+description: 
+    - Update labels of a certificate.
 options:
-  authent values:
     x_api_id:
-      description:
-        - Horizon identifiant
-      required: False
-      type: str
+        description:
+            - Horizon identifiant
+        required: false
+        type: str
     x_api_key:
-      description:
-        - Horizon password
-      required: Flase
-      type: str
+        description:
+            - Horizon password
+        required: false
+        type: str
     ca_bundle:
-      description:
-        - 
-      required: False
-      type: str
+        description:
+            - The location of a CA Bundle to use when validating SSL certificates.
+        required: false
+        type: str
     client_cert:
-      description:
-        - 
-      required: False
-      type: str
+        description:
+            - The location of a client side certificate.
+        required: false
+        type: str
     client_key:
-      description:
-        - 
-      required: False
-      type: str
-      
-  content values:
+        description:
+            - The location of a client side certificate's key.
+        required: false
+        type: str
+
     endpoint:
-      description:
-        - url to post the request to the API
-      required: true
-      type: str
+        description:
+            - url to post the request to the API
+        required: true
+        type: str
     profile:
-      description:
-        - Horizon certificate profile
-      required: true
-      type: str
+        description:
+            - Horizon certificate profile
+        required: true
+        type: str
     certificate_pem:
-      description:
-        - Pem of the certificate to update
-      required: true
-      type: str
+        description:
+            - Pem of the certificate to update
+        required: true
+        type: str
     labels:
-      description:
-        - labels of the certificate
-      required: false
-      type: dict (str)
+        description:
+            - labels of the certificate
+        required: false
+        type: dict (str)
 '''
 
 EXAMPLES = '''
+---
 - name: Simple Update
-  evertrust.horizon.update:
+    evertrust.horizon.update:
 
-    endpoint: "https://url-of-the-api"
-        
-    x_api_id: "myId"
-    x_api_key: "myKey"
+        endpoint: "https://url-of-the-api"
 
-    profile: "profile"
+        x_api_id: "myId"
+        x_api_key: "myKey"
 
-    labels:
-      snow_id: "test_update_ansible"
-      exp_tech: "test"
+        labels:
+          label1: "test"
 
-    certificate_pem: <a_webra_pem_file>
+        certificate_pem: <certificate_in_pem>
+
+- name: Simple Update
+    evertrust.horizon.update:
+
+        endpoint: "https://url-of-the-api"
+
+        x_api_id: "myId"
+        x_api_key: "myKey"
+
+        labels:
+          label1: "test"
+
+        certificate_pem: 
+            src: /pem/file/path
 '''
 
 from ansible.errors import AnsibleAction
