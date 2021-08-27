@@ -426,7 +426,7 @@ class Horizon():
             
             elif isinstance(sans[element], list):
                 for i in range (len(sans[element])):
-                    san_name = element + "." + str(i+1)
+                    san_name = element.lower() + "." + str(i+1)
                     my_sans.append({"element": san_name, "value": sans[element][i]})
 
             my_sans.append({"element": element, "value": sans[element]})
