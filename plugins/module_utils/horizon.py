@@ -460,7 +460,7 @@ class Horizon():
                 else: 
                     raise AnsibleError(f'Error in the dn, some values are not understood.')
         
-        subject = temp_subject
+            subject = temp_subject
 
         for element in subject:
             if subject[element] == "" or subject[element] == None:
@@ -506,7 +506,7 @@ class Horizon():
         '''
         if fields == None:
             fields = []
-            
+
         my_fields = ["module", "profile", "labels", "subjectAlternateNames"]
         for field in fields:
             my_fields.append(field)
@@ -724,7 +724,13 @@ class Horizon():
             elif field == "subjectAlternateNames":
                 sans = {}
                 for san in response[field]:
-                    sans[san['sanType']] = san['value']
+                    san_name = san["sanType"].lower() + ".1"
+                    while san_name in sans:
+                        index = int(san_name[-1:])
+                        san_name = san_name[:-1] + str(index + 1)
+                    
+                    sans[san_name] = san["value"]
+
                 result[field].append(sans)
 
             elif field == "labels":
