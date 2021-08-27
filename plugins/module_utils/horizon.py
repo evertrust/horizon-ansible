@@ -458,7 +458,7 @@ class Horizon():
                         temp_subject[dn_element + '.1'] = ma_val[1]
                         
                 else: 
-                    raise AnsibleError(f'Error with in the dn, some values are not understood.')
+                    raise AnsibleError(f'Error in the dn, some values are not understood.')
         
         subject = temp_subject
 

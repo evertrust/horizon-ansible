@@ -123,7 +123,7 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
                               'horizon_inventory.yml')):
                 valid = True
 
-        self.display.debug("Horizon inventory filename must end with 'horizon_inventory_plugin.yaml' or 'horizon_inventory_plugin.yml'")
+        self.display.debug("Horizon inventory filename must end with 'horizon_inventory.yaml' or 'horizon_inventory.yml'")
 
         return valid
  
