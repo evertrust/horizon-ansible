@@ -4,7 +4,7 @@
 
 .. Anchors
 
-.. _ansible_collections.evertrust.horizon.lookup_lookup:
+.. _ansible_collections.evertrust.horizon.horizon_update_module:
 
 .. Anchors: short name for ansible.builtin
 
@@ -14,8 +14,8 @@
 
 .. Title
 
-evertrust.horizon.lookup -- Evertrust horizon lookup plugin
-+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+evertrust.horizon.horizon_update -- Evertrust horizon update plugin
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 .. Collection note
 
@@ -24,7 +24,7 @@ evertrust.horizon.lookup -- Evertrust horizon lookup plugin
 
     To install it use: :code:`ansible-galaxy collection install evertrust.horizon`.
 
-    To use it in a playbook, specify: :code:`evertrust.horizon.lookup`.
+    To use it in a playbook, specify: :code:`evertrust.horizon.horizon_update`.
 
 .. version_added
 
@@ -41,9 +41,10 @@ Synopsis
 
 .. Description
 
-- Describes attributes of your horizon certificate.
-- You can specify one of the listed attribute choices or omit it to see all attributes.
+- Update labels of a certificate.
 
+.. note::
+    This module has a corresponding :ref:`action plugin <action_plugins>`.
 
 .. Aliases
 
@@ -62,32 +63,9 @@ Parameters
         <tr>
             <th colspan="1">Parameter</th>
             <th>Choices/<font color="blue">Defaults</font></th>
-                            <th>Configuration</th>
                         <th width="100%">Comments</th>
         </tr>
                     <tr>
-                                                                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-attributes"></div>
-                    <b>attributes</b>
-                    <a class="ansibleOptionLink" href="#parameter-attributes" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">string</span>
-                                                                    </div>
-                                                        </td>
-                                <td>
-                                                                                                                            <ul style="margin: 0; padding: 0"><b>Choices:</b>
-                                                                                                                                                                <li>_id</li>
-                                                                                                                                                                                                <li>labels</li>
-                                                                                                                                                                                                <li>module</li>
-                                                                                                                                                                                                <li>profile</li>
-                                                                                    </ul>
-                                                                            </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
-                                                        </td>
-            </tr>
-                                <tr>
                                                                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-ca_bundle"></div>
                     <b>ca_bundle</b>
@@ -98,10 +76,23 @@ Parameters
                                                         </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The location of a CA Bundle to use when validating SSL certificates.</div>
+                                                        </td>
+            </tr>
+                                <tr>
+                                                                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-certificate_pem"></div>
+                    <b>certificate_pem</b>
+                    <a class="ansibleOptionLink" href="#parameter-certificate_pem" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                                                 / <span style="color: red">required</span>                    </div>
+                                                        </td>
+                                <td>
+                                                                                                                                                            </td>
+                                                                <td>
+                                            <div>Pem of the certificate to update</div>
                                                         </td>
             </tr>
                                 <tr>
@@ -115,9 +106,7 @@ Parameters
                                                         </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The location of a client side certificate.</div>
                                                         </td>
             </tr>
@@ -132,9 +121,7 @@ Parameters
                                                         </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The location of a client side certificate&#x27;s key.</div>
                                                         </td>
             </tr>
@@ -149,27 +136,38 @@ Parameters
                                                         </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>url of the API</div>
                                                         </td>
             </tr>
                                 <tr>
                                                                 <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-pem"></div>
-                    <b>pem</b>
-                    <a class="ansibleOptionLink" href="#parameter-pem" title="Permalink to this option"></a>
+                    <div class="ansibleOptionAnchor" id="parameter-labels"></div>
+                    <b>labels</b>
+                    <a class="ansibleOptionLink" href="#parameter-labels" title="Permalink to this option"></a>
                     <div style="font-size: small">
-                        <span style="color: purple">string</span>
+                        <span style="color: purple">dictionary</span>
                                                                     </div>
                                                         </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
-                                            <div>A certificate Pem.</div>
+                                                                <td>
+                                            <div>labels of the certificate</div>
+                                                        </td>
+            </tr>
+                                <tr>
+                                                                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-profile"></div>
+                    <b>profile</b>
+                    <a class="ansibleOptionLink" href="#parameter-profile" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                                                 / <span style="color: red">required</span>                    </div>
+                                                        </td>
+                                <td>
+                                                                                                                                                            </td>
+                                                                <td>
+                                            <div>Horizon certificate profile</div>
                                                         </td>
             </tr>
                                 <tr>
@@ -183,9 +181,7 @@ Parameters
                                                         </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Horizon identifiant</div>
                                                         </td>
             </tr>
@@ -200,9 +196,7 @@ Parameters
                                                         </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Horizon password</div>
                                                         </td>
             </tr>
@@ -223,22 +217,24 @@ Examples
 .. code-block:: yaml+jinja
 
     
-    vars:
-        my_pem: <a_webra_pem_file>
-        pem_path: 
+    - name: Simple Update
+        evertrust.horizon.horizon_update:
+          endpoint: "https://url-of-the-api"
+          x_api_id: "myId"
+          x_api_key: "myKey"
+          labels:
+            label1: "test"
+          certificate_pem: <certificate_in_pem>
+
+    - name: Simple Update
+        evertrust.horizon.horizon_update:
+          endpoint: "https://url-of-the-api"
+          x_api_id: "myId"
+          x_api_key: "myKey"
+          labels:
+            label1: "test"
+          certificate_pem:
             src: /pem/file/path
-        x_api_id: "myId"
-        x_api_key: "myKey"
-        horizon_endpoint: "https://url-of-the-api"
-
-        with_one: "{{ lookup('evertrust.horizon.lookup', x_api_id=x_api_id, x_api_key=x_api_key, pem=my_pem, attributes='module', endpoint=horizon_endpoint) }}"
-        # only demanded (str)
-
-        with_list: "{{ lookup('evertrust.horizon.lookup', x_api_id=x_api_id, x_api_key=x_api_key, pem=my_pem, attributes=['module', '_id'], endpoint=horizon_endpoint) }}"
-        # only those in list (dict)
-
-        without: "{{ lookup('evertrust.horizon.lookup', x_api_id=x_api_id, x_api_key=x_api_key, pem=pem_path, endpoint=horizon_endpoint) }}"
-        # all (dict)
 
 
 
@@ -248,45 +244,11 @@ Examples
 
 .. Return values
 
-Return Values
--------------
-Common return values are documented :ref:`here <common_return_values>`, the following are the fields unique to this lookup:
-
-.. raw:: html
-
-    <table border=0 cellpadding=0 class="documentation-table">
-        <tr>
-            <th colspan="1">Key</th>
-            <th>Returned</th>
-            <th width="100%">Description</th>
-        </tr>
-                    <tr>
-                                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="return-_raw"></div>
-                    <b>_raw</b>
-                    <a class="ansibleOptionLink" href="#return-_raw" title="Permalink to this return value"></a>
-                    <div style="font-size: small">
-                      <span style="color: purple">string</span>
-                                          </div>
-                                    </td>
-                <td>success</td>
-                <td>
-                                            <div>returns all attributes specified, or all attributes if not.</div>
-                                        <br/>
-                                    </td>
-            </tr>
-                        </table>
-    <br/><br/>
 
 ..  Status (Presently only deprecated)
 
 
 .. Authors
-
-Authors
-~~~~~~~
-
-- Adrien Ducourthial <adu@evertrust.fr>
 
 
 

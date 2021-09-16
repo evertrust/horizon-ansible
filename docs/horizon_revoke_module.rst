@@ -4,7 +4,7 @@
 
 .. Anchors
 
-.. _ansible_collections.evertrust.horizon.update_module:
+.. _ansible_collections.evertrust.horizon.horizon_revoke_module:
 
 .. Anchors: short name for ansible.builtin
 
@@ -14,8 +14,8 @@
 
 .. Title
 
-evertrust.horizon.update -- Evertrust horizon update plugin
-+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+evertrust.horizon.horizon_revoke -- rEvertrust horizon revoke plugin
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 .. Collection note
 
@@ -24,7 +24,7 @@ evertrust.horizon.update -- Evertrust horizon update plugin
 
     To install it use: :code:`ansible-galaxy collection install evertrust.horizon`.
 
-    To use it in a playbook, specify: :code:`evertrust.horizon.update`.
+    To use it in a playbook, specify: :code:`evertrust.horizon.horizon_revoke`.
 
 .. version_added
 
@@ -41,7 +41,7 @@ Synopsis
 
 .. Description
 
-- Update labels of a certificate.
+- Revoke a certificate
 
 .. note::
     This module has a corresponding :ref:`action plugin <action_plugins>`.
@@ -92,7 +92,7 @@ Parameters
                                 <td>
                                                                                                                                                             </td>
                                                                 <td>
-                                            <div>Pem of the certificate to update</div>
+                                            <div>Pem of the certificate to revoke</div>
                                                         </td>
             </tr>
                                 <tr>
@@ -137,37 +137,22 @@ Parameters
                                 <td>
                                                                                                                                                             </td>
                                                                 <td>
-                                            <div>url to post the request to the API</div>
+                                            <div>url of the API</div>
                                                         </td>
             </tr>
                                 <tr>
                                                                 <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-labels"></div>
-                    <b>labels</b>
-                    <a class="ansibleOptionLink" href="#parameter-labels" title="Permalink to this option"></a>
+                    <div class="ansibleOptionAnchor" id="parameter-revocation_reason"></div>
+                    <b>revocation_reason</b>
+                    <a class="ansibleOptionLink" href="#parameter-revocation_reason" title="Permalink to this option"></a>
                     <div style="font-size: small">
-                        <span style="color: purple">dictionary</span>
+                        <span style="color: purple">string</span>
                                                                     </div>
                                                         </td>
                                 <td>
                                                                                                                                                             </td>
                                                                 <td>
-                                            <div>labels of the certificate</div>
-                                                        </td>
-            </tr>
-                                <tr>
-                                                                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-profile"></div>
-                    <b>profile</b>
-                    <a class="ansibleOptionLink" href="#parameter-profile" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">string</span>
-                                                 / <span style="color: red">required</span>                    </div>
-                                                        </td>
-                                <td>
-                                                                                                                                                            </td>
-                                                                <td>
-                                            <div>Horizon certificate profile</div>
+                                            <div>Reason of revoke</div>
                                                         </td>
             </tr>
                                 <tr>
@@ -217,22 +202,18 @@ Examples
 .. code-block:: yaml+jinja
 
     
-    - name: Simple Update
-        evertrust.horizon.update:
+    - name: Simple Revoke
+        evertrust.horizon.horizon_revoke:
           endpoint: "https://url-of-the-api"
           x_api_id: "myId"
           x_api_key: "myKey"
-          labels:
-            label1: "test"
           certificate_pem: <certificate_in_pem>
 
-    - name: Simple Update
-        evertrust.horizon.update:
+    - name: Simple Revoke
+        evertrust.horizon.horizon_revoke:
           endpoint: "https://url-of-the-api"
           x_api_id: "myId"
           x_api_key: "myKey"
-          labels:
-            label1: "test"
           certificate_pem:
             src: /pem/file/path
 

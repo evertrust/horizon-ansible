@@ -29,11 +29,11 @@ Lookup Plugins
 Modules
 ~~~~~~~
 
-* :ref:`enroll <ansible_collections.evertrust.horizon.enroll_module>` -- Evertrust horizon enroll plugin
-* :ref:`feed <ansible_collections.evertrust.horizon.feed_module>` -- Evertrust horizon feed plugin
-* :ref:`recover <ansible_collections.evertrust.horizon.recover_module>` -- Evertrust horizon recover plugin
-* :ref:`revoke <ansible_collections.evertrust.horizon.revoke_module>` -- rEvertrust horizon revoke plugin
-* :ref:`update <ansible_collections.evertrust.horizon.update_module>` -- Evertrust horizon update plugin
+* :ref:`horizon_enroll <ansible_collections.evertrust.horizon.horizon_enroll_module>` -- Evertrust horizon enroll plugin
+* :ref:`horizon_feed <ansible_collections.evertrust.horizon.horizon_feed_module>` -- Evertrust horizon feed plugin
+* :ref:`horizon_recover <ansible_collections.evertrust.horizon.horizon_recover_module>` -- Evertrust horizon recover plugin
+* :ref:`horizon_revoke <ansible_collections.evertrust.horizon.horizon_revoke_module>` -- rEvertrust horizon revoke plugin
+* :ref:`horizon_update <ansible_collections.evertrust.horizon.horizon_update_module>` -- Evertrust horizon update plugin
 
 
 
@@ -47,8 +47,8 @@ Modules
 
     inventory_inventory
     lookup_lookup
-    enroll_module
-    feed_module
-    recover_module
-    revoke_module
-    update_module
+    horizon_enroll_module
+    horizon_feed_module
+    horizon_recover_module
+    horizon_revoke_module
+    horizon_update_module

@@ -1,7 +1,7 @@
 #inventory.py
 
 from __future__ import (absolute_import, division, print_function)
-from plugins.action.feed import EXEMPLES
+from plugins.action.horizon_feed import EXEMPLES
 
 from ansible_collections.evertrust.horizon.plugins.module_utils.horizon import Horizon
 

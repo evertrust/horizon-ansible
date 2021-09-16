@@ -8,36 +8,45 @@ __metaclass__ = type
 
 DOCUMENTATION = '''
 module: recover
-short_description: rEvertrust horizon revoke plugin
+short_description: Evertrust horizon recover plugin
 description:
-  - Revoke a certificate
+  - Recover a certificate
 extends_documentation_fragment: evertrust.horizon.auth_options
 options:
-  certificate_pem:
+  profile:
     description:
-      - Pem of the certificate to revoke
+      - Horizon certificate profile
     required: true
     type: str
-  revocation_reason:
+  password:
     description:
-      - Reason of revoke
-    required: false
+      - Security password for the certificate.
+      - Can be subject of a password policy
+      - Can be riquired or not dependiing on the enrollement mode
+    required: true
+    type: str
+  certificate_pem:
+    description:
+      - Pem of the certificate to recover
+    required: true
     type: str
 '''
 
 EXAMPLES = '''
-- name: Simple Revoke
-    evertrust.horizon.revoke:
+- name: Simple Recover
+    evertrust.horizon.horizon_recover:
       endpoint: "https://url-of-the-api"
       x_api_id: "myId"
       x_api_key: "myKey"
       certificate_pem: <certificate_in_pem>
+      password: "pAssw0rd"
 
-- name: Simple Revoke
-    evertrust.horizon.revoke:
+- name: Simple Recover
+    evertrust.horizon.horizon_recover:
       endpoint: "https://url-of-the-api"
       x_api_id: "myId"
       x_api_key: "myKey"
       certificate_pem:
-        src: /pem/file/path
+        src: pem/file/path
+      password: "pAssw0rd"
 '''

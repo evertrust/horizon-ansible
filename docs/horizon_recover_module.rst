@@ -4,7 +4,7 @@
 
 .. Anchors
 
-.. _ansible_collections.evertrust.horizon.recover_module:
+.. _ansible_collections.evertrust.horizon.horizon_recover_module:
 
 .. Anchors: short name for ansible.builtin
 
@@ -14,8 +14,8 @@
 
 .. Title
 
-evertrust.horizon.recover -- Evertrust horizon recover plugin
-+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+evertrust.horizon.horizon_recover -- Evertrust horizon recover plugin
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 .. Collection note
 
@@ -24,7 +24,7 @@ evertrust.horizon.recover -- Evertrust horizon recover plugin
 
     To install it use: :code:`ansible-galaxy collection install evertrust.horizon`.
 
-    To use it in a playbook, specify: :code:`evertrust.horizon.recover`.
+    To use it in a playbook, specify: :code:`evertrust.horizon.horizon_recover`.
 
 .. version_added
 
@@ -220,7 +220,7 @@ Examples
 
     
     - name: Simple Recover
-        evertrust.horizon.recover:
+        evertrust.horizon.horizon_recover:
           endpoint: "https://url-of-the-api"
           x_api_id: "myId"
           x_api_key: "myKey"
@@ -228,7 +228,7 @@ Examples
           password: "pAssw0rd"
 
     - name: Simple Recover
-        evertrust.horizon.recover:
+        evertrust.horizon.horizon_recover:
           endpoint: "https://url-of-the-api"
           x_api_id: "myId"
           x_api_key: "myKey"

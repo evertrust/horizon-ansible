@@ -53,7 +53,7 @@ options:
 
 EXAMPLES = '''
 - name: test discovery
-    evertrust.horizon.feed:
+    evertrust.horizon.horizon_feed:
       x_api_id: "myId"
       x_api_key: "myKey"
       endpoint: "https://url-of-the-api"
@@ -62,7 +62,7 @@ EXAMPLES = '''
       certificate: <certificate_in_pem>
 
 - name: test discovery
-    evertrust.horizon.feed:
+    evertrust.horizon.horizon_feed:
       x_api_id: "myId"
       x_api_key: "myKey"
       endpoint: "https://url-of-the-api"

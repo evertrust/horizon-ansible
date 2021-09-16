@@ -6,11 +6,11 @@
 from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
-DOCUMENTATION = '''
-module: recover
-short_description: Evertrust horizon recover plugin
+DOCUMENTATION = r'''
+module: update
+short_description: Evertrust horizon update plugin
 description:
-  - Recover a certificate
+  - Update labels of a certificate.
 extends_documentation_fragment: evertrust.horizon.auth_options
 options:
   profile:
@@ -18,35 +18,35 @@ options:
       - Horizon certificate profile
     required: true
     type: str
-  password:
-    description:
-      - Security password for the certificate.
-      - Can be subject of a password policy
-      - Can be riquired or not dependiing on the enrollement mode
-    required: true
-    type: str
   certificate_pem:
     description:
-      - Pem of the certificate to recover
+      - Pem of the certificate to update
     required: true
     type: str
+  labels:
+    description:
+      - labels of the certificate
+    required: false
+    type: dict
 '''
 
 EXAMPLES = '''
-- name: Simple Recover
-    evertrust.horizon.recover:
+- name: Simple Update
+    evertrust.horizon.horizon_update:
       endpoint: "https://url-of-the-api"
       x_api_id: "myId"
       x_api_key: "myKey"
+      labels:
+        label1: "test"
       certificate_pem: <certificate_in_pem>
-      password: "pAssw0rd"
 
-- name: Simple Recover
-    evertrust.horizon.recover:
+- name: Simple Update
+    evertrust.horizon.horizon_update:
       endpoint: "https://url-of-the-api"
       x_api_id: "myId"
       x_api_key: "myKey"
+      labels:
+        label1: "test"
       certificate_pem:
-        src: pem/file/path
-      password: "pAssw0rd"
+        src: /pem/file/path
 '''

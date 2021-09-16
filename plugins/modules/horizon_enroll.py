@@ -54,7 +54,7 @@ options:
 
 EXAMPLES = '''
 - name: Simple centralize enroll
-  evertrust.horizon.enroll:
+  evertrust.horizon.horizon_enroll:
     # login and password to connect to the API
     x_api_id: "myId"
     x_api_key: "myKey"
@@ -71,7 +71,7 @@ EXAMPLES = '''
       snow_id: "value1"
       exp_tech: "value2"
 - name: decentralize enroll with csr
-  evertrust.horizon.enroll:
+  evertrust.horizon.horizon_enroll:
     # login and password to connect to the API
     x_api_id: "myId"
     x_api_key: "myKey"
@@ -93,7 +93,7 @@ EXAMPLES = '''
       snow_id: "value1"
       exp_tech: "value2"
 - name: decentralize enroll without csr
-  evertrust.horizon.enroll:
+  evertrust.horizon.horizon_enroll:
     # login and password to connect to the API
     x_api_id: "myId"
     x_api_key: "myKey"
