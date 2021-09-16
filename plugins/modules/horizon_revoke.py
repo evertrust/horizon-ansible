@@ -8,7 +8,8 @@ __metaclass__ = type
 
 DOCUMENTATION = '''
 module: recover
-short_description: rEvertrust horizon revoke plugin
+author: Evertrust
+short_description: Horizon revoke plugin
 description:
   - Revoke a certificate
 extends_documentation_fragment: evertrust.horizon.auth_options
@@ -20,24 +21,31 @@ options:
     type: str
   revocation_reason:
     description:
-      - Reason of revoke
+      - Revocation reason
     required: false
+    choices:
+    - UNSPECIFIED
+    - KEYCOMPROMISE
+    - CACOMPROMISE
+    - AFFILIATIONCHANGE
+    - SUPERSEDED
+    - CESSATIONOFOPERATION
     type: str
 '''
 
 EXAMPLES = '''
 - name: Simple Revoke
     evertrust.horizon.horizon_revoke:
-      endpoint: "https://url-of-the-api"
-      x_api_id: "myId"
-      x_api_key: "myKey"
+      endpoint: "https://<api-endpoint>"
+      x_api_id: "<horizon-id>"
+      x_api_key: "<horizon-password>"
       certificate_pem: <certificate_in_pem>
 
 - name: Simple Revoke
     evertrust.horizon.horizon_revoke:
-      endpoint: "https://url-of-the-api"
-      x_api_id: "myId"
-      x_api_key: "myKey"
+      endpoint: "https://<api-endpoint>"
+      x_api_id: "<horizon-id>"
+      x_api_key: "<horizon-password>"
       certificate_pem:
         src: /pem/file/path
 '''

@@ -8,7 +8,8 @@ __metaclass__ = type
 
 DOCUMENTATION = '''
 module: recover
-short_description: Evertrust horizon recover plugin
+author: Evertrust
+short_description: Horizon recover plugin
 description:
   - Recover a certificate
 extends_documentation_fragment: evertrust.horizon.auth_options
@@ -21,8 +22,8 @@ options:
   password:
     description:
       - Security password for the certificate.
-      - Can be subject of a password policy
-      - Can be riquired or not dependiing on the enrollement mode
+      - Password policies will be applied to check validity.
+      - Required only if the enrollement is centralized and the password generation mode is not random.
     required: true
     type: str
   certificate_pem:
@@ -35,17 +36,17 @@ options:
 EXAMPLES = '''
 - name: Simple Recover
     evertrust.horizon.horizon_recover:
-      endpoint: "https://url-of-the-api"
-      x_api_id: "myId"
-      x_api_key: "myKey"
+      endpoint: "https://<api-endpoint>"
+      x_api_id: "<horizon-id>"
+      x_api_key: "<horizon-password>"
       certificate_pem: <certificate_in_pem>
       password: "pAssw0rd"
 
 - name: Simple Recover
     evertrust.horizon.horizon_recover:
-      endpoint: "https://url-of-the-api"
-      x_api_id: "myId"
-      x_api_key: "myKey"
+      endpoint: "https://<api-endpoint>"
+      x_api_id: "<horizon-id>"
+      x_api_key: "<horizon-password>"
       certificate_pem:
         src: pem/file/path
       password: "pAssw0rd"

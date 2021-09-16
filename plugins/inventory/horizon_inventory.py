@@ -1,53 +1,22 @@
-#inventory.py
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
 
 from __future__ import (absolute_import, division, print_function)
-from plugins.action.horizon_feed import EXEMPLES
 
-from ansible_collections.evertrust.horizon.plugins.module_utils.horizon import Horizon
-
+from ansible.errors import AnsibleParserError
 from ansible.plugins.inventory import BaseInventoryPlugin, Constructable
-from ansible.errors import AnsibleError, AnsibleParserError
-import requests, json
-from requests.exceptions import HTTPError
+from ansible_collections.evertrust.horizon.plugins.module_utils.horizon import Horizon
 
 DOCUMENTATION = r'''
 ---
-name: evertrust.horizon.inventory
+name: evertrust.horizon.horizon_inventory
 plugin_type: inventory
-short_description: Evertrust horizon inventory plugin
+short_description: Horizon inventory plugin
 description: 
     - Get inventory hosts from Evertrust Horizon.
     - Use a YAML configuration file that ends with C(horizon_inventory.(yml|yaml)).
+extends_documentation_fragment: evertrust.horizon.auth_options
 options:
-    x_api_id:
-        description:
-            - Horizon identifiant
-        required: false
-        type: str
-    x_api_key:
-        description:
-            - Horizon password
-        required: false
-        type: str
-    ca_bundle:
-        description:
-            - The location of a CA Bundle to use when validating SSL certificates.
-        required: false
-        type: str
-    client_cert:
-        description:
-            - The location of a client side certificate.
-        required: false
-        type: str
-    client_key:
-        description:
-            - The location of a client side certificate's key.
-        required: false
-        type: str
-    
-    endpoint: 
-        description: url of the API
-        required: true
     query:
         description: query to define a request
         required: true
@@ -85,8 +54,9 @@ hostnames:
   - san.dns
 '''
 
+
 class InventoryModule(BaseInventoryPlugin, Constructable):
-    NAME = 'evertrust.horizon.inventory'
+    NAME = 'evertrust.horizon.horizon_inventory'
 
     def __init__(self):
         super(InventoryModule, self).__init__()
@@ -99,11 +69,10 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
         '''
         for certificate in certificates:
             my_group = self.inventory.add_group(certificate["module"])
-            
+
             self._add_hosts(hosts=certificates, group=my_group, hostnames=hostnames, fields=fields)
 
             self.inventory.add_child('all', my_group)
-
 
     def _add_hosts(self, hosts, group, hostnames, fields):
         '''
@@ -128,12 +97,12 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
 
             if 'labels' in host:
                 for label in host["labels"]:
-                    self.inventory.set_variable(hostname, "label_"+label["key"], label["value"])
-            
+                    self.inventory.set_variable(hostname, "label_" + label["key"], label["value"])
+
             if fields != None:
                 for field in fields:
                     self.inventory.set_variable(hostname, field, host[field])
-               
+
             # Composed variables
             self._set_composite_vars(self.config.get('compose'), host, hostname, strict=True)
 
@@ -142,7 +111,6 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
 
             # Create groups based on variable values and add the corresponding hosts to it
             self._add_host_to_keyed_groups(self.config.get('keyed_groups'), host, hostname, strict=True)
-    
 
     def verify_file(self, path):
         '''
@@ -158,19 +126,19 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
                               'horizon_inventory.yml')):
                 valid = True
 
-        self.display.debug("Horizon inventory filename must end with 'horizon_inventory.yaml' or 'horizon_inventory.yml'")
+        self.display.debug(
+            "Horizon inventory filename must end with 'horizon_inventory.yaml' or 'horizon_inventory.yml'")
 
         return valid
- 
-    
+
     def parse(self, inventory, loader, path, cache):
 
         super().parse(inventory, loader, path, cache=cache)
-        
+
         try:
             # Get value from playbook
             authent, content = self._get_all_informations(path)
-          
+
         except Exception as e:
             raise AnsibleParserError(
                 'All correct options required: {}'.format(e)
@@ -178,10 +146,9 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
 
         self.horizon = Horizon(authent)
         response = self.horizon.search(content)
-  
+
         self._populate(response, content["hostnames"], content["fields"])
 
-    
     def _get_all_informations(self, path):
         ''' Save all plugin information in self variables '''
         self.config = self._read_config_data(path)

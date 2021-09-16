@@ -1,43 +1,19 @@
-# python 3 headers, required if submitting to Ansible
-from __future__ import (absolute_import, division, print_function)
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
 
+from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
 DOCUMENTATION = r'''
-lookup: lookup
+lookup: horizon_lookup
 author:
-    - Adrien Ducourthial <adu@evertrust.fr>
-short_description: Evertrust horizon lookup plugin
+    - Evertrust
+short_description: Horizon lookup plugin
 description:
     - Describes attributes of your horizon certificate.
     - You can specify one of the listed attribute choices or omit it to see all attributes.
+extends_documentation_fragment: evertrust.horizon.auth_options
 options:
-    x_api_id:
-        description:
-            - Horizon identifiant
-        required: false
-        type: str
-    x_api_key:
-        description:
-            - Horizon password
-        required: false
-        type: str
-    ca_bundle:
-        description:
-            - The location of a CA Bundle to use when validating SSL certificates.
-        required: false
-        type: str
-    client_cert:
-        description:
-            - The location of a client side certificate.
-        required: false
-        type: str
-    client_key:
-        description:
-            - The location of a client side certificate's key.
-        required: false
-        type: str
-
     pem: 
         description: A certificate Pem.
     attributes:
@@ -47,11 +23,6 @@ options:
             - 'labels'
             - 'module'
             - 'profile'
-    endpoint:
-        description:
-            - url of the API
-        required: true
-        type: str
 '''
 
 EXAMPLES = """
@@ -63,13 +34,13 @@ vars:
     x_api_key: "myKey"
     horizon_endpoint: "https://url-of-the-api"
 
-    with_one: "{{ lookup('evertrust.horizon.lookup', x_api_id=x_api_id, x_api_key=x_api_key, pem=my_pem, attributes='module', endpoint=horizon_endpoint) }}"
+    with_one: "{{ lookup('evertrust.horizon.horizon_lookup', x_api_id=x_api_id, x_api_key=x_api_key, pem=my_pem, attributes='module', endpoint=horizon_endpoint) }}"
     # only demanded (str)
 
-    with_list: "{{ lookup('evertrust.horizon.lookup', x_api_id=x_api_id, x_api_key=x_api_key, pem=my_pem, attributes=['module', '_id'], endpoint=horizon_endpoint) }}"
+    with_list: "{{ lookup('evertrust.horizon.horizon_lookup', x_api_id=x_api_id, x_api_key=x_api_key, pem=my_pem, attributes=['module', '_id'], endpoint=horizon_endpoint) }}"
     # only those in list (dict)
 
-    without: "{{ lookup('evertrust.horizon.lookup', x_api_id=x_api_id, x_api_key=x_api_key, pem=pem_path, endpoint=horizon_endpoint) }}"
+    without: "{{ lookup('evertrust.horizon.horizon_lookup', x_api_id=x_api_id, x_api_key=x_api_key, pem=pem_path, endpoint=horizon_endpoint) }}"
     # all (dict)
 """
 
@@ -83,15 +54,14 @@ from ansible_collections.evertrust.horizon.plugins.module_utils.horizon import H
 
 from ansible.plugins.lookup import LookupBase
 from ansible.utils.display import Display
-import requests, urllib, json
-from requests.exceptions import HTTPError
 from ansible.errors import AnsibleError, AnsibleAction
 
 display = Display()
 
+
 class LookupModule(LookupBase):
 
-    def run(self, terms, variables=None, **kwargs): 
+    def run(self, terms, variables=None, **kwargs):
         try:
             # Get value from playbook
             authent, content = self._get_all_informations(kwargs)
@@ -104,7 +74,6 @@ class LookupModule(LookupBase):
 
         return result
 
-    
     def _get_all_informations(self, kwargs):
         ''' Save all plugin information in lists '''
         # Authent values

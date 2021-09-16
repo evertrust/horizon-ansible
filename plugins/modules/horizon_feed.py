@@ -9,7 +9,8 @@ __metaclass__ = type
 DOCUMENTATION = '''
 --- 
 module: feed
-short_description: Evertrust horizon feed plugin
+author: Evertrust
+short_description: Horizon feed plugin
 description:
   - Feed a certificate to Horizon.
 extends_documentation_fragment: evertrust.horizon.auth_options
@@ -46,26 +47,26 @@ options:
     type: str
   usages:
     description:
-      - Free field usally used to indicate configuration files making use of the certificate.
+      - Free field usually used to indicate configuration files making use of the certificate.
     required: false
     type: str
 '''
 
 EXAMPLES = '''
-- name: test discovery
+- name: Test discovery
     evertrust.horizon.horizon_feed:
-      x_api_id: "myId"
-      x_api_key: "myKey"
-      endpoint: "https://url-of-the-api"
+      endpoint: "https://<api-endpoint>"
+      x_api_id: "<horizon-id>"
+      x_api_key: "<horizon-password>"
       campaign: campaign1
       ip: localhost
       certificate: <certificate_in_pem>
 
-- name: test discovery
+- name: Test discovery
     evertrust.horizon.horizon_feed:
-      x_api_id: "myId"
-      x_api_key: "myKey"
-      endpoint: "https://url-of-the-api"
+      endpoint: "https://<api-endpoint>"
+      x_api_id: "<horizon-id>"
+      x_api_key: "<horizon-password>"
       campaign: campaign1
       ip: localhost
       certificate:

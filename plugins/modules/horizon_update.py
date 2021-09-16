@@ -8,7 +8,8 @@ __metaclass__ = type
 
 DOCUMENTATION = r'''
 module: update
-short_description: Evertrust horizon update plugin
+author: Evertrust
+short_description: Horizon update plugin
 description:
   - Update labels of a certificate.
 extends_documentation_fragment: evertrust.horizon.auth_options
@@ -33,18 +34,18 @@ options:
 EXAMPLES = '''
 - name: Simple Update
     evertrust.horizon.horizon_update:
-      endpoint: "https://url-of-the-api"
-      x_api_id: "myId"
-      x_api_key: "myKey"
+      endpoint: "https://<api-endpoint>"
+      x_api_id: "<horizon-id>"
+      x_api_key: "<horizon-password>"
       labels:
         label1: "test"
       certificate_pem: <certificate_in_pem>
 
 - name: Simple Update
     evertrust.horizon.horizon_update:
-      endpoint: "https://url-of-the-api"
-      x_api_id: "myId"
-      x_api_key: "myKey"
+      endpoint: "https://<api-endpoint>"
+      x_api_id: "<horizon-id>"
+      x_api_key: "<horizon-password>"
       labels:
         label1: "test"
       certificate_pem:
