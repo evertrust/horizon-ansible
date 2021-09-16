@@ -16,3 +16,4 @@ issues: https://github.com/EverTrust/horizon-ansible/issues
 build_ignore:
   - .gitignore
   - changelogs/.plugin-cache.yaml
+  - .idea/
