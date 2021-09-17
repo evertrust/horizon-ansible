@@ -9,4 +9,4 @@ SPHINXOPTS   	?=
 
 docs:
 	@$(ANTSIBULLBUILD) "collection" "--use-current" "--squash-hierarchy" "--dest-dir=docs/" "evertrust.horizon" $(ANTSIBULLOPTS)
-	@$(SPHINXBUILD) "docs/" "docs/html/" $(SPHINXOPTS)
+	@$(SPHINXBUILD) "docs/" "webdocs/" $(SPHINXOPTS)
