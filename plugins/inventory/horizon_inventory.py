@@ -39,7 +39,7 @@ options:
 '''
 
 EXAMPLES = '''
-plugin: evertrust.horizon.inventory
+plugin: evertrust.horizon.horizon_inventory
 
 endpoint: "https://<api-endpoint>"
 x_api_id: "<horizon-id>"
