@@ -29,24 +29,24 @@ options:
             - To use labels as hostnames use the syntax labels.<key>
         type: list
         default: []
+        choices: 
+          - san.ip
+          - san.dns
+          - discoveryData.ip
+          - discoveryData.Hostname
+          - label.<key>
         required: false
 '''
 
-EXEMPLES = '''
----
-# horizon_inventory.yaml
-
+EXAMPLES = '''
 plugin: evertrust.horizon.inventory
 
-# API path
-endpoint: "https://url-of-the-api"
-
-# login and password to connect to the API
-x_api_id: "myId"
-x_api_key: "myKey"
+endpoint: "https://<api-endpoint>"
+x_api_id: "<horizon-id>"
+x_api_key: "<horizon-password>"
 
 query: "null"
-fields:
+# fields:
 
 # hostname destination variable, order by preference
 # values : [san.ip, san.dns, discoveryData.ip, discoveryData.Hostname, label.<key>]

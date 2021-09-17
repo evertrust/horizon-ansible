@@ -11,8 +11,8 @@ DOCUMENTATION = '''
 module: horizon_feed
 author: Evertrust R&D (@EverTrust)
 short_description: Horizon feed plugin
-description:
-  - Feed a certificate to Horizon.
+description: Present a certificate from a discovery campaign to be used by Horizon.
+notes: Feeding a certificate requires permissions on the specified discovery campaign.
 extends_documentation_fragment: evertrust.horizon.auth_options
 options:
   campaign:
@@ -23,7 +23,7 @@ options:
   ip:
     description:
       - IP adress
-    required: false
+    required: true
     type: str
   certificate:
     description:

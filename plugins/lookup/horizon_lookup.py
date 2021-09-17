@@ -9,8 +9,7 @@ lookup: horizon_lookup
 author:
   - Evertrust
 short_description: Horizon lookup plugin
-description:
-  - Describes attributes of an Horizon certificate.
+description: Describes attributes of an Horizon certificate.
 extends_documentation_fragment: evertrust.horizon.auth_options
 options:
   pem:

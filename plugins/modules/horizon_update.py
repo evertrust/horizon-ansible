@@ -10,8 +10,8 @@ DOCUMENTATION = r'''
 module: horizon_update
 author: Evertrust R&D (@EverTrust)
 short_description: Horizon update plugin
-description:
-  - Update labels of a certificate.
+description: Updates labels of a certificate.
+notes: Updating a certificate requires permissions on the related profile.
 extends_documentation_fragment: evertrust.horizon.auth_options
 options:
   profile:

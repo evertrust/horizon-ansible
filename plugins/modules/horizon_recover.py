@@ -10,8 +10,10 @@ DOCUMENTATION = '''
 module: horizon_recover
 author: Evertrust R&D (@EverTrust)
 short_description: Horizon recover plugin
-description:
-  - Recover a certificate
+description: Performs an recovery against the Horizon API.
+notes: 
+  - Recovering a certificate requires permissions on the related profile.
+  - Be sure to use the "Recover API" permission instead of "Recover".
 extends_documentation_fragment: evertrust.horizon.auth_options
 options:
   profile:

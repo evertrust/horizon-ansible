@@ -10,8 +10,10 @@ DOCUMENTATION = '''
 module: horizon_enroll
 author: Evertrust R&D (@EverTrust)
 short_description: Horizon enrollment plugin
-description:
-  - Enroll a certificate
+description: Performs an enrollment against the Horizon API.
+notes: 
+  - Enrolling a certificate requires permissions on the related profile.
+  - Be sure to use the "Enroll API" permission instead of "Enroll".
 requirements:
   - cryptography>=3.4.0
 extends_documentation_fragment: evertrust.horizon.auth_options
