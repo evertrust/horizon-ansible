@@ -4,7 +4,7 @@
 
 .. Anchors
 
-.. _ansible_collections.evertrust.horizon.enroll_module:
+.. _ansible_collections.evertrust.horizon.horizon_feed_module:
 
 .. Anchors: short name for ansible.builtin
 
@@ -14,8 +14,8 @@
 
 .. Title
 
-evertrust.horizon.enroll -- Evertrust horizon enroll plugin
-+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+evertrust.horizon.horizon_feed -- Horizon feed plugin
++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 .. Collection note
 
@@ -24,7 +24,7 @@ evertrust.horizon.enroll -- Evertrust horizon enroll plugin
 
     To install it use: :code:`ansible-galaxy collection install evertrust.horizon`.
 
-    To use it in a playbook, specify: :code:`evertrust.horizon.enroll`.
+    To use it in a playbook, specify: :code:`evertrust.horizon.horizon_feed`.
 
 .. version_added
 
@@ -41,7 +41,7 @@ Synopsis
 
 .. Description
 
-- Enroll a certificate
+- Present a certificate from a discovery campaign to be used by Horizon.
 
 .. note::
     This module has a corresponding :ref:`action plugin <action_plugins>`.
@@ -82,6 +82,36 @@ Parameters
             </tr>
                                 <tr>
                                                                 <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-campaign"></div>
+                    <b>campaign</b>
+                    <a class="ansibleOptionLink" href="#parameter-campaign" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                                                 / <span style="color: red">required</span>                    </div>
+                                                        </td>
+                                <td>
+                                                                                                                                                            </td>
+                                                                <td>
+                                            <div>Name of the discovery campaign.</div>
+                                                        </td>
+            </tr>
+                                <tr>
+                                                                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-certificate"></div>
+                    <b>certificate</b>
+                    <a class="ansibleOptionLink" href="#parameter-certificate" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                                                                    </div>
+                                                        </td>
+                                <td>
+                                                                                                                                                            </td>
+                                                                <td>
+                                            <div>A certificate pem, or the path to the certificate pem file.</div>
+                                                        </td>
+            </tr>
+                                <tr>
+                                                                <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-client_cert"></div>
                     <b>client_cert</b>
                     <a class="ansibleOptionLink" href="#parameter-client_cert" title="Permalink to this option"></a>
@@ -93,6 +123,7 @@ Parameters
                                                                                                                                                             </td>
                                                                 <td>
                                             <div>The location of a client side certificate.</div>
+                                            <div>Required if you use certificate authentication</div>
                                                         </td>
             </tr>
                                 <tr>
@@ -108,6 +139,7 @@ Parameters
                                                                                                                                                             </td>
                                                                 <td>
                                             <div>The location of a client side certificate&#x27;s key.</div>
+                                            <div>Required if you use certificate authentication</div>
                                                         </td>
             </tr>
                                 <tr>
@@ -122,14 +154,30 @@ Parameters
                                 <td>
                                                                                                                                                             </td>
                                                                 <td>
-                                            <div>url of the API</div>
+                                            <div>Horizon installation endpoint</div>
+                                            <div>Should include the protocol (https://) and no trailing slash</div>
                                                         </td>
             </tr>
                                 <tr>
                                                                 <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-key_type"></div>
-                    <b>key_type</b>
-                    <a class="ansibleOptionLink" href="#parameter-key_type" title="Permalink to this option"></a>
+                    <div class="ansibleOptionAnchor" id="parameter-hostnames"></div>
+                    <b>hostnames</b>
+                    <a class="ansibleOptionLink" href="#parameter-hostnames" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">list</span>
+                         / <span style="color: purple">elements=string</span>                                            </div>
+                                                        </td>
+                                <td>
+                                                                                                                                                            </td>
+                                                                <td>
+                                            <div>Hostname of the discovered host.</div>
+                                                        </td>
+            </tr>
+                                <tr>
+                                                                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-ip"></div>
+                    <b>ip</b>
+                    <a class="ansibleOptionLink" href="#parameter-ip" title="Permalink to this option"></a>
                     <div style="font-size: small">
                         <span style="color: purple">string</span>
                                                  / <span style="color: red">required</span>                    </div>
@@ -137,29 +185,44 @@ Parameters
                                 <td>
                                                                                                                                                             </td>
                                                                 <td>
-                                            <div>Type of key to encode</div>
+                                            <div>IP adress</div>
                                                         </td>
             </tr>
                                 <tr>
                                                                 <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-labels"></div>
-                    <b>labels</b>
-                    <a class="ansibleOptionLink" href="#parameter-labels" title="Permalink to this option"></a>
+                    <div class="ansibleOptionAnchor" id="parameter-operating_systems"></div>
+                    <b>operating_systems</b>
+                    <a class="ansibleOptionLink" href="#parameter-operating_systems" title="Permalink to this option"></a>
                     <div style="font-size: small">
-                        <span style="color: purple">dictionary</span>
+                        <span style="color: purple">list</span>
+                         / <span style="color: purple">elements=string</span>                                            </div>
+                                                        </td>
+                                <td>
+                                                                                                                                                            </td>
+                                                                <td>
+                                            <div>Operating system of the discovered host.</div>
+                                                        </td>
+            </tr>
+                                <tr>
+                                                                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-paths"></div>
+                    <b>paths</b>
+                    <a class="ansibleOptionLink" href="#parameter-paths" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
                                                                     </div>
                                                         </td>
                                 <td>
                                                                                                                                                             </td>
                                                                 <td>
-                                            <div>labels of the certificate</div>
+                                            <div>Path where the certificate was discovered.</div>
                                                         </td>
             </tr>
                                 <tr>
                                                                 <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-mode"></div>
-                    <b>mode</b>
-                    <a class="ansibleOptionLink" href="#parameter-mode" title="Permalink to this option"></a>
+                    <div class="ansibleOptionAnchor" id="parameter-usages"></div>
+                    <b>usages</b>
+                    <a class="ansibleOptionLink" href="#parameter-usages" title="Permalink to this option"></a>
                     <div style="font-size: small">
                         <span style="color: purple">string</span>
                                                                     </div>
@@ -167,69 +230,7 @@ Parameters
                                 <td>
                                                                                                                                                             </td>
                                                                 <td>
-                                            <div>enrollement mode</div>
-                                                        </td>
-            </tr>
-                                <tr>
-                                                                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-password"></div>
-                    <b>password</b>
-                    <a class="ansibleOptionLink" href="#parameter-password" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">string</span>
-                                                                    </div>
-                                                        </td>
-                                <td>
-                                                                                                                                                            </td>
-                                                                <td>
-                                            <div>Security password for the certificate.</div>
-                                            <div>Can be subject of a password policy</div>
-                                            <div>Can be riquired or not depending on the enrollement mode</div>
-                                                        </td>
-            </tr>
-                                <tr>
-                                                                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-profile"></div>
-                    <b>profile</b>
-                    <a class="ansibleOptionLink" href="#parameter-profile" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">string</span>
-                                                 / <span style="color: red">required</span>                    </div>
-                                                        </td>
-                                <td>
-                                                                                                                                                            </td>
-                                                                <td>
-                                            <div>Horizon certificate profile</div>
-                                                        </td>
-            </tr>
-                                <tr>
-                                                                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-sans"></div>
-                    <b>sans</b>
-                    <a class="ansibleOptionLink" href="#parameter-sans" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">dictionary</span>
-                                                 / <span style="color: red">required</span>                    </div>
-                                                        </td>
-                                <td>
-                                                                                                                                                            </td>
-                                                                <td>
-                                            <div>subject alternative names of the certificate</div>
-                                                        </td>
-            </tr>
-                                <tr>
-                                                                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-subject"></div>
-                    <b>subject</b>
-                    <a class="ansibleOptionLink" href="#parameter-subject" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">dictionary</span>
-                                                 / <span style="color: red">required</span>                    </div>
-                                                        </td>
-                                <td>
-                                                                                                                                                            </td>
-                                                                <td>
-                                            <div>subject of the certificate</div>
+                                            <div>Free field usually used to indicate configuration files making use of the certificate.</div>
                                                         </td>
             </tr>
                                 <tr>
@@ -244,7 +245,8 @@ Parameters
                                 <td>
                                                                                                                                                             </td>
                                                                 <td>
-                                            <div>Horizon identifiant</div>
+                                            <div>Horizon identifier</div>
+                                            <div>Required if you use password authentication</div>
                                                         </td>
             </tr>
                                 <tr>
@@ -260,6 +262,7 @@ Parameters
                                                                                                                                                             </td>
                                                                 <td>
                                             <div>Horizon password</div>
+                                            <div>Required if you use password authentication</div>
                                                         </td>
             </tr>
                         </table>
@@ -267,6 +270,11 @@ Parameters
 
 .. Notes
 
+Notes
+-----
+
+.. note::
+   - Feeding a certificate requires permissions on the specified discovery campaign.
 
 .. Seealso
 
@@ -279,66 +287,24 @@ Examples
 .. code-block:: yaml+jinja
 
     
-    extends_doc_fragment: evertrust.horizon.example_common_options
-    - name: Simple centralize enroll
-      evertrust.horizon.enroll:
-        # login and password to connect to the API
-        x_api_id: "myId"
-        x_api_key: "myKey"
-        endpoint: "https://url-of-the-api"
-        mode: "centralized"
-        password: "pAssw0rd"
-        key_type: "rsa-2048"
-        profile: "profile"
-        subject:
-          cn.1: "myCN"
-        sans:
-          dnsname.1: "myDnsname"
-        labels:
-          snow_id: "value1"
-          exp_tech: "value2"
-    - name: decentralize enroll with csr
-      evertrust.horizon.enroll:
-        # login and password to connect to the API
-        x_api_id: "myId"
-        x_api_key: "myKey"
-        endpoint: "https://url-of-the-api"
-        mode: "decentralized"
-        csr: <a_csr_file>
-        password: "pAssw0rd"
-        key_type: "rsa-2048"
-        profile: "profile"
-        subject:
-          cn.1: "myCN"
-          ou.1: "myFirstOU"
-          ou.2: "mySecondOU"
-        sans:
-          dnsname:
-            - "myDnsName1"
-            - "myDnsName2"
-        labels:
-          snow_id: "value1"
-          exp_tech: "value2"
-    - name: decentralize enroll without csr
-      evertrust.horizon.enroll:
-        # login and password to connect to the API
-        x_api_id: "myId"
-        x_api_key: "myKey"
-        endpoint: "https://url-of-the-api"
-        mode: "decentralized"
-        password: "pAssw0rd"
-        key_type: "rsa-2048"
-        profile: "profile"
-        subject:
-          cn.1: "myCN"
-          ou:
-            - "myFirstOU"
-            - "mySecondOU"
-        sans:
-          dnsname.1: "myDnsname"
-        labels:
-          snow_id: "value1"
-          exp_tech: "value2"
+    - name: Test discovery
+        evertrust.horizon.horizon_feed:
+          endpoint: "https://<api-endpoint>"
+          x_api_id: "<horizon-id>"
+          x_api_key: "<horizon-password>"
+          campaign: campaign1
+          ip: localhost
+          certificate: <certificate_in_pem>
+
+    - name: Test discovery
+        evertrust.horizon.horizon_feed:
+          endpoint: "https://<api-endpoint>"
+          x_api_id: "<horizon-id>"
+          x_api_key: "<horizon-password>"
+          campaign: campaign1
+          ip: localhost
+          certificate:
+            src: pem/file/path
 
 
 
@@ -348,85 +314,16 @@ Examples
 
 .. Return values
 
-Return Values
--------------
-Common return values are documented :ref:`here <common_return_values>`, the following are the fields unique to this module:
-
-.. raw:: html
-
-    <table border=0 cellpadding=0 class="documentation-table">
-        <tr>
-            <th colspan="1">Key</th>
-            <th>Returned</th>
-            <th width="100%">Description</th>
-        </tr>
-                    <tr>
-                                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="return-certificate"></div>
-                    <b>certificate</b>
-                    <a class="ansibleOptionLink" href="#return-certificate" title="Permalink to this return value"></a>
-                    <div style="font-size: small">
-                      <span style="color: purple">string</span>
-                                          </div>
-                                    </td>
-                <td>always</td>
-                <td>
-                                            <div>certificate enrolled</div>
-                                        <br/>
-                                    </td>
-            </tr>
-                                <tr>
-                                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="return-key"></div>
-                    <b>key</b>
-                    <a class="ansibleOptionLink" href="#return-key" title="Permalink to this return value"></a>
-                    <div style="font-size: small">
-                      <span style="color: purple">string</span>
-                                          </div>
-                                    </td>
-                <td>if enrollement mode is &quot;centralized&quot;</td>
-                <td>
-                                            <div>Public key of the certificate</div>
-                                        <br/>
-                                    </td>
-            </tr>
-                                <tr>
-                                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="return-p12"></div>
-                    <b>p12</b>
-                    <a class="ansibleOptionLink" href="#return-p12" title="Permalink to this return value"></a>
-                    <div style="font-size: small">
-                      <span style="color: purple">string</span>
-                                          </div>
-                                    </td>
-                <td>if enrollement mode is &quot;centralized&quot;</td>
-                <td>
-                                            <div>pkcs12 returned by the api</div>
-                                        <br/>
-                                    </td>
-            </tr>
-                                <tr>
-                                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="return-p12_password"></div>
-                    <b>p12_password</b>
-                    <a class="ansibleOptionLink" href="#return-p12_password" title="Permalink to this return value"></a>
-                    <div style="font-size: small">
-                      <span style="color: purple">string</span>
-                                          </div>
-                                    </td>
-                <td>if enrollement mode is &quot;centralized&quot;</td>
-                <td>
-                                            <div>password used to enroll</div>
-                                        <br/>
-                                    </td>
-            </tr>
-                        </table>
-    <br/><br/>
 
 ..  Status (Presently only deprecated)
 
 
 .. Authors
+
+Authors
+~~~~~~~
+
+- Evertrust R&D (@EverTrust)
 
 
 

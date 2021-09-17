@@ -4,7 +4,7 @@
 
 .. Anchors
 
-.. _ansible_collections.evertrust.horizon.horizon_feed_module:
+.. _ansible_collections.evertrust.horizon.horizon_inventory_inventory:
 
 .. Anchors: short name for ansible.builtin
 
@@ -14,8 +14,8 @@
 
 .. Title
 
-evertrust.horizon.horizon_feed -- Horizon feed plugin
-+++++++++++++++++++++++++++++++++++++++++++++++++++++
+evertrust.horizon.horizon_inventory -- Horizon inventory plugin
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 .. Collection note
 
@@ -24,7 +24,7 @@ evertrust.horizon.horizon_feed -- Horizon feed plugin
 
     To install it use: :code:`ansible-galaxy collection install evertrust.horizon`.
 
-    To use it in a playbook, specify: :code:`evertrust.horizon.horizon_feed`.
+    To use it in a playbook, specify: :code:`evertrust.horizon.horizon_inventory`.
 
 .. version_added
 
@@ -41,10 +41,9 @@ Synopsis
 
 .. Description
 
-- Present a certificate from a discovery campaign to be used by Horizon.
+- Get inventory hosts from Evertrust Horizon.
+- Use a YAML configuration file that ends with ``horizon_inventory.(yml|yaml``).
 
-.. note::
-    This module has a corresponding :ref:`action plugin <action_plugins>`.
 
 .. Aliases
 
@@ -63,6 +62,7 @@ Parameters
         <tr>
             <th colspan="1">Parameter</th>
             <th>Choices/<font color="blue">Defaults</font></th>
+                            <th>Configuration</th>
                         <th width="100%">Comments</th>
         </tr>
                     <tr>
@@ -76,38 +76,10 @@ Parameters
                                                         </td>
                                 <td>
                                                                                                                                                             </td>
-                                                                <td>
+                                                    <td>
+                                                                                            </td>
+                                                <td>
                                             <div>The location of a CA Bundle to use when validating SSL certificates.</div>
-                                                        </td>
-            </tr>
-                                <tr>
-                                                                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-campaign"></div>
-                    <b>campaign</b>
-                    <a class="ansibleOptionLink" href="#parameter-campaign" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">string</span>
-                                                 / <span style="color: red">required</span>                    </div>
-                                                        </td>
-                                <td>
-                                                                                                                                                            </td>
-                                                                <td>
-                                            <div>Name of the discovery campaign.</div>
-                                                        </td>
-            </tr>
-                                <tr>
-                                                                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-certificate"></div>
-                    <b>certificate</b>
-                    <a class="ansibleOptionLink" href="#parameter-certificate" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">string</span>
-                                                                    </div>
-                                                        </td>
-                                <td>
-                                                                                                                                                            </td>
-                                                                <td>
-                                            <div>A certificate pem, or the path to the certificate pem file.</div>
                                                         </td>
             </tr>
                                 <tr>
@@ -121,7 +93,9 @@ Parameters
                                                         </td>
                                 <td>
                                                                                                                                                             </td>
-                                                                <td>
+                                                    <td>
+                                                                                            </td>
+                                                <td>
                                             <div>The location of a client side certificate.</div>
                                             <div>Required if you use certificate authentication</div>
                                                         </td>
@@ -137,7 +111,9 @@ Parameters
                                                         </td>
                                 <td>
                                                                                                                                                             </td>
-                                                                <td>
+                                                    <td>
+                                                                                            </td>
+                                                <td>
                                             <div>The location of a client side certificate&#x27;s key.</div>
                                             <div>Required if you use certificate authentication</div>
                                                         </td>
@@ -153,9 +129,28 @@ Parameters
                                                         </td>
                                 <td>
                                                                                                                                                             </td>
-                                                                <td>
+                                                    <td>
+                                                                                            </td>
+                                                <td>
                                             <div>Horizon installation endpoint</div>
                                             <div>Should include the protocol (https://) and no trailing slash</div>
+                                                        </td>
+            </tr>
+                                <tr>
+                                                                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-fields"></div>
+                    <b>fields</b>
+                    <a class="ansibleOptionLink" href="#parameter-fields" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                                                                    </div>
+                                                        </td>
+                                <td>
+                                                                                                                                                            </td>
+                                                    <td>
+                                                                                            </td>
+                                                <td>
+                                            <div>a list of fields search</div>
                                                         </td>
             </tr>
                                 <tr>
@@ -168,69 +163,37 @@ Parameters
                          / <span style="color: purple">elements=string</span>                                            </div>
                                                         </td>
                                 <td>
-                                                                                                                                                            </td>
-                                                                <td>
-                                            <div>Hostname of the discovered host.</div>
+                                                                                                                            <ul style="margin: 0; padding: 0"><b>Choices:</b>
+                                                                                                                                                                <li>san.ip</li>
+                                                                                                                                                                                                <li>san.dns</li>
+                                                                                                                                                                                                <li>discoveryData.ip</li>
+                                                                                                                                                                                                <li>discoveryData.Hostname</li>
+                                                                                                                                                                                                <li>label.&lt;key&gt;</li>
+                                                                                    </ul>
+                                                                                    <b>Default:</b><br/><div style="color: blue">[]</div>
+                                    </td>
+                                                    <td>
+                                                                                            </td>
+                                                <td>
+                                            <div>A list in order of precedence for hostname variables.</div>
+                                            <div>To use labels as hostnames use the syntax labels.&lt;key&gt;</div>
                                                         </td>
             </tr>
                                 <tr>
                                                                 <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-ip"></div>
-                    <b>ip</b>
-                    <a class="ansibleOptionLink" href="#parameter-ip" title="Permalink to this option"></a>
+                    <div class="ansibleOptionAnchor" id="parameter-query"></div>
+                    <b>query</b>
+                    <a class="ansibleOptionLink" href="#parameter-query" title="Permalink to this option"></a>
                     <div style="font-size: small">
                         <span style="color: purple">string</span>
                                                  / <span style="color: red">required</span>                    </div>
                                                         </td>
                                 <td>
                                                                                                                                                             </td>
-                                                                <td>
-                                            <div>IP adress</div>
-                                                        </td>
-            </tr>
-                                <tr>
-                                                                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-operating_systems"></div>
-                    <b>operating_systems</b>
-                    <a class="ansibleOptionLink" href="#parameter-operating_systems" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">list</span>
-                         / <span style="color: purple">elements=string</span>                                            </div>
-                                                        </td>
-                                <td>
-                                                                                                                                                            </td>
-                                                                <td>
-                                            <div>Operating system of the discovered host.</div>
-                                                        </td>
-            </tr>
-                                <tr>
-                                                                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-paths"></div>
-                    <b>paths</b>
-                    <a class="ansibleOptionLink" href="#parameter-paths" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">string</span>
-                                                                    </div>
-                                                        </td>
-                                <td>
-                                                                                                                                                            </td>
-                                                                <td>
-                                            <div>Path where the certificate was discovered.</div>
-                                                        </td>
-            </tr>
-                                <tr>
-                                                                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-usages"></div>
-                    <b>usages</b>
-                    <a class="ansibleOptionLink" href="#parameter-usages" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">string</span>
-                                                                    </div>
-                                                        </td>
-                                <td>
-                                                                                                                                                            </td>
-                                                                <td>
-                                            <div>Free field usually used to indicate configuration files making use of the certificate.</div>
+                                                    <td>
+                                                                                            </td>
+                                                <td>
+                                            <div>query to define a request</div>
                                                         </td>
             </tr>
                                 <tr>
@@ -244,7 +207,9 @@ Parameters
                                                         </td>
                                 <td>
                                                                                                                                                             </td>
-                                                                <td>
+                                                    <td>
+                                                                                            </td>
+                                                <td>
                                             <div>Horizon identifier</div>
                                             <div>Required if you use password authentication</div>
                                                         </td>
@@ -260,7 +225,9 @@ Parameters
                                                         </td>
                                 <td>
                                                                                                                                                             </td>
-                                                                <td>
+                                                    <td>
+                                                                                            </td>
+                                                <td>
                                             <div>Horizon password</div>
                                             <div>Required if you use password authentication</div>
                                                         </td>
@@ -270,11 +237,6 @@ Parameters
 
 .. Notes
 
-Notes
------
-
-.. note::
-   - Feeding a certificate requires permissions on the specified discovery campaign.
 
 .. Seealso
 
@@ -287,24 +249,19 @@ Examples
 .. code-block:: yaml+jinja
 
     
-    - name: Test discovery
-        evertrust.horizon.horizon_feed:
-          endpoint: "https://<api-endpoint>"
-          x_api_id: "<horizon-id>"
-          x_api_key: "<horizon-password>"
-          campaign: campaign1
-          ip: localhost
-          certificate: <certificate_in_pem>
+    plugin: evertrust.horizon.inventory
 
-    - name: Test discovery
-        evertrust.horizon.horizon_feed:
-          endpoint: "https://<api-endpoint>"
-          x_api_id: "<horizon-id>"
-          x_api_key: "<horizon-password>"
-          campaign: campaign1
-          ip: localhost
-          certificate:
-            src: pem/file/path
+    endpoint: "https://<api-endpoint>"
+    x_api_id: "<horizon-id>"
+    x_api_key: "<horizon-password>"
+
+    query: "null"
+    # fields:
+
+    # hostname destination variable, order by preference
+    # values : [san.ip, san.dns, discoveryData.ip, discoveryData.Hostname, label.<key>]
+    hostnames:
+      - san.dns
 
 
 
@@ -319,11 +276,6 @@ Examples
 
 
 .. Authors
-
-Authors
-~~~~~~~
-
-- Evertrust R&D (@EverTrust)
 
 
 
