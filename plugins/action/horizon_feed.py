@@ -3,6 +3,7 @@
 
 # Standard base includes and define this as a metaclass of type
 from __future__ import (absolute_import, division, print_function)
+__metaclass__ = type
 
 from ansible.errors import AnsibleAction
 from ansible.plugins.action import ActionBase

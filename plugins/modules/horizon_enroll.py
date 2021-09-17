@@ -7,13 +7,13 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 DOCUMENTATION = '''
-module: enroll
-author: Evertrust
+module: horizon_enroll
+author: Evertrust R&D (@EverTrust)
 short_description: Horizon enrollment plugin
 description:
   - Enroll a certificate
-requirements: 
-  - cryptography
+requirements:
+  - cryptography>=3.4.0
 extends_documentation_fragment: evertrust.horizon.auth_options
 options:
   profile:
@@ -45,7 +45,7 @@ options:
     description:
       - Certificate subject.
       - You can either give the description of the subject, or the full dn.
-      - If you give the dn, other values won’t be used.
+      - If you give the dn, other values won't be used.
     required: true
     type: dict
   sans:

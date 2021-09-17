@@ -9,10 +9,10 @@ from ansible_collections.evertrust.horizon.plugins.module_utils.horizon import H
 
 DOCUMENTATION = r'''
 ---
-name: evertrust.horizon.horizon_inventory
+name: horizon_inventory
 plugin_type: inventory
 short_description: Horizon inventory plugin
-description: 
+description:
     - Get inventory hosts from Evertrust Horizon.
     - Use a YAML configuration file that ends with C(horizon_inventory.(yml|yaml)).
 extends_documentation_fragment: evertrust.horizon.auth_options
@@ -99,7 +99,7 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
                 for label in host["labels"]:
                     self.inventory.set_variable(hostname, "label_" + label["key"], label["value"])
 
-            if fields != None:
+            if fields is not None:
                 for field in fields:
                     self.inventory.set_variable(hostname, field, host[field])
 
@@ -141,7 +141,7 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
 
         except Exception as e:
             raise AnsibleParserError(
-                'All correct options required: {}'.format(e)
+                f'All correct options required: {e}'
             )
 
         self.horizon = Horizon(authent)

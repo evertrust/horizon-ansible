@@ -7,8 +7,8 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 DOCUMENTATION = '''
-module: recover
-author: Evertrust
+module: horizon_recover
+author: Evertrust R&D (@EverTrust)
 short_description: Horizon recover plugin
 description:
   - Recover a certificate

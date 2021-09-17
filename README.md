@@ -10,7 +10,7 @@ This collection has been tested against following versions >= 2.11.2.
 
 ## Python version compatibility
 
-This collection requires Python 3.5 or greater.
+This collection requires Python 3.6 or greater.
 
 <!-- Start collection content -->
 ## Included content

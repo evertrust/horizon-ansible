@@ -7,9 +7,9 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 DOCUMENTATION = '''
---- 
-module: feed
-author: Evertrust
+---
+module: horizon_feed
+author: Evertrust R&D (@EverTrust)
 short_description: Horizon feed plugin
 description:
   - Feed a certificate to Horizon.

@@ -7,8 +7,8 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 DOCUMENTATION = '''
-module: recover
-author: Evertrust
+module: horizon_revoke
+author: Evertrust R&D (@EverTrust)
 short_description: Horizon revoke plugin
 description:
   - Revoke a certificate

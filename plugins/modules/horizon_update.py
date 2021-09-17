@@ -7,8 +7,8 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 DOCUMENTATION = r'''
-module: update
-author: Evertrust
+module: horizon_update
+author: Evertrust R&D (@EverTrust)
 short_description: Horizon update plugin
 description:
   - Update labels of a certificate.
