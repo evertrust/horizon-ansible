@@ -30,7 +30,7 @@ Modules
 ~~~~~~~
 
 * :ref:`horizon_enroll <ansible_collections.evertrust.horizon.horizon_enroll_module>` -- Horizon enrollment plugin
-* :ref:`horizon_feed <ansible_collections.evertrust.horizon.horizon_feed_module>` -- Horizon feed plugin
+* :ref:`horizon_feed <ansible_collections.evertrust.horizon.horizon_feed_module>` -- Horizon feed (discovery) plugin
 * :ref:`horizon_recover <ansible_collections.evertrust.horizon.horizon_recover_module>` -- Horizon recover plugin
 * :ref:`horizon_revoke <ansible_collections.evertrust.horizon.horizon_revoke_module>` -- Horizon revoke plugin
 * :ref:`horizon_update <ansible_collections.evertrust.horizon.horizon_update_module>` -- Horizon update plugin

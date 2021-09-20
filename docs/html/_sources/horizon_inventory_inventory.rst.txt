@@ -71,7 +71,7 @@ Parameters
                     <b>ca_bundle</b>
                     <a class="ansibleOptionLink" href="#parameter-ca_bundle" title="Permalink to this option"></a>
                     <div style="font-size: small">
-                        <span style="color: purple">string</span>
+                        <span style="color: purple">path</span>
                                                                     </div>
                                                         </td>
                                 <td>
@@ -79,7 +79,7 @@ Parameters
                                                     <td>
                                                                                             </td>
                                                 <td>
-                                            <div>The location of a CA Bundle to use when validating SSL certificates.</div>
+                                            <div>Path of a CA bundle to use when validating the server&#x27;s SSL certificate.</div>
                                                         </td>
             </tr>
                                 <tr>
@@ -88,7 +88,7 @@ Parameters
                     <b>client_cert</b>
                     <a class="ansibleOptionLink" href="#parameter-client_cert" title="Permalink to this option"></a>
                     <div style="font-size: small">
-                        <span style="color: purple">string</span>
+                        <span style="color: purple">path</span>
                                                                     </div>
                                                         </td>
                                 <td>
@@ -96,7 +96,7 @@ Parameters
                                                     <td>
                                                                                             </td>
                                                 <td>
-                                            <div>The location of a client side certificate.</div>
+                                            <div>Path of a client side certificate.</div>
                                             <div>Required if you use certificate authentication</div>
                                                         </td>
             </tr>
@@ -106,7 +106,7 @@ Parameters
                     <b>client_key</b>
                     <a class="ansibleOptionLink" href="#parameter-client_key" title="Permalink to this option"></a>
                     <div style="font-size: small">
-                        <span style="color: purple">string</span>
+                        <span style="color: purple">path</span>
                                                                     </div>
                                                         </td>
                                 <td>
@@ -114,7 +114,7 @@ Parameters
                                                     <td>
                                                                                             </td>
                                                 <td>
-                                            <div>The location of a client side certificate&#x27;s key.</div>
+                                            <div>Path of a client side certificate&#x27;s key.</div>
                                             <div>Required if you use certificate authentication</div>
                                                         </td>
             </tr>
@@ -132,8 +132,8 @@ Parameters
                                                     <td>
                                                                                             </td>
                                                 <td>
-                                            <div>Horizon installation endpoint</div>
-                                            <div>Should include the protocol (https://) and no trailing slash</div>
+                                            <div>Your Horizon instance base endpoint.</div>
+                                            <div>It should include the protocol (https://) and no trailing path or slash.</div>
                                                         </td>
             </tr>
                                 <tr>
@@ -193,7 +193,7 @@ Parameters
                                                     <td>
                                                                                             </td>
                                                 <td>
-                                            <div>query to define a request</div>
+                                            <div>HCQL query to filter the results.</div>
                                                         </td>
             </tr>
                                 <tr>
@@ -249,7 +249,7 @@ Examples
 .. code-block:: yaml+jinja
 
     
-    plugin: evertrust.horizon.inventory
+    plugin: evertrust.horizon.horizon_inventory
 
     endpoint: "https://<api-endpoint>"
     x_api_id: "<horizon-id>"
@@ -259,7 +259,6 @@ Examples
     # fields:
 
     # hostname destination variable, order by preference
-    # values : [san.ip, san.dns, discoveryData.ip, discoveryData.Hostname, label.<key>]
     hostnames:
       - san.dns
 
@@ -276,6 +275,11 @@ Examples
 
 
 .. Authors
+
+Authors
+~~~~~~~
+
+- Evertrust R&D (@EverTrust)
 
 
 

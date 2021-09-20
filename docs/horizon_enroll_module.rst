@@ -77,13 +77,13 @@ Parameters
                     <b>ca_bundle</b>
                     <a class="ansibleOptionLink" href="#parameter-ca_bundle" title="Permalink to this option"></a>
                     <div style="font-size: small">
-                        <span style="color: purple">string</span>
+                        <span style="color: purple">path</span>
                                                                     </div>
                                                         </td>
                                 <td>
                                                                                                                                                             </td>
                                                                 <td>
-                                            <div>The location of a CA Bundle to use when validating SSL certificates.</div>
+                                            <div>Path of a CA bundle to use when validating the server&#x27;s SSL certificate.</div>
                                                         </td>
             </tr>
                                 <tr>
@@ -92,13 +92,13 @@ Parameters
                     <b>client_cert</b>
                     <a class="ansibleOptionLink" href="#parameter-client_cert" title="Permalink to this option"></a>
                     <div style="font-size: small">
-                        <span style="color: purple">string</span>
+                        <span style="color: purple">path</span>
                                                                     </div>
                                                         </td>
                                 <td>
                                                                                                                                                             </td>
                                                                 <td>
-                                            <div>The location of a client side certificate.</div>
+                                            <div>Path of a client side certificate.</div>
                                             <div>Required if you use certificate authentication</div>
                                                         </td>
             </tr>
@@ -108,13 +108,13 @@ Parameters
                     <b>client_key</b>
                     <a class="ansibleOptionLink" href="#parameter-client_key" title="Permalink to this option"></a>
                     <div style="font-size: small">
-                        <span style="color: purple">string</span>
+                        <span style="color: purple">path</span>
                                                                     </div>
                                                         </td>
                                 <td>
                                                                                                                                                             </td>
                                                                 <td>
-                                            <div>The location of a client side certificate&#x27;s key.</div>
+                                            <div>Path of a client side certificate&#x27;s key.</div>
                                             <div>Required if you use certificate authentication</div>
                                                         </td>
             </tr>
@@ -130,8 +130,8 @@ Parameters
                                 <td>
                                                                                                                                                             </td>
                                                                 <td>
-                                            <div>Horizon installation endpoint</div>
-                                            <div>Should include the protocol (https://) and no trailing slash</div>
+                                            <div>Your Horizon instance base endpoint.</div>
+                                            <div>It should include the protocol (https://) and no trailing path or slash.</div>
                                                         </td>
             </tr>
                                 <tr>
@@ -146,7 +146,7 @@ Parameters
                                 <td>
                                                                                                                                                             </td>
                                                                 <td>
-                                            <div>Type of key to encode</div>
+                                            <div>Type of key to encode.</div>
                                                         </td>
             </tr>
                                 <tr>
@@ -161,7 +161,7 @@ Parameters
                                 <td>
                                                                                                                                                             </td>
                                                                 <td>
-                                            <div>Labels of the certificate</div>
+                                            <div>Labels of the certificate.</div>
                                                         </td>
             </tr>
                                 <tr>
@@ -180,7 +180,7 @@ Parameters
                                                                                     </ul>
                                                                             </td>
                                                                 <td>
-                                            <div>enrollement mode</div>
+                                            <div>Enrollement mode.</div>
                                                         </td>
             </tr>
                                 <tr>
@@ -227,7 +227,7 @@ Parameters
                                 <td>
                                                                                                                                                             </td>
                                                                 <td>
-                                            <div>Subject alternative names of the certificate</div>
+                                            <div>Subject alternative names (SANs) of the certificate.</div>
                                                         </td>
             </tr>
                                 <tr>
@@ -243,7 +243,7 @@ Parameters
                                                                                                                                                             </td>
                                                                 <td>
                                             <div>Certificate subject.</div>
-                                            <div>You can either give the description of the subject, or the full dn.</div>
+                                            <div>You can either give the description of the subject, or the full DN.</div>
                                             <div>If you give the dn, other values won&#x27;t be used.</div>
                                                         </td>
             </tr>
@@ -302,62 +302,61 @@ Examples
 .. code-block:: yaml+jinja
 
     
-    - name: Simple centralized enrollment
+    - name: Enrolling a certificate in a centralized way
       evertrust.horizon.horizon_enroll:
-        # login and password to connect to the API
         endpoint: "https://<api-endpoint>"
         x_api_id: "<horizon-id>"
         x_api_key: "<horizon-password>"
         mode: "centralized"
-        password: "pAssw0rd"
+        password: "examplePassword"
         key_type: "rsa-2048"
-        profile: "profile"
+        profile: "exampleProfile"
         subject:
-          cn.1: "myCN"
+          cn.1: "exampleCN"
         sans:
-          dnsname.1: "myDnsname"
+          dnsname.1: "exampleDnsname"
         labels:
           snow_id: "value1"
           exp_tech: "value2"
-    - name: decentralized enrollment with csr
+
+    - name: Enrolling a certificate in a decentralized way with a CSR
       evertrust.horizon.horizon_enroll:
-        # login and password to connect to the API
         endpoint: "https://<api-endpoint>"
         x_api_id: "<horizon-id>"
         x_api_key: "<horizon-password>"
         mode: "decentralized"
         csr: <a_csr_file>
-        password: "pAssw0rd"
+        password: "examplePassword"
         key_type: "rsa-2048"
-        profile: "profile"
+        profile: "exampleProfile"
         subject:
-          cn.1: "myCN"
-          ou.1: "myFirstOU"
-          ou.2: "mySecondOU"
+          cn.1: "exampleCN"
+          ou.1: "exampleFirstOU"
+          ou.2: "exampleSecondOU"
         sans:
           dnsname:
-            - "myDnsName1"
-            - "myDnsName2"
+            - "exampleDnsName1"
+            - "exampleDnsName2"
         labels:
           snow_id: "value1"
           exp_tech: "value2"
-    - name: decentralized enrollment without csr
+
+    - name: Enrolling a certificate in a decentralized way without CSR
       evertrust.horizon.horizon_enroll:
-        # login and password to connect to the API
         endpoint: "https://<api-endpoint>"
         x_api_id: "<horizon-id>"
         x_api_key: "<horizon-password>"
         mode: "decentralized"
-        password: "pAssw0rd"
+        password: "examplePassword"
         key_type: "rsa-2048"
-        profile: "profile"
+        profile: "exampleProfile"
         subject:
-          cn.1: "myCN"
+          cn.1: "exampleCN"
           ou:
-            - "myFirstOU"
-            - "mySecondOU"
+            - "exampleFirstOU"
+            - "exampleSecondOU"
         sans:
-          dnsname.1: "myDnsname"
+          dnsname.1: "exampleDnsName"
         labels:
           snow_id: "value1"
           exp_tech: "value2"

@@ -4,8 +4,10 @@
 # This is a virtual module that is entirely implemented as an action plugin and runs on the controller
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
+# language=yaml
 DOCUMENTATION = '''
 module: horizon_revoke
 author: Evertrust R&D (@EverTrust)
@@ -16,9 +18,14 @@ extends_documentation_fragment: evertrust.horizon.auth_options
 options:
   certificate_pem:
     description:
-      - Pem of the certificate to revoke
-    required: true
+      - A certificate string in the PEM format, or the path to the certificate PEM file.
+    required: false
     type: str
+    suboptions:
+      src:
+        description: The path to a certificate PEM file
+        required: false
+        type: path
   revocation_reason:
     description:
       - Revocation reason
@@ -33,15 +40,16 @@ options:
     type: str
 '''
 
+# language=yaml
 EXAMPLES = '''
-- name: Simple Revoke
+- name: Revoke a certificate by its content
     evertrust.horizon.horizon_revoke:
       endpoint: "https://<api-endpoint>"
       x_api_id: "<horizon-id>"
       x_api_key: "<horizon-password>"
       certificate_pem: <certificate_in_pem>
 
-- name: Simple Revoke
+- name: Revoke a certificate by its file
     evertrust.horizon.horizon_revoke:
       endpoint: "https://<api-endpoint>"
       x_api_id: "<horizon-id>"

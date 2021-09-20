@@ -4,49 +4,178 @@
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
+# language=yaml
 DOCUMENTATION = '''
 lookup: horizon_lookup
 author:
-  - Evertrust
+  - Evertrust R&D (@EverTrust)
 short_description: Horizon lookup plugin
-description: Describes attributes of an Horizon certificate.
+description: Looks up the attributes of a given certificate.
 extends_documentation_fragment: evertrust.horizon.auth_options
 options:
   pem:
-    description: A certificate Pem.
+    description:
+      - A certificate string in the PEM format, or the path to the certificate PEM file.
+    required: false
+    type: str
+    suboptions:
+      src:
+        description: The path to a certificate PEM file
+        required: false
+        type: path
   attributes:
     description:
     - Attributes to be retrieved from Horizon.
     - If omitted, all attributes will be returned.
+    type: list
+    elements: string
     choices:
       - '_id'
+      - 'certificate'
+      - 'discoveredTrusted'
+      - 'dn'
+      - 'holderId'
+      - 'issuer'
+      - 'keyType'
       - 'labels'
+      - 'metadata'
       - 'module'
+      - 'notAfter'
+      - 'notBefore'
+      - 'owner'
       - 'profile'
+      - 'revocationDate'
+      - 'revocationReason'
+      - 'serial'
+      - 'signingAlgorithm'
+      - 'subjectAlternateNames'
+      - 'thirdPartyData'
 '''
 
+# language=yaml
 EXAMPLES = """
 vars:
   endpoint: "https://<api-endpoint>"
   x_api_id: "<horizon-id>"
   x_api_key: "<horizon-password>"
+  # Send the certificate by specifying its content (string) 
   my_pem: <a_webra_pem_file>
+  # Send the certificate by specifying its file path
   pem_path:
     src: /pem/file/path
-
+  
+  # Sets a variable containing only one attribute (module)
   with_one: "{{ lookup('evertrust.horizon.horizon_lookup', x_api_id=x_api_id, x_api_key=x_api_key, pem=my_pem, attributes='module', endpoint=horizon_endpoint) }}"
-  # only demanded (str)
 
+  # Sets a variable containing a list of attributes (module, _id)
   with_list: "{{ lookup('evertrust.horizon.horizon_lookup', x_api_id=x_api_id, x_api_key=x_api_key, pem=my_pem, attributes=['module', '_id'], endpoint=horizon_endpoint) }}"
-  # only those in list (dict)
 
+  # Sets a variable containing every certificate attribute.
   without: "{{ lookup('evertrust.horizon.horizon_lookup', x_api_id=x_api_id, x_api_key=x_api_key, pem=pem_path, endpoint=horizon_endpoint) }}"
-  # all (dict)
 """
 
+# language=yaml
 RETURN = """
-_raw:
-  description: Returns requested attributes.
+_id:
+  description: Certificate ID.
+  type: list
+  elements: str
+  returned: If specifically requested.
+certificate:
+  description: Certificate content.
+  type: list
+  elements: str
+  returned: If specifically requested.
+discoveredTrusted:
+  description: True if the certificate was discovered and trusted.
+  type: list
+  elements: bool
+  returned: If specifically requested.
+dn:
+  description: Certificate DN.
+  type: list
+  elements: str
+  returned: If specifically requested.
+holderId:
+  description: Certificate holder ID.
+  type: list
+  elements: str
+  returned: If specifically requested.
+issuer:
+  description: Certificate issuer.
+  type: list
+  elements: str
+  returned: If specifically requested.
+keyType:
+  description: Certificate key type.
+  type: list
+  elements: str
+  returned: If specifically requested.
+labels:
+  description: Certificate labels.
+  type: list
+  elements: str
+  returned: If specifically requested.
+metadata:
+  description: Certificate metadata.
+  type: list
+  elements: dict
+  returned: If specifically requested.
+module:
+  description: Certificate module.
+  type: list
+  elements: str
+  returned: If specifically requested.
+notAfter:
+  description: Certificate notAfter (UNIX timestamp format).
+  type: list
+  elements: int
+  returned: If specifically requested.
+notBefore:
+  description: Certificate notBefore (UNIX timestamp format).
+  type: list
+  elements: int
+  returned: If specifically requested.
+owner:
+  description: Certificate owner.
+  type: list
+  elements: str
+  returned: If specifically requested.
+profile:
+  description: Certificate profile.
+  type: list
+  elements: str
+  returned: If specifically requested.
+revocationDate:
+  description: Certificate revocation date (UNIX timestamp format).
+  type: list
+  elements: str
+  returned: If specifically requested.
+revocationReason:
+  description: Certificate revocation reason.
+  type: list
+  elements: str
+  returned: If specifically requested.
+serial:
+  description: Certificate serial number.
+  type: list
+  elements: str
+  returned: If specifically requested.
+signingAlgorithm:
+  description: Certificate signing algorithm.
+  type: list
+  elements: str
+  returned: If specifically requested.
+subjectAlternateNames:
+  description: Certificate subject alternate names (SAN).
+  type: list
+  elements: str
+  returned: If specifically requested.
+thirdPartyData:
+  description: Certificate third-party data.
+  type: list
+  elements: str
+  returned: If specifically requested.
 """
 
 from ansible_collections.evertrust.horizon.plugins.module_utils.horizon import Horizon
