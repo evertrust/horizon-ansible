@@ -1,46 +1,17 @@
-# Evertrust Horizon Collection
+# Horizon Ansible
 
-The Ansible Evertrust Horizon collection includes a variety of Ansible content to help the utilistation of Horizon instances.  
+This collection includes plenty of modules to interact with Horizon instances and automate your certificate management workflows.
 
-<!-- Start requires_ansible -->
-## Ansible version compatibility
+## Installation
 
-This collection has been tested against following versions >= 2.11.2.  
-<!-- End requires_ansible -->
+### System requirements
 
-## Python version compatibility
+This collection requires Python 3.6 or greater and has been tested against following versions >= 2.11.2,
 
-This collection requires Python 3.6 or greater.
-
-<!-- Start collection content -->
-## Included content
-
-### Inventory plugins
-Name | Description
---- | ---
-[evertrust.horizon.inventory](docs/evertrust.horizon.inventory.asciidoc) | Horizon inventory
-
-### Lookup plugins
-Name | Description
---- | ---
-[evertrust.horizon.lookup](docs/evertrust.horizon.lookup.asciidoc) | Look up informations about a certificate 
-
-### Action plugins
-Name | Description
---- | ---
-[evertrust.horizon.feed](docs/evertrust.horizon.feed_action.asciidoc) | Feed a certificate to Horizon
-[evertrust.horizon.enroll](docs/evertrust.horizon.enroll_action.asciidoc) | Enroll a certificate
-[evertrust.horizon.recover](docs/evertrust.horizon.recover_action.asciidoc) | Recover a certificate
-[evertrust.horizon.revoke](docs/evertrust.horizon.revoke_action.asciidoc) | Revoke a certificate
-[evertrust.horizon.update](docs/evertrust.horizon.update_action.asciidoc) | Update a certificate
-
-<!-- End collection content -->
-
-## Installing the collection
-
+### Ansible Galaxy
 You can install the Horizon collection with the Ansible Galaxy CLI:
 
-    ansible-collection collection install evertrust.horizon
+    ansible-galaxy collection install evertrust.horizon
 
 You can also include it in a `requirements.yml` file and install it with `ansible-galaxy collection install -r requirements.yml`, using the format:
 
@@ -50,9 +21,16 @@ collections:
   - name: evertrust.horizon
 ```
 
-The python module dependencies are not installed by `ansible-galaxy`. They can be manually installed using pip:
+### Dependencies
+
+Some modules require external Python dependencies (mainly the `cryptography` module), which are not installed by `ansible-galaxy`. They can be manually installed using pip:
 
     pip install requirements.txt
+
+
+## Documentation
+
+The full documentation for this collection can be found at [evertrust.github.io/horizon-ansible/html](https://evertrust.github.io/horizon-ansible/html/).
 
 ## Licensing
 
