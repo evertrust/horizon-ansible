@@ -70,7 +70,7 @@ class Horizon():
         json = self.__generate_json(workflow="enroll", template=template, module="webra", profile=content["profile"],
                                     password=password, key_type=key_type, labels=content["labels"],
                                     sans=content["sans"], subject=content["subject"], csr=csr)
-        return self.__post_request(json, content["endpoint"])
+        return self.__post_request(content["endpoint"], json)
 
     def recover(self, content):
         """
@@ -91,7 +91,7 @@ class Horizon():
         json = self.__generate_json(workflow="recover", profile=profile, password=password,
                                     certificate_pem=content["certificate_pem"])
         use_path = path_submit
-        return self.__post_request(json, content["endpoint"])
+        return self.__post_request(content["endpoint"], json)
 
     def revoke(self, content):
         """
@@ -101,7 +101,7 @@ class Horizon():
         """
         json = self.__generate_json(workflow="revoke", revocation_reason=content["revocation_reason"],
                                     certificate_pem=content["certificate_pem"])
-        return self.__post_request(json, content["endpoint"])
+        return self.__post_request(content["endpoint"], json)
 
     def update(self, content):
         """
@@ -111,7 +111,7 @@ class Horizon():
         """
         json = self.__generate_json(workflow="update", certificate_pem=content["certificate_pem"],
                                     labels=content["labels"])
-        return self.__post_request(json, content["endpoint"])
+        return self.__post_request(content["endpoint"], json)
 
     def search(self, content):
         """
@@ -127,7 +127,7 @@ class Horizon():
         results = []
         has_more = True
         while has_more:
-            response = self.__post_request(json, content["endpoint"])
+            response = self.__post_request(content["endpoint"], json)
             results.append(response["results"][0])
             has_more = response["hasMore"]
             if has_more:
@@ -148,7 +148,7 @@ class Horizon():
                                     certificate=content["certificate"], hostnames=content["hostnames"],
                                     operating_systems=content["operating_systems"], paths=content["paths"],
                                     usages=content["usages"])
-        return self.__post_request(json, content["endpoint"], feed=True)
+        return self.__post_request(content["endpoint"], json, feed=True)
 
     def certificate(self, content):
         """
@@ -355,7 +355,7 @@ class Horizon():
 
         return my_json
 
-    def __post_request(self, json, endpoint, feed=False):
+    def __post_request(self, endpoint, json, feed=False):
         """
             :param json: the json to send to the API
             :param endpoint: url of the API

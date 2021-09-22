@@ -4,8 +4,10 @@
 # This is a virtual module that is entirely implemented as an action plugin and runs on the controller
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
+# language=yaml
 DOCUMENTATION = '''
 module: horizon_enroll
 author: Evertrust R&D (@EverTrust)
@@ -32,12 +34,12 @@ options:
     type: str
   key_type:
     description:
-      - Type of key to encode
+      - Type of key to encode.
     required: true
     type: str
   mode:
     description:
-      - enrollement mode
+      - Enrollement mode.
     required: false
     type: str
     choices:
@@ -46,84 +48,85 @@ options:
   subject:
     description:
       - Certificate subject.
-      - You can either give the description of the subject, or the full dn.
+      - You can either give the description of the subject, or the full DN.
       - If you give the dn, other values won't be used.
     required: true
     type: dict
   sans:
     description:
-      - Subject alternative names of the certificate
+      - Subject alternative names (SANs) of the certificate.
     required: true
     type: dict
   labels:
     description:
-      - Labels of the certificate
+      - Labels of the certificate.
     required: false
     type: dict
 '''
 
+# language=yaml
 EXAMPLES = '''
-- name: Simple centralized enrollment
+- name: Enrolling a certificate in a centralized way
   evertrust.horizon.horizon_enroll:
-    # login and password to connect to the API
     endpoint: "https://<api-endpoint>"
     x_api_id: "<horizon-id>"
     x_api_key: "<horizon-password>"
     mode: "centralized"
-    password: "pAssw0rd"
+    password: "examplePassword"
     key_type: "rsa-2048"
-    profile: "profile"
+    profile: "exampleProfile"
     subject:
-      cn.1: "myCN"
+      cn.1: "exampleCN"
     sans:
-      dnsname.1: "myDnsname"
+      dnsname.1: "exampleDnsname"
     labels:
       snow_id: "value1"
       exp_tech: "value2"
-- name: decentralized enrollment with csr
+
+- name: Enrolling a certificate in a decentralized way with a CSR
   evertrust.horizon.horizon_enroll:
-    # login and password to connect to the API
     endpoint: "https://<api-endpoint>"
     x_api_id: "<horizon-id>"
     x_api_key: "<horizon-password>"
     mode: "decentralized"
     csr: <a_csr_file>
-    password: "pAssw0rd"
+    password: "examplePassword"
     key_type: "rsa-2048"
-    profile: "profile"
+    profile: "exampleProfile"
     subject:
-      cn.1: "myCN"
-      ou.1: "myFirstOU"
-      ou.2: "mySecondOU"
+      cn.1: "exampleCN"
+      ou.1: "exampleFirstOU"
+      ou.2: "exampleSecondOU"
     sans:
       dnsname:
-        - "myDnsName1"
-        - "myDnsName2"
+        - "exampleDnsName1"
+        - "exampleDnsName2"
     labels:
       snow_id: "value1"
       exp_tech: "value2"
-- name: decentralized enrollment without csr
+
+- name: Enrolling a certificate in a decentralized way without CSR
   evertrust.horizon.horizon_enroll:
-    # login and password to connect to the API
     endpoint: "https://<api-endpoint>"
     x_api_id: "<horizon-id>"
     x_api_key: "<horizon-password>"
     mode: "decentralized"
-    password: "pAssw0rd"
+    password: "examplePassword"
     key_type: "rsa-2048"
-    profile: "profile"
+    profile: "exampleProfile"
     subject:
-      cn.1: "myCN"
+      cn.1: "exampleCN"
       ou:
-        - "myFirstOU"
-        - "mySecondOU"
+        - "exampleFirstOU"
+        - "exampleSecondOU"
     sans:
-      dnsname.1: "myDnsname"
+      dnsname.1: "exampleDnsName"
     labels:
       snow_id: "value1"
       exp_tech: "value2"
 '''
 
+# language=yaml
 RETURN = '''
 p12:
   description: PKCS#12 returned by the API

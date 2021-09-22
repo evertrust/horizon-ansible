@@ -2,10 +2,12 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import (absolute_import, division, print_function)
+
 __metaclass__ = type
 
 
 class ModuleDocFragment(object):
+    # language=yaml
     DOCUMENTATION = r'''
     options:
       x_api_id:
@@ -22,25 +24,25 @@ class ModuleDocFragment(object):
         type: str
       client_cert:
         description:
-          - The location of a client side certificate.
+          - Path of a client side certificate.
           - Required if you use certificate authentication
         required: false
-        type: str
+        type: path
       client_key:
         description:
-          - The location of a client side certificate's key.
+          - Path of a client side certificate's key.
           - Required if you use certificate authentication
         required: false
-        type: str
+        type: path
       endpoint:
         description:
-          - Horizon installation endpoint
-          - Should include the protocol (https://) and no trailing slash
+          - Your Horizon instance base endpoint.
+          - It should include the protocol (https://) and no trailing path or slash.
         required: true
         type: str
       ca_bundle:
         description:
-          - The location of a CA Bundle to use when validating SSL certificates.
+          - Path of a CA bundle to use when validating the server's SSL certificate. 
         required: false
-        type: str
+        type: path
     '''

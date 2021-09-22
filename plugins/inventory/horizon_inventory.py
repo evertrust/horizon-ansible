@@ -7,9 +7,11 @@ from ansible.errors import AnsibleParserError
 from ansible.plugins.inventory import BaseInventoryPlugin, Constructable
 from ansible_collections.evertrust.horizon.plugins.module_utils.horizon import Horizon
 
+# language=yaml
 DOCUMENTATION = r'''
 ---
 name: horizon_inventory
+author: Evertrust R&D (@EverTrust)
 plugin_type: inventory
 short_description: Horizon inventory plugin
 description:
@@ -18,7 +20,7 @@ description:
 extends_documentation_fragment: evertrust.horizon.auth_options
 options:
     query:
-        description: query to define a request
+        description: HCQL query to filter the results.
         required: true
     fields:
         description: a list of fields search
@@ -38,6 +40,7 @@ options:
         required: false
 '''
 
+# language=yaml
 EXAMPLES = '''
 plugin: evertrust.horizon.horizon_inventory
 
@@ -49,7 +52,6 @@ query: "null"
 # fields:
 
 # hostname destination variable, order by preference
-# values : [san.ip, san.dns, discoveryData.ip, discoveryData.Hostname, label.<key>]
 hostnames:
   - san.dns
 '''

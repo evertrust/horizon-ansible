@@ -6,11 +6,11 @@
 from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
+# language=yaml
 DOCUMENTATION = '''
----
 module: horizon_feed
 author: Evertrust R&D (@EverTrust)
-short_description: Horizon feed plugin
+short_description: Horizon feed (discovery) plugin
 description: Present a certificate from a discovery campaign to be used by Horizon.
 notes: Feeding a certificate requires permissions on the specified discovery campaign.
 extends_documentation_fragment: evertrust.horizon.auth_options
@@ -22,14 +22,19 @@ options:
     type: str
   ip:
     description:
-      - IP adress
+      - IP address
     required: true
     type: str
   certificate:
     description:
-      - A certificate pem, or the path to the certificate pem file.
+      - A certificate string in the PEM format, or the path to the certificate PEM file.
     required: false
     type: str
+    suboptions:
+      src:
+        description: The path to a certificate PEM file
+        required: false
+        type: path
   hostnames:
     description:
       - Hostname of the discovered host.
@@ -52,22 +57,23 @@ options:
     type: str
 '''
 
+# language=yaml
 EXAMPLES = '''
-- name: Test discovery
+- name: Feed a certificate by its content
     evertrust.horizon.horizon_feed:
       endpoint: "https://<api-endpoint>"
       x_api_id: "<horizon-id>"
       x_api_key: "<horizon-password>"
-      campaign: campaign1
+      campaign: exampleCampaign
       ip: localhost
       certificate: <certificate_in_pem>
 
-- name: Test discovery
+- name: Feed a certificate by a file
     evertrust.horizon.horizon_feed:
       endpoint: "https://<api-endpoint>"
       x_api_id: "<horizon-id>"
       x_api_key: "<horizon-password>"
-      campaign: campaign1
+      campaign: exampleCampaign
       ip: localhost
       certificate:
         src: pem/file/path

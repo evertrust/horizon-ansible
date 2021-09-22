@@ -3,6 +3,7 @@
 
 # Standard base includes and define this as a metaclass of type
 from __future__ import (absolute_import, division, print_function)
+
 __metaclass__ = type
 
 from ansible.errors import AnsibleAction
@@ -61,5 +62,6 @@ class ActionModule(ActionBase):
         content["subject"] = self._task.args.get('subject')
         content["sans"] = self._task.args.get('sans')
         content["labels"] = self._task.args.get('labels')
+        content["contact_email"] = self._task.args.get('contact_email')
 
         return authent, content
