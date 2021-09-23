@@ -7,6 +7,8 @@ from __future__ import absolute_import, division, print_function
 
 __metaclass__ = type
 
+# TODO: infer profile from certificate lookup
+
 # language=yaml
 DOCUMENTATION = '''
 module: horizon_recover
@@ -27,7 +29,7 @@ options:
     description:
       - Security password for the certificate.
       - Password policies will be applied to check validity.
-      - Required only if the enrollement is not centralized and the password generation mode is not random.
+      - Only required if the password generation mode is manual.
     required: false
     type: str
   certificate_pem:
@@ -46,7 +48,7 @@ options:
 EXAMPLES = '''
 - name: Recover a certificate by its content
     evertrust.horizon.horizon_recover:
-      endpoint: "https://<api-endpoint>"
+      endpoint: "https://<horizon-endpoint>"
       x_api_id: "<horizon-id>"
       x_api_key: "<horizon-password>"
       certificate_pem: <certificate_in_pem>
@@ -54,7 +56,7 @@ EXAMPLES = '''
 
 - name: Recover a certificate by a file
     evertrust.horizon.horizon_recover:
-      endpoint: "https://<api-endpoint>"
+      endpoint: "https://<horizon-endpoint>"
       x_api_id: "<horizon-id>"
       x_api_key: "<horizon-password>"
       certificate_pem:

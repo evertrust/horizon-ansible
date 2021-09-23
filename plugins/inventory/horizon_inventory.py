@@ -15,28 +15,47 @@ author: Evertrust R&D (@EverTrust)
 plugin_type: inventory
 short_description: Horizon inventory plugin
 description:
-    - Get inventory hosts from Evertrust Horizon.
+    - Generate hosts inventory from Horizon using an HCQL query.
     - Use a YAML configuration file that ends with C(horizon_inventory.(yml|yaml)).
 extends_documentation_fragment: evertrust.horizon.auth_options
 options:
     query:
         description: HCQL query to filter the results.
-        required: true
-    fields:
-        description: a list of fields search
         required: false
+    fields:
+      description:
+        - Fields to be retrieved from Horizon.
+        - If omitted, all fields will be returned.
+      type: list
+      elements: string
+      choices:
+        - _id
+        - certificate
+        - discoveredTrusted
+        - dn
+        - holderId
+        - issuer
+        - keyType
+        - labels
+        - metadata
+        - module
+        - notAfter
+        - notBefore
+        - owner
+        - profile
+        - revocationDate
+        - revocationReason
+        - serial
+        - signingAlgorithm
+        - subjectAlternateNames
+        - thirdPartyData
     hostnames:
         description:
             - A list in order of precedence for hostname variables.
-            - To use labels as hostnames use the syntax labels.<key>
+            - To use labels as hostnames use the syntax label.<key>.
         type: list
+        elements: str
         default: []
-        choices: 
-          - san.ip
-          - san.dns
-          - discoveryData.ip
-          - discoveryData.Hostname
-          - label.<key>
         required: false
 '''
 
@@ -44,15 +63,17 @@ options:
 EXAMPLES = '''
 plugin: evertrust.horizon.horizon_inventory
 
-endpoint: "https://<api-endpoint>"
+endpoint: "https://<horizon-endpoint>"
 x_api_id: "<horizon-id>"
 x_api_key: "<horizon-password>"
 
 query: "null"
 # fields:
 
-# hostname destination variable, order by preference
+# Possible values: san.ip, san.dns, discoveryData.ip, discoveryData.Hostname, label.<key>
+# To use your host IPs as inventory hostnames, the correct syntax would be label.ansible_host
 hostnames:
+  - label.ansible_host
   - san.dns
 '''
 

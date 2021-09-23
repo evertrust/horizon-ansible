@@ -20,7 +20,7 @@ evertrust.horizon.horizon_recover -- Horizon recover plugin
 .. Collection note
 
 .. note::
-    This plugin is part of the `evertrust.horizon collection <https://galaxy.ansible.com/evertrust/horizon>`_ (version 0.1.1).
+    This plugin is part of the `evertrust.horizon collection <https://galaxy.ansible.com/evertrust/horizon>`_ (version 1.0.0).
 
     To install it use: :code:`ansible-galaxy collection install evertrust.horizon`.
 
@@ -77,7 +77,7 @@ Parameters
                                 <td>
                                                                                                                                                             </td>
                                                                 <td>
-                                            <div>Path of a CA bundle to use when validating the server&#x27;s SSL certificate.</div>
+                                            <div>Path of a CA bundle used to validate the Horizon instance SSL certificate.</div>
                                                         </td>
             </tr>
                                 <tr>
@@ -124,8 +124,8 @@ Parameters
                                 <td>
                                                                                                                                                             </td>
                                                                 <td>
-                                            <div>Path of a client side certificate.</div>
-                                            <div>Required if you use certificate authentication</div>
+                                            <div>Path of a client certificate.</div>
+                                            <div>Required if you use certificate based authentication</div>
                                                         </td>
             </tr>
                                 <tr>
@@ -140,8 +140,8 @@ Parameters
                                 <td>
                                                                                                                                                             </td>
                                                                 <td>
-                                            <div>Path of a client side certificate&#x27;s key.</div>
-                                            <div>Required if you use certificate authentication</div>
+                                            <div>Path of a client certificate&#x27;s key.</div>
+                                            <div>Required if you use certificate based authentication</div>
                                                         </td>
             </tr>
                                 <tr>
@@ -157,7 +157,7 @@ Parameters
                                                                                                                                                             </td>
                                                                 <td>
                                             <div>Your Horizon instance base endpoint.</div>
-                                            <div>It should include the protocol (https://) and no trailing path or slash.</div>
+                                            <div>It must include the protocol (https://) and no trailing slash nor path.</div>
                                                         </td>
             </tr>
                                 <tr>
@@ -174,7 +174,7 @@ Parameters
                                                                 <td>
                                             <div>Security password for the certificate.</div>
                                             <div>Password policies will be applied to check validity.</div>
-                                            <div>Required only if the enrollement is not centralized and the password generation mode is not random.</div>
+                                            <div>Only required if the password generation mode is manual.</div>
                                                         </td>
             </tr>
                                 <tr>
@@ -205,7 +205,7 @@ Parameters
                                                                                                                                                             </td>
                                                                 <td>
                                             <div>Horizon identifier</div>
-                                            <div>Required if you use password authentication</div>
+                                            <div>Required if you use credentials authentication</div>
                                                         </td>
             </tr>
                                 <tr>
@@ -221,7 +221,7 @@ Parameters
                                                                                                                                                             </td>
                                                                 <td>
                                             <div>Horizon password</div>
-                                            <div>Required if you use password authentication</div>
+                                            <div>Required if you use credentials authentication</div>
                                                         </td>
             </tr>
                         </table>
@@ -249,7 +249,7 @@ Examples
     
     - name: Recover a certificate by its content
         evertrust.horizon.horizon_recover:
-          endpoint: "https://<api-endpoint>"
+          endpoint: "https://<horizon-endpoint>"
           x_api_id: "<horizon-id>"
           x_api_key: "<horizon-password>"
           certificate_pem: <certificate_in_pem>
@@ -257,7 +257,7 @@ Examples
 
     - name: Recover a certificate by a file
         evertrust.horizon.horizon_recover:
-          endpoint: "https://<api-endpoint>"
+          endpoint: "https://<horizon-endpoint>"
           x_api_id: "<horizon-id>"
           x_api_key: "<horizon-password>"
           certificate_pem:

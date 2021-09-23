@@ -17,17 +17,17 @@ extends_documentation_fragment: evertrust.horizon.auth_options
 options:
   campaign:
     description:
-      - Name of the discovery campaign.
+      - Discovery campaign name.
     required: true
     type: str
   ip:
     description:
-      - IP address
+      - IP address of the discovered host
     required: true
     type: str
   certificate:
     description:
-      - A certificate string in the PEM format, or the path to the certificate PEM file.
+      - A certificate in PEM format, or the path to the certificate PEM file.
     required: false
     type: str
     suboptions:
@@ -37,7 +37,7 @@ options:
         type: path
   hostnames:
     description:
-      - Hostname of the discovered host.
+      - Hostnames of the discovered host.
     required: false
     type: list
   operating_systems:
@@ -47,12 +47,12 @@ options:
     type: list
   paths:
     description:
-      - Path where the certificate was discovered.
+      - Path of any configuration file referencing the certificate.
     required: false
     type: str
   usages:
     description:
-      - Free field usually used to indicate configuration files making use of the certificate.
+      - Path of any configuration file referencing the certificate.
     required: false
     type: str
 '''
@@ -61,7 +61,7 @@ options:
 EXAMPLES = '''
 - name: Feed a certificate by its content
     evertrust.horizon.horizon_feed:
-      endpoint: "https://<api-endpoint>"
+      endpoint: "https://<horizon-endpoint>"
       x_api_id: "<horizon-id>"
       x_api_key: "<horizon-password>"
       campaign: exampleCampaign
@@ -70,7 +70,7 @@ EXAMPLES = '''
 
 - name: Feed a certificate by a file
     evertrust.horizon.horizon_feed:
-      endpoint: "https://<api-endpoint>"
+      endpoint: "https://<horizon-endpoint>"
       x_api_id: "<horizon-id>"
       x_api_key: "<horizon-password>"
       campaign: exampleCampaign

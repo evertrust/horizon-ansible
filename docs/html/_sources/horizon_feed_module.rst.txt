@@ -20,7 +20,7 @@ evertrust.horizon.horizon_feed -- Horizon feed (discovery) plugin
 .. Collection note
 
 .. note::
-    This plugin is part of the `evertrust.horizon collection <https://galaxy.ansible.com/evertrust/horizon>`_ (version 0.1.1).
+    This plugin is part of the `evertrust.horizon collection <https://galaxy.ansible.com/evertrust/horizon>`_ (version 1.0.0).
 
     To install it use: :code:`ansible-galaxy collection install evertrust.horizon`.
 
@@ -77,7 +77,7 @@ Parameters
                                 <td>
                                                                                                                                                             </td>
                                                                 <td>
-                                            <div>Path of a CA bundle to use when validating the server&#x27;s SSL certificate.</div>
+                                            <div>Path of a CA bundle used to validate the Horizon instance SSL certificate.</div>
                                                         </td>
             </tr>
                                 <tr>
@@ -92,7 +92,7 @@ Parameters
                                 <td>
                                                                                                                                                             </td>
                                                                 <td>
-                                            <div>Name of the discovery campaign.</div>
+                                            <div>Discovery campaign name.</div>
                                                         </td>
             </tr>
                                 <tr>
@@ -107,7 +107,7 @@ Parameters
                                 <td>
                                                                                                                                                             </td>
                                                                 <td>
-                                            <div>A certificate string in the PEM format, or the path to the certificate PEM file.</div>
+                                            <div>A certificate in PEM format, or the path to the certificate PEM file.</div>
                                                         </td>
             </tr>
                                         <tr>
@@ -139,8 +139,8 @@ Parameters
                                 <td>
                                                                                                                                                             </td>
                                                                 <td>
-                                            <div>Path of a client side certificate.</div>
-                                            <div>Required if you use certificate authentication</div>
+                                            <div>Path of a client certificate.</div>
+                                            <div>Required if you use certificate based authentication</div>
                                                         </td>
             </tr>
                                 <tr>
@@ -155,8 +155,8 @@ Parameters
                                 <td>
                                                                                                                                                             </td>
                                                                 <td>
-                                            <div>Path of a client side certificate&#x27;s key.</div>
-                                            <div>Required if you use certificate authentication</div>
+                                            <div>Path of a client certificate&#x27;s key.</div>
+                                            <div>Required if you use certificate based authentication</div>
                                                         </td>
             </tr>
                                 <tr>
@@ -172,7 +172,7 @@ Parameters
                                                                                                                                                             </td>
                                                                 <td>
                                             <div>Your Horizon instance base endpoint.</div>
-                                            <div>It should include the protocol (https://) and no trailing path or slash.</div>
+                                            <div>It must include the protocol (https://) and no trailing slash nor path.</div>
                                                         </td>
             </tr>
                                 <tr>
@@ -187,7 +187,7 @@ Parameters
                                 <td>
                                                                                                                                                             </td>
                                                                 <td>
-                                            <div>Hostname of the discovered host.</div>
+                                            <div>Hostnames of the discovered host.</div>
                                                         </td>
             </tr>
                                 <tr>
@@ -202,7 +202,7 @@ Parameters
                                 <td>
                                                                                                                                                             </td>
                                                                 <td>
-                                            <div>IP address</div>
+                                            <div>IP address of the discovered host</div>
                                                         </td>
             </tr>
                                 <tr>
@@ -232,7 +232,7 @@ Parameters
                                 <td>
                                                                                                                                                             </td>
                                                                 <td>
-                                            <div>Path where the certificate was discovered.</div>
+                                            <div>Path of any configuration file referencing the certificate.</div>
                                                         </td>
             </tr>
                                 <tr>
@@ -247,7 +247,7 @@ Parameters
                                 <td>
                                                                                                                                                             </td>
                                                                 <td>
-                                            <div>Free field usually used to indicate configuration files making use of the certificate.</div>
+                                            <div>Path of any configuration file referencing the certificate.</div>
                                                         </td>
             </tr>
                                 <tr>
@@ -263,7 +263,7 @@ Parameters
                                                                                                                                                             </td>
                                                                 <td>
                                             <div>Horizon identifier</div>
-                                            <div>Required if you use password authentication</div>
+                                            <div>Required if you use credentials authentication</div>
                                                         </td>
             </tr>
                                 <tr>
@@ -279,7 +279,7 @@ Parameters
                                                                                                                                                             </td>
                                                                 <td>
                                             <div>Horizon password</div>
-                                            <div>Required if you use password authentication</div>
+                                            <div>Required if you use credentials authentication</div>
                                                         </td>
             </tr>
                         </table>
@@ -306,7 +306,7 @@ Examples
     
     - name: Feed a certificate by its content
         evertrust.horizon.horizon_feed:
-          endpoint: "https://<api-endpoint>"
+          endpoint: "https://<horizon-endpoint>"
           x_api_id: "<horizon-id>"
           x_api_key: "<horizon-password>"
           campaign: exampleCampaign
@@ -315,7 +315,7 @@ Examples
 
     - name: Feed a certificate by a file
         evertrust.horizon.horizon_feed:
-          endpoint: "https://<api-endpoint>"
+          endpoint: "https://<horizon-endpoint>"
           x_api_id: "<horizon-id>"
           x_api_key: "<horizon-password>"
           campaign: exampleCampaign

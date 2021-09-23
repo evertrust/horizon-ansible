@@ -4,7 +4,7 @@
 Evertrust.Horizon
 =================
 
-Collection version 0.1.1
+Collection version 1.0.0
 
 .. toctree::
     :maxdepth: 1

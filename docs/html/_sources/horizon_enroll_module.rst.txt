@@ -20,7 +20,7 @@ evertrust.horizon.horizon_enroll -- Horizon enrollment plugin
 .. Collection note
 
 .. note::
-    This plugin is part of the `evertrust.horizon collection <https://galaxy.ansible.com/evertrust/horizon>`_ (version 0.1.1).
+    This plugin is part of the `evertrust.horizon collection <https://galaxy.ansible.com/evertrust/horizon>`_ (version 1.0.0).
 
     To install it use: :code:`ansible-galaxy collection install evertrust.horizon`.
 
@@ -83,7 +83,7 @@ Parameters
                                 <td>
                                                                                                                                                             </td>
                                                                 <td>
-                                            <div>Path of a CA bundle to use when validating the server&#x27;s SSL certificate.</div>
+                                            <div>Path of a CA bundle used to validate the Horizon instance SSL certificate.</div>
                                                         </td>
             </tr>
                                 <tr>
@@ -98,8 +98,8 @@ Parameters
                                 <td>
                                                                                                                                                             </td>
                                                                 <td>
-                                            <div>Path of a client side certificate.</div>
-                                            <div>Required if you use certificate authentication</div>
+                                            <div>Path of a client certificate.</div>
+                                            <div>Required if you use certificate based authentication</div>
                                                         </td>
             </tr>
                                 <tr>
@@ -114,8 +114,8 @@ Parameters
                                 <td>
                                                                                                                                                             </td>
                                                                 <td>
-                                            <div>Path of a client side certificate&#x27;s key.</div>
-                                            <div>Required if you use certificate authentication</div>
+                                            <div>Path of a client certificate&#x27;s key.</div>
+                                            <div>Required if you use certificate based authentication</div>
                                                         </td>
             </tr>
                                 <tr>
@@ -131,7 +131,7 @@ Parameters
                                                                                                                                                             </td>
                                                                 <td>
                                             <div>Your Horizon instance base endpoint.</div>
-                                            <div>It should include the protocol (https://) and no trailing path or slash.</div>
+                                            <div>It must include the protocol (https://) and no trailing slash nor path.</div>
                                                         </td>
             </tr>
                                 <tr>
@@ -144,9 +144,21 @@ Parameters
                                                  / <span style="color: red">required</span>                    </div>
                                                         </td>
                                 <td>
-                                                                                                                                                            </td>
+                                                                                                                            <ul style="margin: 0; padding: 0"><b>Choices:</b>
+                                                                                                                                                                <li>rsa-256</li>
+                                                                                                                                                                                                <li>rsa-512</li>
+                                                                                                                                                                                                <li>rsa-1024</li>
+                                                                                                                                                                                                <li>rsa-2048</li>
+                                                                                                                                                                                                <li>rsa-3072</li>
+                                                                                                                                                                                                <li>rsa-4096</li>
+                                                                                                                                                                                                <li>rsa-8192</li>
+                                                                                                                                                                                                <li>ec-secp256r1</li>
+                                                                                                                                                                                                <li>ec-secp384r1</li>
+                                                                                                                                                                                                <li>ec-secp521r1</li>
+                                                                                    </ul>
+                                                                            </td>
                                                                 <td>
-                                            <div>Type of key to encode.</div>
+                                            <div>Key type.</div>
                                                         </td>
             </tr>
                                 <tr>
@@ -161,7 +173,7 @@ Parameters
                                 <td>
                                                                                                                                                             </td>
                                                                 <td>
-                                            <div>Labels of the certificate.</div>
+                                            <div>Certificate&#x27;s labels.</div>
                                                         </td>
             </tr>
                                 <tr>
@@ -180,7 +192,8 @@ Parameters
                                                                                     </ul>
                                                                             </td>
                                                                 <td>
-                                            <div>Enrollement mode.</div>
+                                            <div>Enrollment mode.</div>
+                                            <div>If empty, will be inferred from the Horizon certificate profile configuration.</div>
                                                         </td>
             </tr>
                                 <tr>
@@ -227,7 +240,7 @@ Parameters
                                 <td>
                                                                                                                                                             </td>
                                                                 <td>
-                                            <div>Subject alternative names (SANs) of the certificate.</div>
+                                            <div>Certificate&#x27;s subject alternative names (SANs) of the certificate.</div>
                                                         </td>
             </tr>
                                 <tr>
@@ -242,7 +255,7 @@ Parameters
                                 <td>
                                                                                                                                                             </td>
                                                                 <td>
-                                            <div>Certificate subject.</div>
+                                            <div>Certificate&#x27;s subject.</div>
                                             <div>You can either give the description of the subject, or the full DN.</div>
                                             <div>If you give the dn, other values won&#x27;t be used.</div>
                                                         </td>
@@ -260,7 +273,7 @@ Parameters
                                                                                                                                                             </td>
                                                                 <td>
                                             <div>Horizon identifier</div>
-                                            <div>Required if you use password authentication</div>
+                                            <div>Required if you use credentials authentication</div>
                                                         </td>
             </tr>
                                 <tr>
@@ -276,7 +289,7 @@ Parameters
                                                                                                                                                             </td>
                                                                 <td>
                                             <div>Horizon password</div>
-                                            <div>Required if you use password authentication</div>
+                                            <div>Required if you use credentials authentication</div>
                                                         </td>
             </tr>
                         </table>
@@ -304,7 +317,7 @@ Examples
     
     - name: Enrolling a certificate in a centralized way
       evertrust.horizon.horizon_enroll:
-        endpoint: "https://<api-endpoint>"
+        endpoint: "https://<horizon-endpoint>"
         x_api_id: "<horizon-id>"
         x_api_key: "<horizon-password>"
         mode: "centralized"
@@ -321,7 +334,7 @@ Examples
 
     - name: Enrolling a certificate in a decentralized way with a CSR
       evertrust.horizon.horizon_enroll:
-        endpoint: "https://<api-endpoint>"
+        endpoint: "https://<horizon-endpoint>"
         x_api_id: "<horizon-id>"
         x_api_key: "<horizon-password>"
         mode: "decentralized"
@@ -343,7 +356,7 @@ Examples
 
     - name: Enrolling a certificate in a decentralized way without CSR
       evertrust.horizon.horizon_enroll:
-        endpoint: "https://<api-endpoint>"
+        endpoint: "https://<horizon-endpoint>"
         x_api_id: "<horizon-id>"
         x_api_key: "<horizon-password>"
         mode: "decentralized"
@@ -392,7 +405,7 @@ Common return values are documented :ref:`here <common_return_values>`, the foll
                                     </td>
                 <td>always</td>
                 <td>
-                                            <div>Certificate enrolled</div>
+                                            <div>Enrolled certificate in PEM format</div>
                                         <br/>
                                     </td>
             </tr>
@@ -407,7 +420,7 @@ Common return values are documented :ref:`here <common_return_values>`, the foll
                                     </td>
                 <td>if enrollement mode is &quot;centralized&quot;</td>
                 <td>
-                                            <div>Public key of the certificate</div>
+                                            <div>Certificate&#x27;s private key</div>
                                         <br/>
                                     </td>
             </tr>
@@ -422,7 +435,7 @@ Common return values are documented :ref:`here <common_return_values>`, the foll
                                     </td>
                 <td>If enrollement mode is &quot;centralized&quot;</td>
                 <td>
-                                            <div>PKCS#12 returned by the API</div>
+                                            <div>PKCS#12 returned by the API (base64-encoded)</div>
                                         <br/>
                                     </td>
             </tr>
@@ -437,7 +450,7 @@ Common return values are documented :ref:`here <common_return_values>`, the foll
                                     </td>
                 <td>If enrollement mode is &quot;centralized&quot;</td>
                 <td>
-                                            <div>Password used to enroll</div>
+                                            <div>PKCS#12 password</div>
                                         <br/>
                                     </td>
             </tr>

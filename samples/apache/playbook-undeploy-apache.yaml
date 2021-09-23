@@ -1,33 +1,24 @@
----
 - hosts: webserver
   become: yes
-  
   tasks:
-  - name: get certificate
-    shell: "cat /etc/apache2/ssl-files/{{domain}}.crt"
+  - name: Retrieving the current certificate
+    shell: "cat /etc/apache2/ssl/{{ domain }}.crt"
     register: data
-      
-  - name: Stop Apache Services
-    become: yes
+
+  - name: Stopping Apache services
     service:
       name: apache2
       state: stopped
 
-  - name: Uninstall Apache
+  - name: Uninstalling Apache
+    become: yes
     apt:
       name: apache2
       state: absent
-      purge: yes
 
-  - name: Clean
-    command: rm -r -f /etc/apache2 /var/log/apache2
-    become: true
-  
   - name: horizon_revoke
     evertrust.horizon.horizon_revoke:
-      endpoint: "https://horizon-demo.evertrust.fr" 
-      x_api_id: "{{api_id}}"
-      x_api_key: "{{api_key}}"
+      endpoint: "{{ horizon_endpoint }}"
+      x_api_id: "{{ api_id }}"
+      x_api_key: "{{ api_key }}"
       certificate_pem: "{{ data['stdout'] }}"
-
-  

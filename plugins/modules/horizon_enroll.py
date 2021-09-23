@@ -34,12 +34,24 @@ options:
     type: str
   key_type:
     description:
-      - Type of key to encode.
+      - Key type.
     required: true
+    choices:
+      - rsa-256
+      - rsa-512
+      - rsa-1024
+      - rsa-2048
+      - rsa-3072
+      - rsa-4096
+      - rsa-8192
+      - ec-secp256r1
+      - ec-secp384r1
+      - ec-secp521r1 
     type: str
   mode:
     description:
-      - Enrollement mode.
+      - Enrollment mode.
+      - If empty, will be inferred from the Horizon certificate profile configuration.
     required: false
     type: str
     choices:
@@ -47,19 +59,19 @@ options:
       - decentralized
   subject:
     description:
-      - Certificate subject.
+      - Certificate's subject.
       - You can either give the description of the subject, or the full DN.
       - If you give the dn, other values won't be used.
     required: true
     type: dict
   sans:
     description:
-      - Subject alternative names (SANs) of the certificate.
+      - Certificate's subject alternative names (SANs) of the certificate.
     required: true
     type: dict
   labels:
     description:
-      - Labels of the certificate.
+      - Certificate's labels.
     required: false
     type: dict
 '''
@@ -68,7 +80,7 @@ options:
 EXAMPLES = '''
 - name: Enrolling a certificate in a centralized way
   evertrust.horizon.horizon_enroll:
-    endpoint: "https://<api-endpoint>"
+    endpoint: "https://<horizon-endpoint>"
     x_api_id: "<horizon-id>"
     x_api_key: "<horizon-password>"
     mode: "centralized"
@@ -85,7 +97,7 @@ EXAMPLES = '''
 
 - name: Enrolling a certificate in a decentralized way with a CSR
   evertrust.horizon.horizon_enroll:
-    endpoint: "https://<api-endpoint>"
+    endpoint: "https://<horizon-endpoint>"
     x_api_id: "<horizon-id>"
     x_api_key: "<horizon-password>"
     mode: "decentralized"
@@ -107,7 +119,7 @@ EXAMPLES = '''
 
 - name: Enrolling a certificate in a decentralized way without CSR
   evertrust.horizon.horizon_enroll:
-    endpoint: "https://<api-endpoint>"
+    endpoint: "https://<horizon-endpoint>"
     x_api_id: "<horizon-id>"
     x_api_key: "<horizon-password>"
     mode: "decentralized"
@@ -129,19 +141,19 @@ EXAMPLES = '''
 # language=yaml
 RETURN = '''
 p12:
-  description: PKCS#12 returned by the API
+  description: PKCS#12 returned by the API (base64-encoded)
   returned: If enrollement mode is "centralized"
   type: str
 p12_password:
-  description: Password used to enroll
+  description: PKCS#12 password
   returned: If enrollement mode is "centralized"
   type: str
 certificate:
-  description: Certificate enrolled
+  description: Enrolled certificate in PEM format
   returned: always
   type: str
 key:
-  description: Public key of the certificate
+  description: Certificate's private key
   returned: if enrollement mode is "centralized"
   type: str
 '''

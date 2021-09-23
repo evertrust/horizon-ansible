@@ -10,12 +10,12 @@ lookup: horizon_lookup
 author:
   - Evertrust R&D (@EverTrust)
 short_description: Horizon lookup plugin
-description: Looks up the attributes of a given certificate.
+description: Retrieve certificate's information from Horizon.
 extends_documentation_fragment: evertrust.horizon.auth_options
 options:
   pem:
     description:
-      - A certificate string in the PEM format, or the path to the certificate PEM file.
+      - A certificate in PEM format, or the path to the certificate PEM file.
     required: false
     type: str
     suboptions:
@@ -23,39 +23,39 @@ options:
         description: The path to a certificate PEM file
         required: false
         type: path
-  attributes:
+  fields:
     description:
-    - Attributes to be retrieved from Horizon.
-    - If omitted, all attributes will be returned.
+    - Certificate fields to be retrieved from Horizon.
+    - If omitted, all fields will be returned.
     type: list
     elements: string
     choices:
-      - '_id'
-      - 'certificate'
-      - 'discoveredTrusted'
-      - 'dn'
-      - 'holderId'
-      - 'issuer'
-      - 'keyType'
-      - 'labels'
-      - 'metadata'
-      - 'module'
-      - 'notAfter'
-      - 'notBefore'
-      - 'owner'
-      - 'profile'
-      - 'revocationDate'
-      - 'revocationReason'
-      - 'serial'
-      - 'signingAlgorithm'
-      - 'subjectAlternateNames'
-      - 'thirdPartyData'
+      - _id
+      - certificate
+      - discoveredTrusted
+      - dn
+      - holderId
+      - issuer
+      - keyType
+      - labels
+      - metadata
+      - module
+      - notAfter
+      - notBefore
+      - owner
+      - profile
+      - revocationDate
+      - revocationReason
+      - serial
+      - signingAlgorithm
+      - subjectAlternateNames
+      - thirdPartyData
 '''
 
 # language=yaml
 EXAMPLES = """
 vars:
-  endpoint: "https://<api-endpoint>"
+  endpoint: "https://<horizon-endpoint>"
   x_api_id: "<horizon-id>"
   x_api_key: "<horizon-password>"
   # Send the certificate by specifying its content (string) 
@@ -64,30 +64,33 @@ vars:
   pem_path:
     src: /pem/file/path
   
-  # Sets a variable containing only one attribute (module)
-  with_one: "{{ lookup('evertrust.horizon.horizon_lookup', x_api_id=x_api_id, x_api_key=x_api_key, pem=my_pem, attributes='module', endpoint=horizon_endpoint) }}"
+  # Sets a variable containing only one field (module)
+  with_one: "{{ lookup('evertrust.horizon.horizon_lookup', x_api_id=x_api_id, x_api_key=x_api_key, pem=my_pem, fields='module', endpoint=horizon_endpoint) }}"
 
-  # Sets a variable containing a list of attributes (module, _id)
-  with_list: "{{ lookup('evertrust.horizon.horizon_lookup', x_api_id=x_api_id, x_api_key=x_api_key, pem=my_pem, attributes=['module', '_id'], endpoint=horizon_endpoint) }}"
+  # Sets a variable containing a list of fields (module, _id)
+  with_list: "{{ lookup('evertrust.horizon.horizon_lookup', x_api_id=x_api_id, x_api_key=x_api_key, pem=my_pem, fields=['module', '_id'], endpoint=horizon_endpoint) }}"
 
-  # Sets a variable containing every certificate attribute.
+  # Sets a variable containing every certificate field.
   without: "{{ lookup('evertrust.horizon.horizon_lookup', x_api_id=x_api_id, x_api_key=x_api_key, pem=pem_path, endpoint=horizon_endpoint) }}"
 """
 
 # language=yaml
 RETURN = """
 _id:
-  description: Certificate ID.
+  description: Horizon internal certificate ID.
   type: list
   elements: str
   returned: If specifically requested.
 certificate:
-  description: Certificate content.
+  description: Certificate in PEM format.
   type: list
   elements: str
   returned: If specifically requested.
 discoveredTrusted:
-  description: True if the certificate was discovered and trusted.
+  description: 
+  - True if the certificate was discovered and trusted. 
+  - False if the certificate was discovered. 
+  - Absent if the certificate was not discovered.
   type: list
   elements: bool
   returned: If specifically requested.
@@ -102,7 +105,7 @@ holderId:
   elements: str
   returned: If specifically requested.
 issuer:
-  description: Certificate issuer.
+  description: Certificate issuer DN.
   type: list
   elements: str
   returned: If specifically requested.
@@ -127,12 +130,12 @@ module:
   elements: str
   returned: If specifically requested.
 notAfter:
-  description: Certificate notAfter (UNIX timestamp format).
+  description: Certificate expiration date (UNIX timestamp in millis).
   type: list
   elements: int
   returned: If specifically requested.
 notBefore:
-  description: Certificate notBefore (UNIX timestamp format).
+  description: Certificate issuance date (UNIX timestamp in millis).
   type: list
   elements: int
   returned: If specifically requested.
@@ -147,7 +150,7 @@ profile:
   elements: str
   returned: If specifically requested.
 revocationDate:
-  description: Certificate revocation date (UNIX timestamp format).
+  description: Certificate revocation date (UNIX timestamp in millis).
   type: list
   elements: str
   returned: If specifically requested.
@@ -157,7 +160,7 @@ revocationReason:
   elements: str
   returned: If specifically requested.
 serial:
-  description: Certificate serial number.
+  description: Certificate serial number (hexadecimal format).
   type: list
   elements: str
   returned: If specifically requested.
@@ -230,7 +233,7 @@ class LookupModule(LookupBase):
         content = {}
         content["endpoint"] = kwargs["endpoint"]
         content["pem"] = kwargs["pem"]
-        if "attributes" in kwargs:
-            content["attributes"] = kwargs["attributes"]
+        if "fields" in kwargs:
+            content["fields"] = kwargs["fields"]
 
         return authent, content

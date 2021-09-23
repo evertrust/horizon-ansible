@@ -20,7 +20,7 @@ evertrust.horizon.horizon_lookup -- Horizon lookup plugin
 .. Collection note
 
 .. note::
-    This plugin is part of the `evertrust.horizon collection <https://galaxy.ansible.com/evertrust/horizon>`_ (version 0.1.1).
+    This plugin is part of the `evertrust.horizon collection <https://galaxy.ansible.com/evertrust/horizon>`_ (version 1.0.0).
 
     To install it use: :code:`ansible-galaxy collection install evertrust.horizon`.
 
@@ -41,7 +41,7 @@ Synopsis
 
 .. Description
 
-- Looks up the attributes of a given certificate.
+- Retrieve certificate's information from Horizon.
 
 
 .. Aliases
@@ -66,9 +66,80 @@ Parameters
         </tr>
                     <tr>
                                                                 <td colspan="2">
-                    <div class="ansibleOptionAnchor" id="parameter-attributes"></div>
-                    <b>attributes</b>
-                    <a class="ansibleOptionLink" href="#parameter-attributes" title="Permalink to this option"></a>
+                    <div class="ansibleOptionAnchor" id="parameter-ca_bundle"></div>
+                    <b>ca_bundle</b>
+                    <a class="ansibleOptionLink" href="#parameter-ca_bundle" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">path</span>
+                                                                    </div>
+                                                        </td>
+                                <td>
+                                                                                                                                                            </td>
+                                                    <td>
+                                                                                            </td>
+                                                <td>
+                                            <div>Path of a CA bundle used to validate the Horizon instance SSL certificate.</div>
+                                                        </td>
+            </tr>
+                                <tr>
+                                                                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="parameter-client_cert"></div>
+                    <b>client_cert</b>
+                    <a class="ansibleOptionLink" href="#parameter-client_cert" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">path</span>
+                                                                    </div>
+                                                        </td>
+                                <td>
+                                                                                                                                                            </td>
+                                                    <td>
+                                                                                            </td>
+                                                <td>
+                                            <div>Path of a client certificate.</div>
+                                            <div>Required if you use certificate based authentication</div>
+                                                        </td>
+            </tr>
+                                <tr>
+                                                                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="parameter-client_key"></div>
+                    <b>client_key</b>
+                    <a class="ansibleOptionLink" href="#parameter-client_key" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">path</span>
+                                                                    </div>
+                                                        </td>
+                                <td>
+                                                                                                                                                            </td>
+                                                    <td>
+                                                                                            </td>
+                                                <td>
+                                            <div>Path of a client certificate&#x27;s key.</div>
+                                            <div>Required if you use certificate based authentication</div>
+                                                        </td>
+            </tr>
+                                <tr>
+                                                                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="parameter-endpoint"></div>
+                    <b>endpoint</b>
+                    <a class="ansibleOptionLink" href="#parameter-endpoint" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                                                 / <span style="color: red">required</span>                    </div>
+                                                        </td>
+                                <td>
+                                                                                                                                                            </td>
+                                                    <td>
+                                                                                            </td>
+                                                <td>
+                                            <div>Your Horizon instance base endpoint.</div>
+                                            <div>It must include the protocol (https://) and no trailing slash nor path.</div>
+                                                        </td>
+            </tr>
+                                <tr>
+                                                                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="parameter-fields"></div>
+                    <b>fields</b>
+                    <a class="ansibleOptionLink" href="#parameter-fields" title="Permalink to this option"></a>
                     <div style="font-size: small">
                         <span style="color: purple">list</span>
                          / <span style="color: purple">elements=string</span>                                            </div>
@@ -100,79 +171,8 @@ Parameters
                                                     <td>
                                                                                             </td>
                                                 <td>
-                                            <div>Attributes to be retrieved from Horizon.</div>
-                                            <div>If omitted, all attributes will be returned.</div>
-                                                        </td>
-            </tr>
-                                <tr>
-                                                                <td colspan="2">
-                    <div class="ansibleOptionAnchor" id="parameter-ca_bundle"></div>
-                    <b>ca_bundle</b>
-                    <a class="ansibleOptionLink" href="#parameter-ca_bundle" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">path</span>
-                                                                    </div>
-                                                        </td>
-                                <td>
-                                                                                                                                                            </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
-                                            <div>Path of a CA bundle to use when validating the server&#x27;s SSL certificate.</div>
-                                                        </td>
-            </tr>
-                                <tr>
-                                                                <td colspan="2">
-                    <div class="ansibleOptionAnchor" id="parameter-client_cert"></div>
-                    <b>client_cert</b>
-                    <a class="ansibleOptionLink" href="#parameter-client_cert" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">path</span>
-                                                                    </div>
-                                                        </td>
-                                <td>
-                                                                                                                                                            </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
-                                            <div>Path of a client side certificate.</div>
-                                            <div>Required if you use certificate authentication</div>
-                                                        </td>
-            </tr>
-                                <tr>
-                                                                <td colspan="2">
-                    <div class="ansibleOptionAnchor" id="parameter-client_key"></div>
-                    <b>client_key</b>
-                    <a class="ansibleOptionLink" href="#parameter-client_key" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">path</span>
-                                                                    </div>
-                                                        </td>
-                                <td>
-                                                                                                                                                            </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
-                                            <div>Path of a client side certificate&#x27;s key.</div>
-                                            <div>Required if you use certificate authentication</div>
-                                                        </td>
-            </tr>
-                                <tr>
-                                                                <td colspan="2">
-                    <div class="ansibleOptionAnchor" id="parameter-endpoint"></div>
-                    <b>endpoint</b>
-                    <a class="ansibleOptionLink" href="#parameter-endpoint" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">string</span>
-                                                 / <span style="color: red">required</span>                    </div>
-                                                        </td>
-                                <td>
-                                                                                                                                                            </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
-                                            <div>Your Horizon instance base endpoint.</div>
-                                            <div>It should include the protocol (https://) and no trailing path or slash.</div>
+                                            <div>Certificate fields to be retrieved from Horizon.</div>
+                                            <div>If omitted, all fields will be returned.</div>
                                                         </td>
             </tr>
                                 <tr>
@@ -189,7 +189,7 @@ Parameters
                                                     <td>
                                                                                             </td>
                                                 <td>
-                                            <div>A certificate string in the PEM format, or the path to the certificate PEM file.</div>
+                                            <div>A certificate in PEM format, or the path to the certificate PEM file.</div>
                                                         </td>
             </tr>
                                         <tr>
@@ -226,7 +226,7 @@ Parameters
                                                                                             </td>
                                                 <td>
                                             <div>Horizon identifier</div>
-                                            <div>Required if you use password authentication</div>
+                                            <div>Required if you use credentials authentication</div>
                                                         </td>
             </tr>
                                 <tr>
@@ -244,7 +244,7 @@ Parameters
                                                                                             </td>
                                                 <td>
                                             <div>Horizon password</div>
-                                            <div>Required if you use password authentication</div>
+                                            <div>Required if you use credentials authentication</div>
                                                         </td>
             </tr>
                         </table>
@@ -265,7 +265,7 @@ Examples
 
     
     vars:
-      endpoint: "https://<api-endpoint>"
+      endpoint: "https://<horizon-endpoint>"
       x_api_id: "<horizon-id>"
       x_api_key: "<horizon-password>"
       # Send the certificate by specifying its content (string) 
@@ -274,13 +274,13 @@ Examples
       pem_path:
         src: /pem/file/path
       
-      # Sets a variable containing only one attribute (module)
-      with_one: "{{ lookup('evertrust.horizon.horizon_lookup', x_api_id=x_api_id, x_api_key=x_api_key, pem=my_pem, attributes='module', endpoint=horizon_endpoint) }}"
+      # Sets a variable containing only one field (module)
+      with_one: "{{ lookup('evertrust.horizon.horizon_lookup', x_api_id=x_api_id, x_api_key=x_api_key, pem=my_pem, fields='module', endpoint=horizon_endpoint) }}"
 
-      # Sets a variable containing a list of attributes (module, _id)
-      with_list: "{{ lookup('evertrust.horizon.horizon_lookup', x_api_id=x_api_id, x_api_key=x_api_key, pem=my_pem, attributes=['module', '_id'], endpoint=horizon_endpoint) }}"
+      # Sets a variable containing a list of fields (module, _id)
+      with_list: "{{ lookup('evertrust.horizon.horizon_lookup', x_api_id=x_api_id, x_api_key=x_api_key, pem=my_pem, fields=['module', '_id'], endpoint=horizon_endpoint) }}"
 
-      # Sets a variable containing every certificate attribute.
+      # Sets a variable containing every certificate field.
       without: "{{ lookup('evertrust.horizon.horizon_lookup', x_api_id=x_api_id, x_api_key=x_api_key, pem=pem_path, endpoint=horizon_endpoint) }}"
 
 
@@ -314,7 +314,7 @@ Common return values are documented :ref:`here <common_return_values>`, the foll
                                     </td>
                 <td>If specifically requested.</td>
                 <td>
-                                            <div>Certificate ID.</div>
+                                            <div>Horizon internal certificate ID.</div>
                                         <br/>
                                     </td>
             </tr>
@@ -329,7 +329,7 @@ Common return values are documented :ref:`here <common_return_values>`, the foll
                                     </td>
                 <td>If specifically requested.</td>
                 <td>
-                                            <div>Certificate content.</div>
+                                            <div>Certificate in PEM format.</div>
                                         <br/>
                                     </td>
             </tr>
@@ -345,6 +345,8 @@ Common return values are documented :ref:`here <common_return_values>`, the foll
                 <td>If specifically requested.</td>
                 <td>
                                             <div>True if the certificate was discovered and trusted.</div>
+                                            <div>False if the certificate was discovered.</div>
+                                            <div>Absent if the certificate was not discovered.</div>
                                         <br/>
                                     </td>
             </tr>
@@ -389,7 +391,7 @@ Common return values are documented :ref:`here <common_return_values>`, the foll
                                     </td>
                 <td>If specifically requested.</td>
                 <td>
-                                            <div>Certificate issuer.</div>
+                                            <div>Certificate issuer DN.</div>
                                         <br/>
                                     </td>
             </tr>
@@ -464,7 +466,7 @@ Common return values are documented :ref:`here <common_return_values>`, the foll
                                     </td>
                 <td>If specifically requested.</td>
                 <td>
-                                            <div>Certificate notAfter (UNIX timestamp format).</div>
+                                            <div>Certificate expiration date (UNIX timestamp in millis).</div>
                                         <br/>
                                     </td>
             </tr>
@@ -479,7 +481,7 @@ Common return values are documented :ref:`here <common_return_values>`, the foll
                                     </td>
                 <td>If specifically requested.</td>
                 <td>
-                                            <div>Certificate notBefore (UNIX timestamp format).</div>
+                                            <div>Certificate issuance date (UNIX timestamp in millis).</div>
                                         <br/>
                                     </td>
             </tr>
@@ -524,7 +526,7 @@ Common return values are documented :ref:`here <common_return_values>`, the foll
                                     </td>
                 <td>If specifically requested.</td>
                 <td>
-                                            <div>Certificate revocation date (UNIX timestamp format).</div>
+                                            <div>Certificate revocation date (UNIX timestamp in millis).</div>
                                         <br/>
                                     </td>
             </tr>
@@ -554,7 +556,7 @@ Common return values are documented :ref:`here <common_return_values>`, the foll
                                     </td>
                 <td>If specifically requested.</td>
                 <td>
-                                            <div>Certificate serial number.</div>
+                                            <div>Certificate serial number (hexadecimal format).</div>
                                         <br/>
                                     </td>
             </tr>

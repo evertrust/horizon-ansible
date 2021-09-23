@@ -1,61 +1,61 @@
 - hosts: webserver
   become: yes
   vars: 
-    x_api_id: "{{api_id}}"
-    x_api_key: "{{api_key}}"
-
-    remaining_life: "{{remaining_life}}"
+    remaining_life: "{{ remaining_life }}"
 
   tasks:
-  - name: get certificate
+  - name: Retrieving current certificate
     shell: "cat /etc/apache2/ssl-files/{{domain}}.crt"
-    register: data
+    register: current_certificate
   
-  - name: recup certificate values
+  - name: Looking up for current certificate in Horizon
     set_fact:
-      certificate: "{{lookup('evertrust.horizon.horizon_lookup', pem=data['stdout'], x_api_id=x_api_id, x_api_key=x_api_key, endpoint='https://horizon-demo.evertrust.fr')}}"
+      lookup_result: "{{ lookup('evertrust.horizon.horizon_lookup', pem=current_certificate['stdout'], x_api_id=api_id, x_api_key=api_key, endpoint=horizon_endpoint) }}"
 
-  - name: calcule date
+  - name: Calculating certificate renewal date
     set_fact:
-      res_date: " {{ a|int - (b|int + (c|int *86400)) }} "
+      should_renew: "{{(a|int / 1000) - (c|int *86400) < b|int}}"
     vars:
-      a: "{{certificate['notAfter'][0]}}"
-      b: "{{ansible_date_time.epoch}}"
-      c: "{{ remaining_life }}"
+      a: "{{ lookup_result['notAfter'][0] }}"
+      b: "{{ ansible_date_time.epoch }}"
+      c: "{{ renewal_period }}"
 
-  - name: renew
+  - name: Renewing certificate if within its renewal period
     evertrust.horizon.horizon_enroll:
-      endpoint: "https://horizon-demo.evertrust.fr"
-      password: "Aa1"
-      key_type: "{{certificate['keyType'][0]}}"
-      x_api_id: "{{api_id}}"
-      x_api_key: "{{api_key}}"
-      profile: "{{certificate['profile'][0]}}"
-      subject: 
-        dn: "{{ certificate['dn'][0] }}"
-      sans: "{{ certificate['subjectAlternateNames'][0] }}"
-      labels: "{{ certificate['labels'][0] }}"
-    
-    register: value
-    
-    when: "{{ res_date|int < 0 }}"
+      endpoint: "{{ horizon_endpoint }}"
+      key_type: "{{ lookup_result['keyType'][0] }}"
+      x_api_id: "{{ api_id }}"
+      x_api_key: "{{ api_key }}"
+      profile: "{{ lookup_result['profile'][0] }}"
+      subject:
+        dn: "{{ lookup_result['dn'][0] }}"
+      sans: "{{ lookup_result['subjectAlternateNames'][0] }}"
+      labels: "{{ lookup_result['labels'][0] }}"
+    register: renewed_certificate
+    when: should_renew|bool == true
 
-  - name: horizon_revoke
+  - name: Uploading the renewed certificate
+    copy:
+      content: "{{ renewed_certificate['certificate'] }}"
+      dest: "/etc/apache2/ssl/{{ domain }}.crt"
+    when: should_renew|bool == true
+
+  - name: Uploading the renewed certificate private key
+    copy:
+      content: "{{ renewed_certificate['key'] }}"
+      dest: "/etc/apache2/ssl/{{ domain }}.key"
+    when: should_renew|bool == true
+
+  - name: Restarting apache2
+    service:
+      name: apache2
+      state: restarted
+    when: should_renew|bool == true
+
+  - name: Revoking the previous certificate
     evertrust.horizon.horizon_revoke:
-      endpoint: "https://horizon-demo.evertrust.fr" 
-      x_api_id: "{{api_id}}"
-      x_api_key: "{{api_key}}"
-      certificate_pem: "{{ data['stdout'] }}"
-    when: "{{ res_date|int < 0 }}"
-
-  - name: replace crt
-    copy:
-      content: "{{ value['certificate'] }}"
-      dest: "/etc/apache2/ssl-files/{{ domain }}.crt"
-    when: "{{ res_date|int < 0 }}"
-  
-  - name: replace key
-    copy:
-      content: "{{ value['key'] }}"
-      dest: "/etc/apache2/ssl-files/{{ domain }}.key"
-    when: "{{ res_date|int < 0 }}"
+      endpoint: "{{ horizon_endpoint }}"
+      x_api_id: "{{ api_id }}"
+      x_api_key: "{{ api_key }}"
+      certificate_pem: "{{ current_certificate['stdout'] }}"
+    when: should_renew|bool == true

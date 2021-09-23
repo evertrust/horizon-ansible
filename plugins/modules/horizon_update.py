@@ -7,6 +7,8 @@ from __future__ import absolute_import, division, print_function
 
 __metaclass__ = type
 
+# TODO: infer profile from certificate lookup
+
 # language=yaml
 DOCUMENTATION = r'''
 module: horizon_update
@@ -42,7 +44,7 @@ options:
 EXAMPLES = '''
 - name: Update a certificate by its content
     evertrust.horizon.horizon_update:
-      endpoint: "https://<api-endpoint>"
+      endpoint: "https://<horizon-endpoint>"
       x_api_id: "<horizon-id>"
       x_api_key: "<horizon-password>"
       labels:
@@ -51,7 +53,7 @@ EXAMPLES = '''
 
 - name: Update a certificate by its file
     evertrust.horizon.horizon_update:
-      endpoint: "https://<api-endpoint>"
+      endpoint: "https://<horizon-endpoint>"
       x_api_id: "<horizon-id>"
       x_api_key: "<horizon-password>"
       labels:

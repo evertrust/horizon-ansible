@@ -69,7 +69,8 @@ class Horizon():
 
         json = self.__generate_json(workflow="enroll", template=template, module="webra", profile=content["profile"],
                                     password=password, key_type=key_type, labels=content["labels"],
-                                    sans=content["sans"], subject=content["subject"], csr=csr)
+                                    sans=content["sans"], subject=content["subject"],
+                                    contact_email=content['contact_email'], csr=csr)
         return self.__post_request(content["endpoint"], json)
 
     def recover(self, content):
@@ -123,6 +124,7 @@ class Horizon():
         use_path = path_search
 
         json = self.__generate_json(workflow=None, query=content["query"], with_count=True, fields=content["fields"])
+        print(json)
 
         results = []
         has_more = True
@@ -165,13 +167,13 @@ class Horizon():
 
         response = self.__get_request(endpoint=content["endpoint"], param=pem)
 
-        if not "attributes" in content:
+        if not "fields" in content:
             fields = []
             for value in response:
                 fields.append(value)
             return self.__format_response(response, fields)
         else:
-            return self.__format_response(response, content["attributes"])
+            return self.__format_response(response, content["fields"])
 
     def __debug(self, response):
         """
@@ -296,7 +298,7 @@ class Horizon():
     def __generate_json(self, workflow, template=None, module=None, profile=None, password=None, certificate_pem=None,
                         revocation_reason=None, csr=None, labels=None, sans=None, subject=None, key_type=None,
                         campaign=None, ip=None, certificate=None, hostnames=None, operating_systems=None, paths=None,
-                        usages=None, query=None, fields=None, with_count=None, page_index=1):
+                        usages=None, query=None, fields=None, with_count=None, contact_email=None, page_index=1):
         """
             params: fields to create the json parameter to send to the API
         """
@@ -332,6 +334,8 @@ class Horizon():
                 my_json["template"]["csr"] = csr
             if labels is not None:
                 my_json["template"]["labels"] = self.__set_labels(labels)
+            if contact_email is not None:
+                my_json["contact"] = contact_email
 
         elif query is not None:
             my_json["query"] = self.__set_query(query)
@@ -668,7 +672,7 @@ class Horizon():
                     for label in certificate["labels"]:
                         if label["key"] == label_pref:
                             hostname = label["value"]
-                        break
+                            break
 
             if hostname is not None:
                 break
