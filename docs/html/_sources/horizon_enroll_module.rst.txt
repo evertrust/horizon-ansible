@@ -418,7 +418,7 @@ Common return values are documented :ref:`here <common_return_values>`, the foll
                       <span style="color: purple">string</span>
                                           </div>
                                     </td>
-                <td>if enrollement mode is &quot;centralized&quot;</td>
+                <td>if enrollement mode is &quot;centralized&quot; or if a key pair was generated on-the-fly</td>
                 <td>
                                             <div>Certificate&#x27;s private key</div>
                                         <br/>
