@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import (absolute_import, division, print_function)
+
 __metaclass__ = type
 
 # language=yaml
@@ -56,8 +57,8 @@ options:
 EXAMPLES = """
 vars:
   endpoint: "https://<horizon-endpoint>"
-  x_api_id: "<horizon-id>"
-  x_api_key: "<horizon-password>"
+  x-api-id: "<horizon-id>"
+  x-api-key: "<horizon-password>"
   # Send the certificate by specifying its content (string) 
   my_pem: <a_webra_pem_file>
   # Send the certificate by specifying its file path
@@ -65,13 +66,13 @@ vars:
     src: /pem/file/path
   
   # Sets a variable containing only one field (module)
-  with_one: "{{ lookup('evertrust.horizon.horizon_lookup', x_api_id=x_api_id, x_api_key=x_api_key, pem=my_pem, fields='module', endpoint=horizon_endpoint) }}"
+  with_one: "{{ lookup('evertrust.horizon.horizon_lookup', x-api-id=x-api-id, x-api-key=x-api-key, pem=my_pem, fields='module', endpoint=horizon_endpoint) }}"
 
   # Sets a variable containing a list of fields (module, _id)
-  with_list: "{{ lookup('evertrust.horizon.horizon_lookup', x_api_id=x_api_id, x_api_key=x_api_key, pem=my_pem, fields=['module', '_id'], endpoint=horizon_endpoint) }}"
+  with_list: "{{ lookup('evertrust.horizon.horizon_lookup', x-api-id=x-api-id, x-api-key=x-api-key, pem=my_pem, fields=['module', '_id'], endpoint=horizon_endpoint) }}"
 
   # Sets a variable containing every certificate field.
-  without: "{{ lookup('evertrust.horizon.horizon_lookup', x_api_id=x_api_id, x_api_key=x_api_key, pem=pem_path, endpoint=horizon_endpoint) }}"
+  without: "{{ lookup('evertrust.horizon.horizon_lookup', x-api-id=x-api-id, x-api-key=x-api-key, pem=pem_path, endpoint=horizon_endpoint) }}"
 """
 
 # language=yaml
@@ -194,46 +195,31 @@ class LookupModule(LookupBase):
 
     def run(self, terms, variables=None, **kwargs):
         try:
-            # Get value from playbook
-            authent, content = self._get_all_informations(kwargs)
-
-            horizon = Horizon(authent)
-            result = horizon.certificate(content)
+            client = Horizon(self._get_auth(kwargs))
+            content = self._get_content(kwargs)
+            result = client.certificate(content)
 
         except AnsibleAction as e:
             raise AnsibleError(f'Error: {e}')
 
         return result
 
-    def _get_all_informations(self, kwargs):
-        ''' Save all plugin information in lists '''
-        # Authent values
-        authent = {}
-        if "x_api_id" in kwargs:
-            authent["api_id"] = kwargs["x_api_id"]
-        else:
-            authent["api_id"] = None
-        if "x_api_key" in kwargs:
-            authent["api_key"] = kwargs["x_api_key"]
-        else:
-            authent["api_key"] = None
-        if "client_cert" in kwargs:
-            authent["client_cert"] = kwargs["client_cert"]
-        else:
-            authent["client_cert"] = None
-        if "client_key" in kwargs:
-            authent["client_key"] = kwargs["client_key"]
-        else:
-            authent["client_key"] = None
-        if "ca_bundle" in kwargs:
-            authent["ca_bundle"] = kwargs["ca_bundle"]
-        else:
-            authent["ca_bundle"] = None
-        # Content values
-        content = {}
-        content["endpoint"] = kwargs["endpoint"]
-        content["pem"] = kwargs["pem"]
-        if "fields" in kwargs:
-            content["fields"] = kwargs["fields"]
+    def _auth_args(self):
+        return ["endpoint", "x-api-id", "x-api-key", "ca_bundle", "client_cert", "client_key"]
 
-        return authent, content
+    def _get_auth(self, kwargs):
+        auth = {}
+        for arg in self._auth_args():
+            if arg in kwargs:
+                auth[arg] = kwargs[arg]
+        return auth
+
+    def _args(self):
+        return ["pem", "fields"]
+
+    def _get_content(self, kwargs):
+        content = {}
+        for arg in self._args():
+            if arg in kwargs:
+                content[arg] = kwargs[arg]
+        return content

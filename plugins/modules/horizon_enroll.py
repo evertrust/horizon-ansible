@@ -81,8 +81,8 @@ EXAMPLES = '''
 - name: Enrolling a certificate in a centralized way
   evertrust.horizon.horizon_enroll:
     endpoint: "https://<horizon-endpoint>"
-    x_api_id: "<horizon-id>"
-    x_api_key: "<horizon-password>"
+    x-api-id: "<horizon-id>"
+    x-api-key: "<horizon-password>"
     mode: "centralized"
     password: "examplePassword"
     key_type: "rsa-2048"
@@ -98,8 +98,8 @@ EXAMPLES = '''
 - name: Enrolling a certificate in a decentralized way with a CSR
   evertrust.horizon.horizon_enroll:
     endpoint: "https://<horizon-endpoint>"
-    x_api_id: "<horizon-id>"
-    x_api_key: "<horizon-password>"
+    x-api-id: "<horizon-id>"
+    x-api-key: "<horizon-password>"
     mode: "decentralized"
     csr: <a_csr_file>
     password: "examplePassword"
@@ -120,8 +120,8 @@ EXAMPLES = '''
 - name: Enrolling a certificate in a decentralized way without CSR
   evertrust.horizon.horizon_enroll:
     endpoint: "https://<horizon-endpoint>"
-    x_api_id: "<horizon-id>"
-    x_api_key: "<horizon-password>"
+    x-api-id: "<horizon-id>"
+    x-api-key: "<horizon-password>"
     mode: "decentralized"
     password: "examplePassword"
     key_type: "rsa-2048"

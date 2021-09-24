@@ -8,7 +8,7 @@ __metaclass__ = type
 import base64
 import re
 import string
-import urllib
+import urllib.parse
 
 import requests
 from ansible.errors import AnsibleError
@@ -19,31 +19,25 @@ from cryptography.hazmat.primitives.serialization import pkcs12
 from cryptography.x509.oid import NameOID
 from requests.exceptions import HTTPError
 
-path_template = "/api/v1/requests/template"
-path_submit = "/api/v1/requests/submit"
-path_search = "/api/v1/certificates/search"
-path_feed = "/api/v1/discovery/feed"
-path_certificate = "/api/v1/certificates/"
-use_path = path_submit
-
 
 class Horizon():
 
-    def __init__(self, authent):
+    def __init__(self, auth):
         """
             Initialize authentication parameters.
-            :param authent: horizon authentication parameters
+            :param auth: horizon authentication parameters
         """
         # Initialize values to avoid errors later
+        self.endpoint = auth['endpoint']
         self.headers = None
         self.cert = None
-        self.bundle = authent["ca_bundle"]
+        self.bundle = auth["ca_bundle"]
         # commplete the anthentication system
-        if authent["client_cert"] is not None and authent["client_key"] is not None:
-            self.cert = (authent["client_cert"], authent["client_key"])
+        if auth["client_cert"] is not None and auth["client_key"] is not None:
+            self.cert = (auth["client_cert"], auth["client_key"])
 
-        elif authent["api_id"] is not None and authent["api_key"] is not None:
-            self.headers = {"x-api-id": authent["api_id"], "x-api-key": authent["api_key"]}
+        elif auth["x-api-id"] is not None and auth["x-api-key"] is not None:
+            self.headers = {"x-api-id": auth["x-api-id"], "x-api-key": auth["x-api-key"]}
 
         else:
             raise AnsibleError('You have to inform authentication parameters')
@@ -54,7 +48,7 @@ class Horizon():
             :param content: all values get from the playbook
             :return the response of the API
         """
-        template = self.__get_template(content["endpoint"], content["profile"], "enroll", "webra")
+        template = self.__get_template(content["profile"], "enroll", "webra")
         password = self.__check_password_policy(content["password"], template)
         mode = self.__check_mode(template, mode=content["mode"])
         key_type = content["key_type"]
@@ -71,7 +65,7 @@ class Horizon():
                                     password=password, key_type=key_type, labels=content["labels"],
                                     sans=content["sans"], subject=content["subject"],
                                     contact_email=content['contact_email'], csr=csr)
-        return self.__post_request(content["endpoint"], json)
+        return self.post("/api/v1/requests/submit", json)
 
     def recover(self, content):
         """
@@ -79,7 +73,6 @@ class Horizon():
             :param content: all values get from the playbook
             :return the response of the API
         """
-        global use_path
 
         param = {
             "endpoint": content["endpoint"],
@@ -87,12 +80,11 @@ class Horizon():
         }
         profile = self.certificate(param)[0]["profile"][0]
 
-        template = self.__get_template(content["endpoint"], profile, "recover", "webra")
+        template = self.__get_template(profile, "recover", "webra")
         password = self.__check_password_policy(content["password"], template)
         json = self.__generate_json(workflow="recover", profile=profile, password=password,
                                     certificate_pem=content["certificate_pem"])
-        use_path = path_submit
-        return self.__post_request(content["endpoint"], json)
+        return self.post("/api/v1/requests/submit", json)
 
     def revoke(self, content):
         """
@@ -102,7 +94,7 @@ class Horizon():
         """
         json = self.__generate_json(workflow="revoke", revocation_reason=content["revocation_reason"],
                                     certificate_pem=content["certificate_pem"])
-        return self.__post_request(content["endpoint"], json)
+        return self.post("/api/v1/requests/submit", json)
 
     def update(self, content):
         """
@@ -112,7 +104,7 @@ class Horizon():
         """
         json = self.__generate_json(workflow="update", certificate_pem=content["certificate_pem"],
                                     labels=content["labels"])
-        return self.__post_request(content["endpoint"], json)
+        return self.post("/api/v1/requests/submit", json)
 
     def search(self, content):
         """
@@ -120,16 +112,12 @@ class Horizon():
             :param content: all values get from the playbook
             :return a list of certificate
         """
-        global use_path
-        use_path = path_search
-
         json = self.__generate_json(workflow=None, query=content["query"], with_count=True, fields=content["fields"])
-        print(json)
 
         results = []
         has_more = True
         while has_more:
-            response = self.__post_request(content["endpoint"], json)
+            response = self.post("/api/v1/certificates/search", json)
             results.append(response["results"][0])
             has_more = response["hasMore"]
             if has_more:
@@ -143,14 +131,11 @@ class Horizon():
             :param content: all values get from the playbook
             :return the response of the API
         """
-        global use_path
-        use_path = path_feed
-
         json = self.__generate_json(workflow=None, campaign=content["campaign"], ip=content["ip"],
                                     certificate=content["certificate"], hostnames=content["hostnames"],
                                     operating_systems=content["operating_systems"], paths=content["paths"],
                                     usages=content["usages"])
-        return self.__post_request(content["endpoint"], json, feed=True)
+        return self.post("/api/v1/discovery/feed", json, feed=True)
 
     def certificate(self, content):
         """
@@ -158,14 +143,11 @@ class Horizon():
             :param content: all values from the lookup request
             :return the response of the API
         """
-        global use_path
-        use_path = path_certificate
-
         pem = self.__set_certificate(content["pem"])
         pem = urllib.parse.quote(pem)
         pem = pem.replace('/', "%2F")
 
-        response = self.__get_request(endpoint=content["endpoint"], param=pem)
+        response = self.get("/api/v1/certificates/", param=pem)
 
         if not "fields" in content:
             fields = []
@@ -199,7 +181,7 @@ class Horizon():
         else:
             return True
 
-    def __get_template(self, endpoint, profile, workflow, module=None):
+    def __get_template(self, profile, workflow, module=None):
         """
             :param endpoint: url of the API
             :param profile: profile horizon
@@ -213,13 +195,9 @@ class Horizon():
             "workflow": workflow
         }
 
-        # Construct the api endpoint
-        endpoint = endpoint + path_template
-
         try:
             # Get the template
-            template = requests.post(url=endpoint, verify=self.bundle, cert=self.cert, headers=self.headers,
-                                     json=data).json()
+            template = self.post("/api/v1/requests/template", data)
             # Test the response
             if self.__debug(template):
                 return template
@@ -359,7 +337,7 @@ class Horizon():
 
         return my_json
 
-    def __post_request(self, endpoint, json, feed=False):
+    def post(self, path, json, feed=False):
         """
             :param json: the json to send to the API
             :param endpoint: url of the API
@@ -367,12 +345,11 @@ class Horizon():
             :return the response of the API
         """
         ''' Send the request to the API. '''
-        # Construct the API endpoint
-        endpoint = endpoint + use_path
+        uri = self.endpoint + path
 
         try:
             # Ask the API
-            response = requests.post(endpoint, verify=self.bundle, cert=self.cert, json=json, headers=self.headers)
+            response = requests.post(uri, verify=self.bundle, cert=self.cert, json=json, headers=self.headers)
             # Test the response
             if not feed:
                 response = response.json()
@@ -384,20 +361,21 @@ class Horizon():
         except Exception as err:
             raise AnsibleError(f'{err}')
 
-    def __get_request(self, endpoint, param=None):
+    def get(self, path, param=None):
         """
             :param endpoint: url of the API
             :param param: detail to add on the url
             :return the response of the API
         """
         # Construct the API endpoint
-        endpoint = endpoint + use_path
+        uri = self.endpoint + path
+
         if param is not None:
-            endpoint = endpoint + param
+            uri = uri + param
 
         try:
             # Ask the API
-            response = requests.get(endpoint, verify=self.bundle, cert=self.cert, headers=self.headers).json()
+            response = requests.get(uri, verify=self.bundle, cert=self.cert, headers=self.headers).json()
             # Test the response
             if self.__debug(response):
                 return response
@@ -538,37 +516,26 @@ class Horizon():
             :param key_type: a key format
             :return a PKCS10
         """
+        bindings = {
+            "cn": NameOID.COMMON_NAME,
+            "o": NameOID.ORGANIZATION_NAME,
+            "c": NameOID.COUNTRY_NAME,
+            "ou": NameOID.ORGANIZATIONAL_UNIT_NAME
+        }
+
         try:
-            private_key, public_key = self.__generate_biKey(key_type)
+            private_key, public_key = self.__generate_key_pair(key_type)
 
             x509_subject = []
             for element in subject:
-
                 if isinstance(subject[element], list):
-                    if element == "cn":
+                    if element in bindings.keys():
                         for value in subject[element]:
-                            x509_subject.append(x509.NameAttribute(NameOID.COMMON_NAME, value))
-                    elif element == "o":
-                        for value in subject[element]:
-                            x509_subject.append(x509.NameAttribute(NameOID.ORGANIZATION_NAME, value))
-                    elif element == "c":
-                        for value in subject[element]:
-                            x509_subject.append(x509.NameAttribute(NameOID.COUNTRY_NAME, value))
-                    elif element == "ou":
-                        for value in subject[element]:
-                            x509_subject.append(x509.NameAttribute(NameOID.ORGANIZATIONAL_UNIT_NAME, value))
-
+                            x509_subject.append(x509.NameAttribute(bindings[element], value))
                 else:
                     val, i = element.split('.')
-
-                    if val == "cn":
-                        x509_subject.append(x509.NameAttribute(NameOID.COMMON_NAME, subject[element]))
-                    elif val == "o":
-                        x509_subject.append(x509.NameAttribute(NameOID.ORGANIZATION_NAME, subject[element]))
-                    elif val == "c":
-                        x509_subject.append(x509.NameAttribute(NameOID.COUNTRY_NAME, subject[element]))
-                    elif val == "ou":
-                        x509_subject.append(x509.NameAttribute(NameOID.ORGANIZATIONAL_UNIT_NAME, subject[element]))
+                    if val in bindings.keys():
+                        x509_subject.append(x509.NameAttribute(bindings[val], subject[element]))
 
             pkcs10 = x509.CertificateSigningRequestBuilder()
             pkcs10 = pkcs10.subject_name(x509.Name(x509_subject))
@@ -576,14 +543,14 @@ class Horizon():
             csr = pkcs10.sign(private_key, hashes.SHA256())
 
             if isinstance(csr, x509.CertificateSigningRequest):
-                return csr.public_bytes(serialization.Encoding.PEM).decode()
+                return private_key, csr.public_bytes(serialization.Encoding.PEM).decode()
 
         except Exception as e:
             raise AnsibleError(
                 f'Error in the creation of the pkcs10, be sure to fill all the fields required with decentralized '
                 f'mode. Error is: {e}')
 
-    def __generate_biKey(self, key_type):
+    def __generate_key_pair(self, key_type):
         """
             :param key_type: a key format
             :return a tuple (private key, public key)

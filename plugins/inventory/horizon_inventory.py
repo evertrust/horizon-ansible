@@ -64,8 +64,8 @@ EXAMPLES = '''
 plugin: evertrust.horizon.horizon_inventory
 
 endpoint: "https://<horizon-endpoint>"
-x_api_id: "<horizon-id>"
-x_api_key: "<horizon-password>"
+x-api-id: "<horizon-id>"
+x-api-key: "<horizon-password>"
 
 query: "null"
 # fields:
@@ -83,6 +83,7 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
 
     def __init__(self):
         super(InventoryModule, self).__init__()
+        self.client = self._get_client()
 
     def _populate(self, certificates, hostnames, fields):
         '''
@@ -105,7 +106,7 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
             :param fields: a list of fields
         '''
         for host in hosts:
-            hostname = self.horizon.get_hostnames(host, hostnames)
+            hostname = self.client.get_hostnames(host, hostnames)
 
             if not hostname:
                 continue
@@ -167,26 +168,27 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
                 f'All correct options required: {e}'
             )
 
-        self.horizon = Horizon(authent)
-        response = self.horizon.search(content)
+        response = self.client.search(content)
 
         self._populate(response, content["hostnames"], content["fields"])
 
-    def _get_all_informations(self, path):
-        ''' Save all plugin information in self variables '''
-        self.config = self._read_config_data(path)
-        # Authent values
-        authent = {}
-        authent["api_id"] = self.config.get('x_api_id')
-        authent["api_key"] = self.config.get('x_api_key')
-        authent["ca_bundle"] = self.config.get('ca_bundle')
-        authent["client_cert"] = self.config.get('client_cert')
-        authent["client_key"] = self.config.get('client_key')
-        # Content values
-        content = {}
-        content["endpoint"] = self.config.get('endpoint')
-        content["query"] = self.config.get('query')
-        content["fields"] = self.config.get('fields')
-        content["hostnames"] = self.config.get('hostnames')
+    def _auth_args(self):
+        return ["endpoint", "x-api-id", "x-api-key", "ca_bundle", "client_cert", "client_key"]
 
-        return authent, content
+    def _get_auth(self):
+        auth = {}
+        for arg in self._auth_args():
+            auth[arg] = self.config.get(arg)
+        return auth
+
+    def _args(self):
+        return ["query", "fields", "hostnames"]
+
+    def _get_content(self):
+        content = {}
+        for arg in self._args():
+            content[arg] = self.config.get(arg)
+        return content
+
+    def _get_client(self):
+        return Horizon(self._get_auth())

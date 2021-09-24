@@ -62,8 +62,8 @@ EXAMPLES = '''
 - name: Feed a certificate by its content
     evertrust.horizon.horizon_feed:
       endpoint: "https://<horizon-endpoint>"
-      x_api_id: "<horizon-id>"
-      x_api_key: "<horizon-password>"
+      x-api-id: "<horizon-id>"
+      x-api-key: "<horizon-password>"
       campaign: exampleCampaign
       ip: localhost
       certificate: <certificate_in_pem>
@@ -71,8 +71,8 @@ EXAMPLES = '''
 - name: Feed a certificate by a file
     evertrust.horizon.horizon_feed:
       endpoint: "https://<horizon-endpoint>"
-      x_api_id: "<horizon-id>"
-      x_api_key: "<horizon-password>"
+      x-api-id: "<horizon-id>"
+      x-api-key: "<horizon-password>"
       campaign: exampleCampaign
       ip: localhost
       certificate:
