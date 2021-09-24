@@ -1,7 +1,7 @@
 - hosts: webserver
   become: yes
   tasks:
-  - name: update
+  - name: Updating APT cache
     apt: update_cache=yes   
   
   - name: Installing nginx

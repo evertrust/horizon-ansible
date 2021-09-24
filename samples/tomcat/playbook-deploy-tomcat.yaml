@@ -1,47 +1,46 @@
 - hosts: webserver
   become: yes
   tasks:
-  - name: update
+  - name: Updating APT cache
     apt: update_cache=yes   
 
-  - name: add group "tomcat"
+  - name: Creating group "tomcat"
     group: 
       name: tomcat
 
-  - name: add user "tomcat"
+  - name: Creating user "tomcat"
     user: 
       name: tomcat 
       group: tomcat 
       createhome: yes
     become: true
   
-  - name: install tomcat
+  - name: Installing tomcat
     apt: 
       name: tomcat9 
       state: latest
 
-  - name: horizon_enroll
+  - name: Enrolling a certificate on Horizon for domain {{ domain }}
     evertrust.horizon.horizon_enroll:
-      endpoint: "https://horizon-demo.evertrust.fr"
+      endpoint: "{{ horizon_endpoint }}"
       mode: "centralized"
-      password: "Aa1"
-      key_type: "rsa-2048"
+      key_type: "{{ key_type }}"
       x_api_id: "{{ api_id }}"
       x_api_key: "{{ api_key }}"
-      profile: "DefaultSSLInternalCA"
-      module: "webra"
+      profile: "{{ profile }}"
       subject:
         cn.1: "{{ domain }}"
-        o.1: "Evertrust"
-        c.1: "FR"
+        ou.1: "Web Server"
       sans:
         dnsname.1: "{{ domain }}"
+        dnsname.2: "www.{{ domain }}"
       labels:
-        snow_id: "needed"
-      
-    register: value
+        business_unit: "{{ business_unit }}"
+        ansible_host: "{{ ansible_host }}"
+      contact_email: "{{ contact_email }}"
+    register: enrolled_certificate
   
-  - name: create tomcat directory
+  - name: Creating the tomcat directory
     file:
       path: /etc/tomcat9
       state: directory
@@ -49,41 +48,41 @@
       owner: "tomcat"
       group: "tomcat"
 
-  - name: create ssl directory
+  - name: Creating the SSL directory
     file:
-      path: /etc/tomcat9/ssl-files
+      path: /etc/tomcat9/ssl
       state: directory
       mode: '0775'
       owner: "tomcat"
       group: "tomcat"
 
-  - name: create file crt
+  - name: Uploading the {{ domain }} certificate
     copy:
-      content: "{{ value['certificate'] }}"
-      dest: "/etc/tomcat9/ssl-files/{{ domain }}.crt"
+      content: "{{ enrolled_certificate['certificate'] }}"
+      dest: "/etc/tomcat9/ssl/{{ domain }}.crt"
       mode: '0660'
       owner: tomcat 
       group: tomcat 
     
-  - name: create file key
+  - name: Uploading the {{ domain }} private key
     copy:
-      content: "{{ value['key'] }}"
-      dest: "/etc/tomcat9/ssl-files/{{ domain }}.key"
+      content: "{{ enrolled_certificate['key'] }}"
+      dest: "/etc/tomcat9/ssl/{{ domain }}.key"
       mode: '0660'
       owner: tomcat 
       group: tomcat 
 
-  - name: Configure Tomcat server
+  - name: Uploading the tomcat configuration
     template: 
-      src: /Users/adrien/Playbooks_exemples/templates/tomcat.server.xml.j2
+      src: ../templates/tomcat.server.xml.j2
       dest: /etc/tomcat9/server.xml
 
-  - name: Restart Tomcat
-    command: "systemctl restart tomcat9"
-    become: true
-    become_user: root
+  - name: Restarting nginx
+    service:
+      name: tomcat9
+      state: restarted
 
-  - name: wait for tomcat to start
+  - name: Waiting for the tomcat service to start
     wait_for: 
       port: 8443
 

@@ -5,7 +5,7 @@
 
   tasks:
   - name: Retrieving current certificate
-    shell: "cat /etc/apache2/ssl-files/{{domain}}.crt"
+    shell: "cat /etc/apache2/ssl/{{ domain }}.crt"
     register: current_certificate
   
   - name: Looking up for current certificate in Horizon

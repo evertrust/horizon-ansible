@@ -64,8 +64,8 @@ EXAMPLES = '''
 plugin: evertrust.horizon.horizon_inventory
 
 endpoint: "https://<horizon-endpoint>"
-x-api-id: "<horizon-id>"
-x-api-key: "<horizon-password>"
+x_api_id: "<horizon-id>"
+x_api_key: "<horizon-password>"
 
 query: "null"
 # fields:
@@ -173,7 +173,7 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
         self._populate(response, content["hostnames"], content["fields"])
 
     def _auth_args(self):
-        return ["endpoint", "x-api-id", "x-api-key", "ca_bundle", "client_cert", "client_key"]
+        return ["endpoint", "x_api_id", "x_api_key", "ca_bundle", "client_cert", "client_key"]
 
     def _get_auth(self):
         auth = {}

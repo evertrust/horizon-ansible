@@ -28,7 +28,7 @@
         dnsname.1: "{{ domain }}"
         dnsname.2: "www.{{ domain }}"
       labels:
-        BusinessUnit: "{{ business_unit }}"
+        business_unit: "{{ business_unit }}"
         ansible_host: "{{ ansible_host }}"
       contact_email: "{{ contact_email }}"
     register: enrolled_certificate

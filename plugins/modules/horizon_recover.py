@@ -49,16 +49,16 @@ EXAMPLES = '''
 - name: Recover a certificate by its content
     evertrust.horizon.horizon_recover:
       endpoint: "https://<horizon-endpoint>"
-      x-api-id: "<horizon-id>"
-      x-api-key: "<horizon-password>"
+      x_api_id: "<horizon-id>"
+      x_api_key: "<horizon-password>"
       certificate_pem: <certificate_in_pem>
       password: "examplePassword"
 
 - name: Recover a certificate by a file
     evertrust.horizon.horizon_recover:
       endpoint: "https://<horizon-endpoint>"
-      x-api-id: "<horizon-id>"
-      x-api-key: "<horizon-password>"
+      x_api_id: "<horizon-id>"
+      x_api_key: "<horizon-password>"
       certificate_pem:
         src: pem/file/path
       password: "examplePassword"

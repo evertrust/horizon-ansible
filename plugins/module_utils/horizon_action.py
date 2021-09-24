@@ -19,7 +19,7 @@ class HorizonAction(ActionBase, ABC):
         return []
 
     def _auth_args(self):
-        return ["endpoint", "x-api-id", "x-api-key", "ca_bundle", "client_cert", "client_key"]
+        return ["endpoint", "x_api_id", "x_api_key", "ca_bundle", "client_cert", "client_key"]
 
     def _get_auth(self):
         auth = {}

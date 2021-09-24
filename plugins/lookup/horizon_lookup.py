@@ -57,8 +57,8 @@ options:
 EXAMPLES = """
 vars:
   endpoint: "https://<horizon-endpoint>"
-  x-api-id: "<horizon-id>"
-  x-api-key: "<horizon-password>"
+  x_api_id: "<horizon-id>"
+  x_api_key: "<horizon-password>"
   # Send the certificate by specifying its content (string) 
   my_pem: <a_webra_pem_file>
   # Send the certificate by specifying its file path
@@ -66,13 +66,13 @@ vars:
     src: /pem/file/path
   
   # Sets a variable containing only one field (module)
-  with_one: "{{ lookup('evertrust.horizon.horizon_lookup', x-api-id=x-api-id, x-api-key=x-api-key, pem=my_pem, fields='module', endpoint=horizon_endpoint) }}"
+  with_one: "{{ lookup('evertrust.horizon.horizon_lookup', x_api_id=x_api_id, x_api_key=x_api_key, pem=my_pem, fields='module', endpoint=horizon_endpoint) }}"
 
   # Sets a variable containing a list of fields (module, _id)
-  with_list: "{{ lookup('evertrust.horizon.horizon_lookup', x-api-id=x-api-id, x-api-key=x-api-key, pem=my_pem, fields=['module', '_id'], endpoint=horizon_endpoint) }}"
+  with_list: "{{ lookup('evertrust.horizon.horizon_lookup', x_api_id=x_api_id, x_api_key=x_api_key, pem=my_pem, fields=['module', '_id'], endpoint=horizon_endpoint) }}"
 
   # Sets a variable containing every certificate field.
-  without: "{{ lookup('evertrust.horizon.horizon_lookup', x-api-id=x-api-id, x-api-key=x-api-key, pem=pem_path, endpoint=horizon_endpoint) }}"
+  without: "{{ lookup('evertrust.horizon.horizon_lookup', x_api_id=x_api_id, x_api_key=x_api_key, pem=pem_path, endpoint=horizon_endpoint) }}"
 """
 
 # language=yaml
@@ -205,13 +205,15 @@ class LookupModule(LookupBase):
         return result
 
     def _auth_args(self):
-        return ["endpoint", "x-api-id", "x-api-key", "ca_bundle", "client_cert", "client_key"]
+        return ["endpoint", "x_api_id", "x_api_key", "ca_bundle", "client_cert", "client_key"]
 
     def _get_auth(self, kwargs):
         auth = {}
         for arg in self._auth_args():
-            if arg in kwargs:
+            if arg in kwargs.keys():
                 auth[arg] = kwargs[arg]
+            else:
+                auth[arg] = None
         return auth
 
     def _args(self):
@@ -220,6 +222,6 @@ class LookupModule(LookupBase):
     def _get_content(self, kwargs):
         content = {}
         for arg in self._args():
-            if arg in kwargs:
+            if arg in kwargs.keys():
                 content[arg] = kwargs[arg]
         return content

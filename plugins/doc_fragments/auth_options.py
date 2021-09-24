@@ -10,13 +10,13 @@ class ModuleDocFragment(object):
     # language=yaml
     DOCUMENTATION = r'''
     options:
-      x-api-id:
+      x_api_id:
         description:
           - Horizon identifier
           - Required if you use credentials authentication
         required: false
         type: str
-      x-api-key:
+      x_api_key:
         description:
           - Horizon password
           - Required if you use credentials authentication

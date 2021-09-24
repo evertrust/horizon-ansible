@@ -10,9 +10,9 @@
 
         SSLProtocol All -SSLv2 -SSLv3 -TLSv1 -TLSv1.1
 
-        SSLCertificateFile /etc/apache2/ssl-files/{{ domain  }}.crt
-        SSLCertificateKeyFile /etc/apache2/ssl-files/{{ domain  }}.key
+        SSLCertificateFile /etc/apache2/ssl/{{ domain }}.crt
+        SSLCertificateKeyFile /etc/apache2/ssl/{{ domain }}.key
 
-        ErrorLog /var/log/apache2/{{domain}}.error.log
+        ErrorLog /var/log/apache2/{{ domain }}.error.log
 
 </VirtualHost>

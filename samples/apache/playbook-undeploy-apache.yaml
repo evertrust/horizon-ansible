@@ -3,7 +3,7 @@
   tasks:
   - name: Retrieving the current certificate
     shell: "cat /etc/apache2/ssl/{{ domain }}.crt"
-    register: data
+    register: certificate
 
   - name: Stopping Apache services
     service:
@@ -21,4 +21,4 @@
       endpoint: "{{ horizon_endpoint }}"
       x_api_id: "{{ api_id }}"
       x_api_key: "{{ api_key }}"
-      certificate_pem: "{{ data['stdout'] }}"
+      certificate_pem: "{{ certificate['stdout'] }}"

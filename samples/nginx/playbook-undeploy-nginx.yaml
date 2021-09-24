@@ -18,7 +18,7 @@
       purge: yes
 
 
-  - name: Revoking currenrt certificate
+  - name: Revoking the current certificate
     evertrust.horizon.horizon_revoke:
       endpoint: "{{ horizon_endpoint }}" 
       x_api_id: "{{ api_id }}"
