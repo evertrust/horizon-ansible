@@ -154,6 +154,6 @@ certificate:
   type: str
 key:
   description: Certificate's private key
-  returned: if enrollement mode is "centralized"
+  returned: if enrollement mode is "centralized" or if a key pair was generated on-the-fly
   type: str
 '''

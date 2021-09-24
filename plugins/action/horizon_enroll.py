@@ -8,6 +8,7 @@ __metaclass__ = type
 
 from ansible.errors import AnsibleAction
 from ansible_collections.evertrust.horizon.plugins.module_utils.horizon_action import HorizonAction
+from cryptography.hazmat.primitives import serialization
 
 
 class ActionModule(HorizonAction):
@@ -20,17 +21,30 @@ class ActionModule(HorizonAction):
         result = super(ActionModule, self).run(tmp, task_vars)
 
         try:
-            # Get value from playbook
             client = self._get_client()
             content = self._get_content()
+            key = None
+            certificate = None
+
+            # Generate a key pair and CSR if none was provided
+            if content["mode"] == "decentralized" and content['csr'] is None:
+                key, csr = client.generate_PKCS10(subject=content['subject'], key_type=content['key_type'])
+                content['csr'] = csr
+
             response = client.enroll(content)
 
-            certificate = None
             if "certificate" in response:
                 certificate = response["certificate"]["certificate"]
 
             if content["mode"] == "decentralized":
-                result = {"certificate": certificate}
+                result = {
+                    "certificate": certificate,
+                    "key": key.private_bytes(
+                        encoding=serialization.Encoding.PEM,
+                        format=serialization.PrivateFormat.TraditionalOpenSSL,
+                        encryption_algorithm=serialization.NoEncryption()
+                    ).decode()
+                }
             else:
                 result = {
                     "p12": response["pkcs12"]["value"],

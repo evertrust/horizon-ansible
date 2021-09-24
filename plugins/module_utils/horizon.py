@@ -52,13 +52,12 @@ class Horizon():
         password = self.__check_password_policy(content["password"], template)
         mode = self.__check_mode(template, mode=content["mode"])
         key_type = content["key_type"]
+        if "csr" not in content.keys():
+            raise AnsibleError("You must specify a CSR when using decentralized enrollment")
         csr = content["csr"]
 
         if mode == "decentralized":
-            if key_type in template["template"]["keyTypes"]:
-                if csr is None:
-                    csr = self.__generate_PKCS10(content["subject"], key_type)
-            else:
+            if key_type not in template["template"]["keyTypes"]:
                 raise AnsibleError(f'key_type not in list')
 
         json = self.__generate_json(workflow="enroll", template=template, module="webra", profile=content["profile"],
@@ -510,7 +509,7 @@ class Horizon():
         else:
             raise AnsibleError(f'The mode: {mode} is not available.')
 
-    def __generate_PKCS10(self, subject, key_type):
+    def generate_PKCS10(self, subject, key_type):
         """
             :param subject: a dict contaning the subject's informations of the certificate
             :param key_type: a key format
