@@ -33,6 +33,10 @@
       contact_email: "{{ contact_email }}"
     register: enrolled_certificate
 
+  - name: Looking up for enrolled certificate in Horizon
+    set_fact:
+      lookup_result: "{{ lookup('evertrust.horizon.horizon_lookup', pem=enrolled_certificate['certificate'], x_api_id=api_id, x_api_key=api_key, endpoint=horizon_endpoint) }}"
+
   - name: Creating the SSL directory
     file:
       path: /etc/apache2/ssl
@@ -64,6 +68,14 @@
       mode: '0775'
       owner: "www-data"
       group: "www-data"
+
+  - name: Deploying the {{ domain }} index page
+    template:
+      src: ../templates/index.html.j2
+      dest: "/var/www/{{ domain }}/index.html"
+      owner: "www-data"
+      group: "www-data"
+      mode: '0644'
 
   - name: Uploading the {{ domain }} site config
     template:
