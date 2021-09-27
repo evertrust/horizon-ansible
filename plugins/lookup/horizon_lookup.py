@@ -14,7 +14,7 @@ short_description: Horizon lookup plugin
 description: Retrieve certificate's information from Horizon.
 extends_documentation_fragment: evertrust.horizon.auth_options
 options:
-  pem:
+  certificate_pem:
     description:
       - A certificate in PEM format, or the path to the certificate PEM file.
     required: false
@@ -79,46 +79,39 @@ vars:
 RETURN = """
 _id:
   description: Horizon internal certificate ID.
-  type: list
-  elements: str
+  type: str
   returned: If specifically requested.
 certificate:
   description: Certificate in PEM format.
-  type: list
-  elements: str
+  type: str
   returned: If specifically requested.
 discoveredTrusted:
   description: 
   - True if the certificate was discovered and trusted. 
   - False if the certificate was discovered. 
   - Absent if the certificate was not discovered.
-  type: list
-  elements: bool
+  type: bool
   returned: If specifically requested.
 dn:
   description: Certificate DN.
-  type: list
-  elements: str
+  type: str
   returned: If specifically requested.
 holderId:
   description: Certificate holder ID.
-  type: list
-  elements: str
+  type: str
   returned: If specifically requested.
 issuer:
   description: Certificate issuer DN.
-  type: list
-  elements: str
+  type: str
   returned: If specifically requested.
 keyType:
   description: Certificate key type.
-  type: list
-  elements: str
+  type: str
   returned: If specifically requested.
 labels:
   description: Certificate labels.
   type: list
-  elements: str
+  elements: dict
   returned: If specifically requested.
 metadata:
   description: Certificate metadata.
@@ -127,58 +120,49 @@ metadata:
   returned: If specifically requested.
 module:
   description: Certificate module.
-  type: list
-  elements: str
+  type: str
   returned: If specifically requested.
 notAfter:
   description: Certificate expiration date (UNIX timestamp in millis).
-  type: list
-  elements: int
+  type: int
   returned: If specifically requested.
 notBefore:
   description: Certificate issuance date (UNIX timestamp in millis).
-  type: list
-  elements: int
+  type: int
   returned: If specifically requested.
 owner:
   description: Certificate owner.
-  type: list
-  elements: str
+  type: str
   returned: If specifically requested.
 profile:
   description: Certificate profile.
-  type: list
-  elements: str
+  type: str
   returned: If specifically requested.
 revocationDate:
   description: Certificate revocation date (UNIX timestamp in millis).
-  type: list
-  elements: str
+  type: str
   returned: If specifically requested.
 revocationReason:
   description: Certificate revocation reason.
-  type: list
-  elements: str
+  type: str
   returned: If specifically requested.
 serial:
   description: Certificate serial number (hexadecimal format).
-  type: list
-  elements: str
+  type: str
   returned: If specifically requested.
 signingAlgorithm:
   description: Certificate signing algorithm.
-  type: list
-  elements: str
+  type: str
   returned: If specifically requested.
 subjectAlternateNames:
   description: Certificate subject alternate names (SAN).
   type: list
-  elements: str
+  elements: dict
   returned: If specifically requested.
 thirdPartyData:
   description: Certificate third-party data.
   type: list
-  elements: str
+  elements: dict
   returned: If specifically requested.
 """
 
@@ -195,9 +179,9 @@ class LookupModule(LookupBase):
 
     def run(self, terms, variables=None, **kwargs):
         try:
-            client = Horizon(self._get_auth(kwargs))
+            client = Horizon(**self._get_auth(kwargs))
             content = self._get_content(kwargs)
-            result = client.certificate(content)
+            result = client.certificate(**content)
 
         except AnsibleAction as e:
             raise AnsibleError(f'Error: {e}')
@@ -217,7 +201,7 @@ class LookupModule(LookupBase):
         return auth
 
     def _args(self):
-        return ["pem", "fields"]
+        return ["certificate_pem", "fields"]
 
     def _get_content(self, kwargs):
         content = {}

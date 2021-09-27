@@ -25,7 +25,7 @@ options:
       - IP address of the discovered host
     required: true
     type: str
-  certificate:
+  certificate_pem:
     description:
       - A certificate in PEM format, or the path to the certificate PEM file.
     required: false
@@ -75,6 +75,6 @@ EXAMPLES = '''
       x_api_key: "<horizon-password>"
       campaign: exampleCampaign
       ip: localhost
-      certificate:
+      certificate_pem:
         src: pem/file/path
 '''

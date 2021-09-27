@@ -149,15 +149,83 @@ p12_password:
   returned: If enrollement mode is "centralized"
   type: str
 certificate:
-  description: Enrolled certificate in PEM format
-  returned: always
+  description: Enrolled certificate object
+  returned: Always
   type: str
-bundle:
+  contains:
+    _id:
+      description: Horizon internal certificate ID.
+      type: str
+      returned: Always
+    certificate:
+      description: Certificate in PEM format.
+      type: str
+      returned: Always
+    dn:
+      description: Certificate DN.
+      type: str
+      returned: Always
+    holderId:
+      description: Certificate holder ID.
+      type: str
+      returned: Always
+    issuer:
+      description: Certificate issuer DN.
+      type: str
+      returned: Always
+    keyType:
+      description: Certificate key type.
+      type: str
+      returned: Always
+    labels:
+      description: Certificate labels.
+      type: list
+      elements: dict
+      returned: If present
+    metadata:
+      description: Certificate metadata.
+      type: list
+      elements: dict
+      returned: Always
+    module:
+      description: Certificate module.
+      type: str
+      returned: Always
+    notAfter:
+      description: Certificate expiration date (UNIX timestamp in millis).
+      type: int
+      returned: Always
+    notBefore:
+      description: Certificate issuance date (UNIX timestamp in millis).
+      type: int
+      returned: Always
+    owner:
+      description: Certificate owner.
+      type: str
+      returned: Always
+    profile:
+      description: Certificate profile.
+      type: str
+      returned: Always
+    serial:
+      description: Certificate serial number (hexadecimal format).
+      type: str
+      returned: Always
+    signingAlgorithm:
+      description: Certificate signing algorithm.
+      type: str
+      returned: Always
+    subjectAlternateNames:
+      description: Certificate subject alternate names (SAN).
+      type: list
+      elements: dict
+      returned: If present
+chain:
   description: Certificate's trust chain
-  returned: always
+  returned: Always
   type: str
 key:
   description: Certificate's private key
-  returned: if enrollement mode is "centralized" or if a key pair was generated on-the-fly
+  returned: If enrollement mode is "centralized" or if a key pair was generated on-the-fly
   type: str
 '''

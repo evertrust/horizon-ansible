@@ -21,8 +21,7 @@ class ActionModule(HorizonAction):
         try:
             client = self._get_client()
             content = self._get_content()
-            result = client.update(content)
-
+            result = client.update(**content)
         except AnsibleAction as e:
             result.update(e.result)
 

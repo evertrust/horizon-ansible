@@ -5,7 +5,6 @@ from __future__ import (absolute_import, division, print_function)
 
 __metaclass__ = type
 
-import base64
 import re
 import string
 import urllib.parse
@@ -15,169 +14,172 @@ from ansible.errors import AnsibleError
 from cryptography import x509
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import rsa, ec
-from cryptography.hazmat.primitives.serialization import pkcs12
 from cryptography.x509.oid import NameOID
 from requests.exceptions import HTTPError
 
 
 class Horizon():
 
-    def __init__(self, auth):
+    def __init__(self, endpoint, x_api_id=None, x_api_key=None, client_cert=None, client_key=None, ca_bundle=None):
         """
             Initialize authentication parameters.
             :param auth: horizon authentication parameters
         """
         # Initialize values to avoid errors later
-        self.endpoint = auth['endpoint']
+        self.endpoint = endpoint
         self.headers = None
         self.cert = None
-        self.bundle = auth["ca_bundle"]
+        self.bundle = ca_bundle
         # commplete the anthentication system
-        if auth["client_cert"] is not None and auth["client_key"] is not None:
-            self.cert = (auth["client_cert"], auth["client_key"])
+        if client_cert is not None and client_key is not None:
+            self.cert = (client_cert, client_key)
 
-        elif auth["x_api_id"] is not None and auth["x_api_key"] is not None:
-            self.headers = {"x-api-id": auth["x_api_id"], "x-api-key": auth["x_api_key"]}
+        elif x_api_id is not None and x_api_key is not None:
+            self.headers = {"x-api-id": x_api_id, "x-api-key": x_api_key}
 
         else:
             raise AnsibleError('You have to inform authentication parameters')
 
-    def enroll(self, content):
+    def enroll(self, profile, mode=None, csr=None, password=None, key_type=None, labels={}, sans={}, subject={},
+               contact_email=None):
         """
             All steps to enroll a certificate
             :param content: all values get from the playbook
             :return the response of the API
         """
-        template = self.__get_template(content["profile"], "enroll", "webra")
-        password = self.__check_password_policy(content["password"], template)
-        mode = self.__check_mode(template, mode=content["mode"])
-        key_type = content["key_type"]
-        if "csr" not in content.keys():
-            raise AnsibleError("You must specify a CSR when using decentralized enrollment")
-        csr = content["csr"]
+        template = self.__get_template(profile, "enroll", "webra")
+        password = self.__check_password_policy(password, template)
+        mode = self.__check_mode(template, mode=mode)
 
         if mode == "decentralized":
-            if key_type not in template["template"]["keyTypes"]:
-                raise AnsibleError(f'key_type not in list')
+            if csr is None:
+                raise AnsibleError("You must specify a CSR when using decentralized enrollment")
+        if key_type not in template["template"]["keyTypes"]:
+            raise AnsibleError(f'key_type not in list')
 
-        json = self.__generate_json(workflow="enroll", template=template, module="webra", profile=content["profile"],
-                                    password=password, key_type=key_type, labels=content["labels"],
-                                    sans=content["sans"], subject=content["subject"],
-                                    contact_email=content['contact_email'], csr=csr)
+        json = {
+            "workflow": "enroll",
+            "module": "webra",
+            "profile": profile,
+            "password": {
+                "value": password
+            },
+            "template": {
+                "keyTypes": [key_type],
+                "sans": self.__set_sans(sans),
+                "subject": self.__set_subject(subject, template),
+                "csr": csr,
+                "labels": self.__set_labels(labels),
+            },
+            "contact": contact_email
+        }
+
         return self.post("/api/v1/requests/submit", json)
 
-    def recover(self, content):
+    def recover(self, certificate_pem, password):
         """
             All steps to recover a certificate
             :param content: all values get from the playbook
             :return the response of the API
         """
 
-        param = {
-            "endpoint": content["endpoint"],
-            "pem": content["certificate_pem"]
-        }
-        profile = self.certificate(param)[0]["profile"][0]
-
+        profile = self.certificate(certificate_pem)["profile"]
         template = self.__get_template(profile, "recover", "webra")
-        password = self.__check_password_policy(content["password"], template)
-        json = self.__generate_json(workflow="recover", profile=profile, password=password,
-                                    certificate_pem=content["certificate_pem"])
+        password = self.__check_password_policy(password, template)
+
+        json = {
+            "workflow": "recover",
+            "profile": profile,
+            "password": password,
+            "certificatePem": self.__get_certificate(certificate_pem)
+        }
+
         return self.post("/api/v1/requests/submit", json)
 
-    def revoke(self, content):
+    def revoke(self, certificate_pem, revocation_reason):
         """
             All steps to revoke a certificate
             :param content: all values get from the playbook
             :return the response of the API
         """
-        json = self.__generate_json(workflow="revoke", revocation_reason=content["revocation_reason"],
-                                    certificate_pem=content["certificate_pem"])
+        json = {
+            "workflow": "revoke",
+            "certificatePem": self.__get_certificate(certificate_pem),
+            "revocationReason": revocation_reason
+        }
+
         return self.post("/api/v1/requests/submit", json)
 
-    def update(self, content):
+    def update(self, certificate_pem, labels={}):
         """
             All steps to update a certificate
             :param content: all values get from the playbook
             :return the response of the API
         """
-        json = self.__generate_json(workflow="update", certificate_pem=content["certificate_pem"],
-                                    labels=content["labels"])
+        json = {
+            "workflow": "update",
+            "certificatePem": self.__get_certificate(certificate_pem),
+            "labels": self.__set_labels(labels)
+        }
         return self.post("/api/v1/requests/submit", json)
 
-    def search(self, content):
+    def search(self, query=None, fields=[]):
         """
             All steps to search on horizon
             :param content: all values get from the playbook
             :return a list of certificate
         """
-        json = self.__generate_json(workflow=None, query=content["query"], with_count=True, fields=content["fields"])
-
+        json = {
+            "query": query,
+            "withCount": True,
+            "pageIndex": 1,
+            "fields": ["module", "profile", "labels", "subjectAlternateNames"].extend(fields)
+        }
         results = []
         has_more = True
         while has_more:
             response = self.post("/api/v1/certificates/search", json)
-            results.append(response["results"][0])
+            results.extend(response["results"])
             has_more = response["hasMore"]
             if has_more:
                 json["pageIndex"] += 1
 
         return results
 
-    def feed(self, content):
-        """
-            All steps to feed a certificate
-            :param content: all values get from the playbook
-            :return the response of the API
-        """
-        json = self.__generate_json(workflow=None, campaign=content["campaign"], ip=content["ip"],
-                                    certificate=content["certificate"], hostnames=content["hostnames"],
-                                    operating_systems=content["operating_systems"], paths=content["paths"],
-                                    usages=content["usages"])
-        return self.post("/api/v1/discovery/feed", json, feed=True)
+    def feed(self, campaign, certificate_pem, ip, hostnames=None, operating_systems=None, paths=None, usages=None,
+             tls_ports=None):
 
-    def certificate(self, content):
+        json = {
+            "campaign": campaign,
+            "certificate": self.__get_certificate(certificate_pem),
+            "hostDiscoveryData": {
+                "ip": ip,
+                "hostnames": hostnames,
+                "operatingSystems": operating_systems,
+                "paths": paths,
+                "usages": usages,
+                "tlsPorts": tls_ports
+            }
+        }
+
+        return self.post("/api/v1/discovery/feed", json)
+
+    def certificate(self, certificate_pem, fields=None):
         """
             All step to get values of a certificate
             :param content: all values from the lookup request
             :return the response of the API
         """
-        pem = self.__set_certificate(content["pem"])
+        pem = self.__get_certificate(certificate_pem)
         pem = urllib.parse.quote(pem, safe='')
 
         response = self.get("/api/v1/certificates/" + pem)
 
-        if not "fields" in content:
+        if fields is None:
             fields = []
             for value in response:
                 fields.append(value)
-            return self.__format_response(response, fields)
-        else:
-            return self.__format_response(response, content["fields"])
-
-    def __debug(self, response):
-        """
-            Catch the errors returned by the API
-            :param response: an answer from the API
-            :return Boolean
-        """
-        if isinstance(response, list):
-            message = ""
-            for elmt in response:
-                if "error" in elmt:
-                    message += f'Error: {elmt["error"]}, Message: {elmt["message"]}, Details: {elmt["detail"]}, '
-            raise AnsibleError(message)
-
-        elif "error" in response:
-            message = f'Error: {response["error"]}'
-            if "message" in response:
-                message += f', Message: {response["message"]}'
-            if "detail" in response:
-                message += f', Details: {response["detail"]}'
-            raise AnsibleError(message)
-
-        else:
-            return True
+        return self.__format_response(response, fields)
 
     def __get_template(self, profile, workflow, module=None):
         """
@@ -193,19 +195,10 @@ class Horizon():
             "workflow": workflow
         }
 
-        try:
-            # Get the template
-            template = self.post("/api/v1/requests/template", data)
-            # Test the response
-            if self.__debug(template):
-                return template
+        return self.post("/api/v1/requests/template", data)
 
-        except HTTPError as http_err:
-            raise AnsibleError(f'HTTP error occurred: {http_err}')
-        except Exception as err:
-            raise AnsibleError(f'{err}')
-
-    def __check_password_policy(self, password, template):
+    @staticmethod
+    def __check_password_policy(password, template):
         """
             :param password: the password from the playbook
             :param template: the template of the request
@@ -271,71 +264,7 @@ class Horizon():
 
         return password
 
-    def __generate_json(self, workflow, template=None, module=None, profile=None, password=None, certificate_pem=None,
-                        revocation_reason=None, csr=None, labels=None, sans=None, subject=None, key_type=None,
-                        campaign=None, ip=None, certificate=None, hostnames=None, operating_systems=None, paths=None,
-                        usages=None, query=None, fields=None, with_count=None, contact_email=None, page_index=1):
-        """
-            params: fields to create the json parameter to send to the API
-        """
-        # Initialize my_json
-        if template is not None:
-            my_json = template
-        elif workflow == "update":
-            my_json = {"template": {}}
-        else:
-            my_json = {}
-
-        if workflow is not None:
-            my_json["workflow"] = workflow
-
-            if module is not None:
-                my_json["module"] = module
-            if profile is not None:
-                my_json["profile"] = profile
-            if password is not None:
-                my_json["password"] = {"value": password}
-            if certificate_pem is not None:
-                certificate_pem = self.__set_certificate(certificate_pem)
-                my_json["certificatePem"] = certificate_pem
-            if revocation_reason is not None:
-                my_json["revocationReason"] = revocation_reason
-            if key_type is not None:
-                my_json["template"]["keyTypes"] = [key_type]
-            if sans is not None:
-                my_json["template"]["sans"] = self.__set_sans(sans)
-            if subject is not None:
-                my_json["template"]["subject"] = self.__set_subject(subject, template)
-            if csr is not None:
-                my_json["template"]["csr"] = csr
-            if labels is not None:
-                my_json["template"]["labels"] = self.__set_labels(labels)
-            if contact_email is not None:
-                my_json["contact"] = contact_email
-
-        elif query is not None:
-            my_json["query"] = self.__set_query(query)
-            my_json["withCount"] = with_count
-            my_json["pageIndex"] = page_index
-            my_json["fields"] = self.__set_fields(fields)
-
-        else:
-            my_json["campaign"] = campaign
-            my_json["certificate"] = certificate
-            my_json["hostDiscoveryData"] = {}
-            my_json["hostDiscoveryData"]["ip"] = ip
-            if hostnames is not None:
-                my_json["hostDiscoveryData"]["hostnames"] = hostnames
-            if operating_systems is not None:
-                my_json["hostDiscoveryData"]["operatingSystems"] = operating_systems
-            if paths is not None:
-                my_json["hostDiscoveryData"]["paths"] = paths
-            if usages is not None:
-                my_json["hostDiscoveryData"]["usages"] = usages
-
-        return my_json
-
-    def post(self, path, json, feed=False):
+    def post(self, path, json):
         """
             :param path: POST path
             :param json: the json to send to the API
@@ -343,7 +272,7 @@ class Horizon():
         """
         return self.send('POST', path, json=json)
 
-    def get(self, path, param=None, data=None):
+    def get(self, path, data=None):
         """
             :param data:
             :param path: GET path
@@ -357,13 +286,12 @@ class Horizon():
         method = method.upper()
         response = requests.request(method, uri, cert=self.cert, verify=self.bundle,
                                     headers=self.headers, **kwargs)
-
-        if response.headers['Content-Type'] == 'application/json':
+        if 'Content-Type' in response.headers and response.headers['Content-Type'] == 'application/json':
             content = response.json()
         else:
-            content = response.content
+            content = response.content.decode()
 
-        if response.status_code == 200:
+        if response.ok:
             return content
 
         raise HTTPError(content)
@@ -446,37 +374,6 @@ class Horizon():
 
         return my_subject
 
-    def __set_query(self, query):
-        """
-            :param query: a request
-            :return the query with a format readable by the API
-        """
-        if query == 'null':
-            my_query = None
-        else:
-            my_query = '\"'
-            for c in query:
-                if c == '\"':
-                    my_query += '\\'
-                my_query += c
-            my_query += '\"'
-
-        return my_query
-
-    def __set_fields(self, fields):
-        """
-            :param fields: list of fields
-            :return a list of fields
-        """
-        if fields is None:
-            fields = []
-
-        my_fields = ["module", "profile", "labels", "subjectAlternateNames"]
-        for field in fields:
-            my_fields.append(field)
-
-        return my_fields
-
     def __check_mode(self, template, mode=None):
         """
             :param template: the template of the request
@@ -554,23 +451,7 @@ class Horizon():
 
         public_key = private_key.public_key()
 
-        return (private_key, public_key)
-
-    def get_key(self, p12, password):
-        """
-            :param p12: a PKCS12 certificate
-            :param password: the password corresponding to the certificate
-            : return the public key of the PKCS12
-        """
-        encoded_key = pkcs12.load_key_and_certificates(base64.b64decode(p12), password.encode())
-
-        key = encoded_key[0].private_bytes(
-            encoding=serialization.Encoding.PEM,
-            format=serialization.PrivateFormat.TraditionalOpenSSL,
-            encryption_algorithm=serialization.NoEncryption()
-        ).decode()
-
-        return key
+        return private_key, public_key
 
     def get_hostnames(self, certificate, hostnames):
         """
@@ -659,14 +540,13 @@ class Horizon():
         result = {}
 
         for field in fields:
-
-            result[field] = []
+            result[field] = response[field]
 
             if field == "metadata":
                 metadata = {}
                 for data in response[field]:
                     metadata[data['key']] = data['value']
-                result[field].append(metadata)
+                result[field] = metadata
 
             elif field == "subjectAlternateNames":
                 sans = {}
@@ -678,28 +558,22 @@ class Horizon():
 
                     sans[san_name] = san["value"]
 
-                result[field].append(sans)
+                result[field] = sans
 
             elif field == "labels":
                 labels = {}
                 for label in response[field]:
                     labels[label['key']] = label['value']
-                result[field].append(labels)
+                result[field] = labels
 
-            else:
-                result[field].append(response[field])
+        return result
 
-        return [result]
-
-    def __set_certificate(self, certificate_pem):
+    def __get_certificate(self, certificate_pem):
         if isinstance(certificate_pem, dict):
             if "src" in certificate_pem:
-                f = open(certificate_pem["src"], 'r')
-                cert = ""
-                for line in f.readlines():
-                    cert += line
-                f.close()
-                certificate_pem = cert
+                with open(certificate_pem["src"], 'r') as file:
+                    cert = file.read()
+                return cert
             else:
-                raise AnsibleError(f'certificate_pem format is not readable.')
+                raise AnsibleError('certificate_pem format is not readable.')
         return certificate_pem

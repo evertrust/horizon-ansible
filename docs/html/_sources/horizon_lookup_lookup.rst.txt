@@ -83,6 +83,42 @@ Parameters
             </tr>
                                 <tr>
                                                                 <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="parameter-certificate_pem"></div>
+                    <b>certificate_pem</b>
+                    <a class="ansibleOptionLink" href="#parameter-certificate_pem" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                                                                    </div>
+                                                        </td>
+                                <td>
+                                                                                                                                                            </td>
+                                                    <td>
+                                                                                            </td>
+                                                <td>
+                                            <div>A certificate in PEM format, or the path to the certificate PEM file.</div>
+                                                        </td>
+            </tr>
+                                        <tr>
+                                                    <td class="elbow-placeholder"></td>
+                                                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-certificate_pem/src"></div>
+                    <b>src</b>
+                    <a class="ansibleOptionLink" href="#parameter-certificate_pem/src" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">path</span>
+                                                                    </div>
+                                                        </td>
+                                <td>
+                                                                                                                                                            </td>
+                                                    <td>
+                                                                                            </td>
+                                                <td>
+                                            <div>The path to a certificate PEM file</div>
+                                                        </td>
+            </tr>
+                    
+                                <tr>
+                                                                <td colspan="2">
                     <div class="ansibleOptionAnchor" id="parameter-client_cert"></div>
                     <b>client_cert</b>
                     <a class="ansibleOptionLink" href="#parameter-client_cert" title="Permalink to this option"></a>
@@ -175,42 +211,6 @@ Parameters
                                             <div>If omitted, all fields will be returned.</div>
                                                         </td>
             </tr>
-                                <tr>
-                                                                <td colspan="2">
-                    <div class="ansibleOptionAnchor" id="parameter-pem"></div>
-                    <b>pem</b>
-                    <a class="ansibleOptionLink" href="#parameter-pem" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">string</span>
-                                                                    </div>
-                                                        </td>
-                                <td>
-                                                                                                                                                            </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
-                                            <div>A certificate in PEM format, or the path to the certificate PEM file.</div>
-                                                        </td>
-            </tr>
-                                        <tr>
-                                                    <td class="elbow-placeholder"></td>
-                                                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-pem/src"></div>
-                    <b>src</b>
-                    <a class="ansibleOptionLink" href="#parameter-pem/src" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">path</span>
-                                                                    </div>
-                                                        </td>
-                                <td>
-                                                                                                                                                            </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
-                                            <div>The path to a certificate PEM file</div>
-                                                        </td>
-            </tr>
-                    
                                 <tr>
                                                                 <td colspan="2">
                     <div class="ansibleOptionAnchor" id="parameter-x_api_id"></div>
@@ -309,8 +309,8 @@ Common return values are documented :ref:`here <common_return_values>`, the foll
                     <b>_id</b>
                     <a class="ansibleOptionLink" href="#return-_id" title="Permalink to this return value"></a>
                     <div style="font-size: small">
-                      <span style="color: purple">list</span>
-                       / <span style="color: purple">elements=string</span>                    </div>
+                      <span style="color: purple">string</span>
+                                          </div>
                                     </td>
                 <td>If specifically requested.</td>
                 <td>
@@ -324,8 +324,8 @@ Common return values are documented :ref:`here <common_return_values>`, the foll
                     <b>certificate</b>
                     <a class="ansibleOptionLink" href="#return-certificate" title="Permalink to this return value"></a>
                     <div style="font-size: small">
-                      <span style="color: purple">list</span>
-                       / <span style="color: purple">elements=string</span>                    </div>
+                      <span style="color: purple">string</span>
+                                          </div>
                                     </td>
                 <td>If specifically requested.</td>
                 <td>
@@ -339,8 +339,8 @@ Common return values are documented :ref:`here <common_return_values>`, the foll
                     <b>discoveredTrusted</b>
                     <a class="ansibleOptionLink" href="#return-discoveredTrusted" title="Permalink to this return value"></a>
                     <div style="font-size: small">
-                      <span style="color: purple">list</span>
-                       / <span style="color: purple">elements=boolean</span>                    </div>
+                      <span style="color: purple">boolean</span>
+                                          </div>
                                     </td>
                 <td>If specifically requested.</td>
                 <td>
@@ -356,8 +356,8 @@ Common return values are documented :ref:`here <common_return_values>`, the foll
                     <b>dn</b>
                     <a class="ansibleOptionLink" href="#return-dn" title="Permalink to this return value"></a>
                     <div style="font-size: small">
-                      <span style="color: purple">list</span>
-                       / <span style="color: purple">elements=string</span>                    </div>
+                      <span style="color: purple">string</span>
+                                          </div>
                                     </td>
                 <td>If specifically requested.</td>
                 <td>
@@ -371,8 +371,8 @@ Common return values are documented :ref:`here <common_return_values>`, the foll
                     <b>holderId</b>
                     <a class="ansibleOptionLink" href="#return-holderId" title="Permalink to this return value"></a>
                     <div style="font-size: small">
-                      <span style="color: purple">list</span>
-                       / <span style="color: purple">elements=string</span>                    </div>
+                      <span style="color: purple">string</span>
+                                          </div>
                                     </td>
                 <td>If specifically requested.</td>
                 <td>
@@ -386,8 +386,8 @@ Common return values are documented :ref:`here <common_return_values>`, the foll
                     <b>issuer</b>
                     <a class="ansibleOptionLink" href="#return-issuer" title="Permalink to this return value"></a>
                     <div style="font-size: small">
-                      <span style="color: purple">list</span>
-                       / <span style="color: purple">elements=string</span>                    </div>
+                      <span style="color: purple">string</span>
+                                          </div>
                                     </td>
                 <td>If specifically requested.</td>
                 <td>
@@ -401,8 +401,8 @@ Common return values are documented :ref:`here <common_return_values>`, the foll
                     <b>keyType</b>
                     <a class="ansibleOptionLink" href="#return-keyType" title="Permalink to this return value"></a>
                     <div style="font-size: small">
-                      <span style="color: purple">list</span>
-                       / <span style="color: purple">elements=string</span>                    </div>
+                      <span style="color: purple">string</span>
+                                          </div>
                                     </td>
                 <td>If specifically requested.</td>
                 <td>
@@ -417,7 +417,7 @@ Common return values are documented :ref:`here <common_return_values>`, the foll
                     <a class="ansibleOptionLink" href="#return-labels" title="Permalink to this return value"></a>
                     <div style="font-size: small">
                       <span style="color: purple">list</span>
-                       / <span style="color: purple">elements=string</span>                    </div>
+                       / <span style="color: purple">elements=dictionary</span>                    </div>
                                     </td>
                 <td>If specifically requested.</td>
                 <td>
@@ -446,8 +446,8 @@ Common return values are documented :ref:`here <common_return_values>`, the foll
                     <b>module</b>
                     <a class="ansibleOptionLink" href="#return-module" title="Permalink to this return value"></a>
                     <div style="font-size: small">
-                      <span style="color: purple">list</span>
-                       / <span style="color: purple">elements=string</span>                    </div>
+                      <span style="color: purple">string</span>
+                                          </div>
                                     </td>
                 <td>If specifically requested.</td>
                 <td>
@@ -461,8 +461,8 @@ Common return values are documented :ref:`here <common_return_values>`, the foll
                     <b>notAfter</b>
                     <a class="ansibleOptionLink" href="#return-notAfter" title="Permalink to this return value"></a>
                     <div style="font-size: small">
-                      <span style="color: purple">list</span>
-                       / <span style="color: purple">elements=integer</span>                    </div>
+                      <span style="color: purple">integer</span>
+                                          </div>
                                     </td>
                 <td>If specifically requested.</td>
                 <td>
@@ -476,8 +476,8 @@ Common return values are documented :ref:`here <common_return_values>`, the foll
                     <b>notBefore</b>
                     <a class="ansibleOptionLink" href="#return-notBefore" title="Permalink to this return value"></a>
                     <div style="font-size: small">
-                      <span style="color: purple">list</span>
-                       / <span style="color: purple">elements=integer</span>                    </div>
+                      <span style="color: purple">integer</span>
+                                          </div>
                                     </td>
                 <td>If specifically requested.</td>
                 <td>
@@ -491,8 +491,8 @@ Common return values are documented :ref:`here <common_return_values>`, the foll
                     <b>owner</b>
                     <a class="ansibleOptionLink" href="#return-owner" title="Permalink to this return value"></a>
                     <div style="font-size: small">
-                      <span style="color: purple">list</span>
-                       / <span style="color: purple">elements=string</span>                    </div>
+                      <span style="color: purple">string</span>
+                                          </div>
                                     </td>
                 <td>If specifically requested.</td>
                 <td>
@@ -506,8 +506,8 @@ Common return values are documented :ref:`here <common_return_values>`, the foll
                     <b>profile</b>
                     <a class="ansibleOptionLink" href="#return-profile" title="Permalink to this return value"></a>
                     <div style="font-size: small">
-                      <span style="color: purple">list</span>
-                       / <span style="color: purple">elements=string</span>                    </div>
+                      <span style="color: purple">string</span>
+                                          </div>
                                     </td>
                 <td>If specifically requested.</td>
                 <td>
@@ -521,8 +521,8 @@ Common return values are documented :ref:`here <common_return_values>`, the foll
                     <b>revocationDate</b>
                     <a class="ansibleOptionLink" href="#return-revocationDate" title="Permalink to this return value"></a>
                     <div style="font-size: small">
-                      <span style="color: purple">list</span>
-                       / <span style="color: purple">elements=string</span>                    </div>
+                      <span style="color: purple">string</span>
+                                          </div>
                                     </td>
                 <td>If specifically requested.</td>
                 <td>
@@ -536,8 +536,8 @@ Common return values are documented :ref:`here <common_return_values>`, the foll
                     <b>revocationReason</b>
                     <a class="ansibleOptionLink" href="#return-revocationReason" title="Permalink to this return value"></a>
                     <div style="font-size: small">
-                      <span style="color: purple">list</span>
-                       / <span style="color: purple">elements=string</span>                    </div>
+                      <span style="color: purple">string</span>
+                                          </div>
                                     </td>
                 <td>If specifically requested.</td>
                 <td>
@@ -551,8 +551,8 @@ Common return values are documented :ref:`here <common_return_values>`, the foll
                     <b>serial</b>
                     <a class="ansibleOptionLink" href="#return-serial" title="Permalink to this return value"></a>
                     <div style="font-size: small">
-                      <span style="color: purple">list</span>
-                       / <span style="color: purple">elements=string</span>                    </div>
+                      <span style="color: purple">string</span>
+                                          </div>
                                     </td>
                 <td>If specifically requested.</td>
                 <td>
@@ -566,8 +566,8 @@ Common return values are documented :ref:`here <common_return_values>`, the foll
                     <b>signingAlgorithm</b>
                     <a class="ansibleOptionLink" href="#return-signingAlgorithm" title="Permalink to this return value"></a>
                     <div style="font-size: small">
-                      <span style="color: purple">list</span>
-                       / <span style="color: purple">elements=string</span>                    </div>
+                      <span style="color: purple">string</span>
+                                          </div>
                                     </td>
                 <td>If specifically requested.</td>
                 <td>
@@ -582,7 +582,7 @@ Common return values are documented :ref:`here <common_return_values>`, the foll
                     <a class="ansibleOptionLink" href="#return-subjectAlternateNames" title="Permalink to this return value"></a>
                     <div style="font-size: small">
                       <span style="color: purple">list</span>
-                       / <span style="color: purple">elements=string</span>                    </div>
+                       / <span style="color: purple">elements=dictionary</span>                    </div>
                                     </td>
                 <td>If specifically requested.</td>
                 <td>
@@ -597,7 +597,7 @@ Common return values are documented :ref:`here <common_return_values>`, the foll
                     <a class="ansibleOptionLink" href="#return-thirdPartyData" title="Permalink to this return value"></a>
                     <div style="font-size: small">
                       <span style="color: purple">list</span>
-                       / <span style="color: purple">elements=string</span>                    </div>
+                       / <span style="color: purple">elements=dictionary</span>                    </div>
                                     </td>
                 <td>If specifically requested.</td>
                 <td>

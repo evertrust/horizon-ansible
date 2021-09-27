@@ -34,4 +34,4 @@ class HorizonAction(ActionBase, ABC):
         return content
 
     def _get_client(self):
-        return Horizon(self._get_auth())
+        return Horizon(**self._get_auth())

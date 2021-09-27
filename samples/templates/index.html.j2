@@ -205,27 +205,27 @@
     <table class="main__wrap">
         <tr>
             <td class="title__color">DN:</td>
-            <td class="right ">{{ lookup_result['dn'][0] }}</td>
+            <td class="right ">{{ enrolled_certificate['certificate']['dn'] }}</td>
         </tr>
         <tr>
             <td class="title__color">Issuer DN:</td>
-            <td class="right">{{ lookup_result['issuer'][0] }}</td>
+            <td class="right">{{ enrolled_certificate['certificate']['issuer'] }}</td>
         </tr>
         <tr>
             <td class="title__color">Not Before:</td>
-            <td class="right">{{ '%d %b %y %H:%M %Z' | strftime(lookup_result['notBefore'][0]|int / 1000) }}</td>
+            <td class="right">{{ '%d %b %y %H:%M %Z' | strftime(enrolled_certificate['certificate']['notBefore']|int / 1000) }}</td>
         </tr>
         <tr>
             <td class="title__color">Not After:</td>
-            <td class="right">{{ '%d %b %y %H:%M %Z' | strftime(lookup_result['notAfter'][0]|int / 1000) }}</td>
+            <td class="right">{{ '%d %b %y %H:%M %Z' | strftime(enrolled_certificate['certificate']['notAfter']|int / 1000) }}</td>
         </tr>
         <tr>
             <td class="title__color">Serial:</td>
-            <td class="right">0x{{ lookup_result['serial'][0] }}</td>
+            <td class="right">0x{{ enrolled_certificate['certificate']['serial'] }}</td>
         </tr>
         <tr>
             <td class="title__color">SANS:</td>
-            <td class="right">{{ lookup_result['subjectAlternateNames'] }}</td>
+            <td class="right">{{ enrolled_certificate['certificate']['subjectAlternateNames'] }}</td>
         </tr>
 
     </table>

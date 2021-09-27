@@ -14,7 +14,7 @@ class ActionModule(HorizonAction):
     TRANSFERS_FILES = True
 
     def _args(self):
-        return ["campaign", "ip", "certificate", "hostnames", "operating_systems", "paths", "usages"]
+        return ["campaign", "ip", "certificate_pem", "hostnames", "operating_systems", "paths", "usages"]
 
     def run(self, tmp=None, task_vars=None):
         result = super(ActionModule, self).run(tmp=tmp, task_vars=task_vars)
@@ -22,7 +22,7 @@ class ActionModule(HorizonAction):
         try:
             client = self._get_client()
             content = self._get_content()
-            result = client.feed(content)
+            result['response'] = client.feed(**content)
 
         except AnsibleAction as e:
             result.update(e.result)

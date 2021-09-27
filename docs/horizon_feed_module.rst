@@ -97,9 +97,9 @@ Parameters
             </tr>
                                 <tr>
                                                                 <td colspan="2">
-                    <div class="ansibleOptionAnchor" id="parameter-certificate"></div>
-                    <b>certificate</b>
-                    <a class="ansibleOptionLink" href="#parameter-certificate" title="Permalink to this option"></a>
+                    <div class="ansibleOptionAnchor" id="parameter-certificate_pem"></div>
+                    <b>certificate_pem</b>
+                    <a class="ansibleOptionLink" href="#parameter-certificate_pem" title="Permalink to this option"></a>
                     <div style="font-size: small">
                         <span style="color: purple">string</span>
                                                                     </div>
@@ -113,9 +113,9 @@ Parameters
                                         <tr>
                                                     <td class="elbow-placeholder"></td>
                                                 <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-certificate/src"></div>
+                    <div class="ansibleOptionAnchor" id="parameter-certificate_pem/src"></div>
                     <b>src</b>
-                    <a class="ansibleOptionLink" href="#parameter-certificate/src" title="Permalink to this option"></a>
+                    <a class="ansibleOptionLink" href="#parameter-certificate_pem/src" title="Permalink to this option"></a>
                     <div style="font-size: small">
                         <span style="color: purple">path</span>
                                                                     </div>
@@ -320,7 +320,7 @@ Examples
           x_api_key: "<horizon-password>"
           campaign: exampleCampaign
           ip: localhost
-          certificate:
+          certificate_pem:
             src: pem/file/path
 
 

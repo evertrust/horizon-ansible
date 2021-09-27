@@ -3,6 +3,7 @@
 
 # Standard base includes and define this as a metaclass of type
 from __future__ import (absolute_import, division, print_function)
+
 __metaclass__ = type
 
 from ansible.errors import AnsibleAction
@@ -21,9 +22,12 @@ class ActionModule(HorizonAction):
         try:
             client = self._get_client()
             content = self._get_content()
-            result = client.recover(content)
+            result = client.recover(**content)
+            return {
+                "p12": response["pkcs12"]["value"],
+                "p12_password": response["password"]["value"],
+                "key": self.__get_key_from_p12(response["pkcs12"]["value"], response["password"]["value"])
+            }
 
         except AnsibleAction as e:
             result.update(e.result)
-
-        return result

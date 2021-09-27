@@ -160,15 +160,14 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
         super().parse(inventory, loader, path, cache=cache)
 
         try:
-            # Get value from playbook
-            authent, content = self._get_all_informations(path)
+            content = self._get_content()
 
         except Exception as e:
             raise AnsibleParserError(
                 f'All correct options required: {e}'
             )
 
-        response = self.client.search(content)
+        response = self.client.search(**content)
 
         self._populate(response, content["hostnames"], content["fields"])
 
@@ -191,4 +190,4 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
         return content
 
     def _get_client(self):
-        return Horizon(self._get_auth())
+        return Horizon(**self._get_auth())
