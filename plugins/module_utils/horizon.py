@@ -143,10 +143,9 @@ class Horizon():
             :return the response of the API
         """
         pem = self.__set_certificate(content["pem"])
-        pem = urllib.parse.quote(pem)
-        pem = pem.replace('/', "%2F")
+        pem = urllib.parse.quote(pem, safe='')
 
-        response = self.get("/api/v1/certificates/", param=pem)
+        response = self.get("/api/v1/certificates/" + pem)
 
         if not "fields" in content:
             fields = []
@@ -338,51 +337,36 @@ class Horizon():
 
     def post(self, path, json, feed=False):
         """
+            :param path: POST path
             :param json: the json to send to the API
-            :param endpoint: url of the API
-            :param feed: Boolean
             :return the response of the API
         """
-        ''' Send the request to the API. '''
-        uri = self.endpoint + path
+        return self.send('POST', path, json=json)
 
-        try:
-            # Ask the API
-            response = requests.post(uri, verify=self.bundle, cert=self.cert, json=json, headers=self.headers)
-            # Test the response
-            if not feed:
-                response = response.json()
-                if self.__debug(response):
-                    return response
-
-        except HTTPError as http_err:
-            raise AnsibleError(f'HTTP error occurred: {http_err}')
-        except Exception as err:
-            raise AnsibleError(f'{err}')
-
-    def get(self, path, param=None):
+    def get(self, path, param=None, data=None):
         """
-            :param endpoint: url of the API
+            :param data:
+            :param path: GET path
             :param param: detail to add on the url
             :return the response of the API
         """
-        # Construct the API endpoint
+        return self.send('GET', path, data=data)
+
+    def send(self, method, path, **kwargs):
         uri = self.endpoint + path
+        method = method.upper()
+        response = requests.request(method, uri, cert=self.cert, verify=self.bundle,
+                                    headers=self.headers, **kwargs)
 
-        if param is not None:
-            uri = uri + param
+        if response.headers['Content-Type'] == 'application/json':
+            content = response.json()
+        else:
+            content = response.content
 
-        try:
-            # Ask the API
-            response = requests.get(uri, verify=self.bundle, cert=self.cert, headers=self.headers).json()
-            # Test the response
-            if self.__debug(response):
-                return response
+        if response.status_code == 200:
+            return content
 
-        except HTTPError as http_err:
-            raise AnsibleError(f'HTTP error occurred: {http_err}')
-        except Exception as err:
-            raise AnsibleError(f'{err}')
+        raise HTTPError(content)
 
     def __set_labels(self, labels):
         """

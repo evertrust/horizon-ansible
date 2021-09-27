@@ -152,6 +152,10 @@ certificate:
   description: Enrolled certificate in PEM format
   returned: always
   type: str
+bundle:
+  description: Certificate's trust chain
+  returned: always
+  type: str
 key:
   description: Certificate's private key
   returned: if enrollement mode is "centralized" or if a key pair was generated on-the-fly
