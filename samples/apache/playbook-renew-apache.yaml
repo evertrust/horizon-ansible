@@ -1,8 +1,6 @@
 - hosts: webserver
   become: yes
   vars: 
-    remaining_life: "{{ remaining_life }}"
-
   tasks:
   - name: Retrieving current certificate
     shell: "cat /etc/apache2/ssl/{{ domain }}.crt"
@@ -10,40 +8,50 @@
   
   - name: Looking up for current certificate in Horizon
     set_fact:
-      lookup_result: "{{ lookup('evertrust.horizon.horizon_lookup', pem=current_certificate['stdout'], x_api_id=api_id, x_api_key=api_key, endpoint=horizon_endpoint) }}"
+      current_lookup_result: >-
+        {{ query('evertrust.horizon.horizon_lookup', certificate_pem=current_certificate['stdout'], x_api_id=api_id, x_api_key=api_key, endpoint=horizon_endpoint) }}
 
   - name: Calculating certificate renewal date
     set_fact:
       should_renew: "{{(a|int / 1000) - (c|int *86400) < b|int}}"
     vars:
-      a: "{{ lookup_result['notAfter'][0] }}"
+      a: "{{ current_lookup_result['notAfter'] }}"
       b: "{{ ansible_date_time.epoch }}"
       c: "{{ renewal_period }}"
 
   - name: Renewing certificate if within its renewal period
     evertrust.horizon.horizon_enroll:
       endpoint: "{{ horizon_endpoint }}"
-      key_type: "{{ lookup_result['keyType'][0] }}"
+      key_type: "{{ current_lookup_result['keyType'] }}"
       x_api_id: "{{ api_id }}"
       x_api_key: "{{ api_key }}"
-      profile: "{{ lookup_result['profile'][0] }}"
+      profile: "{{ current_lookup_result['profile'] }}"
       subject:
-        dn: "{{ lookup_result['dn'][0] }}"
-      sans: "{{ lookup_result['subjectAlternateNames'][0] }}"
-      labels: "{{ lookup_result['labels'][0] }}"
-    register: renewed_certificate
+        dn: "{{ current_lookup_result['dn'] }}"
+      sans: "{{ current_lookup_result['subjectAlternateNames'] }}"
+      labels: "{{ current_lookup_result['labels'] }}"
+    register: enrolled_certificate
     when: should_renew|bool == true
 
   - name: Uploading the renewed certificate
     copy:
-      content: "{{ renewed_certificate['certificate'] }}"
+      content: "{{ enrolled_certificate['certificate']['certificate'] }}"
       dest: "/etc/apache2/ssl/{{ domain }}.crt"
     when: should_renew|bool == true
 
   - name: Uploading the renewed certificate private key
     copy:
-      content: "{{ renewed_certificate['key'] }}"
+      content: "{{ enrolled_certificate['key'] }}"
       dest: "/etc/apache2/ssl/{{ domain }}.key"
+    when: should_renew|bool == true
+
+  - name: Redeploying the {{ domain }} index page
+    template:
+      src: ../templates/index.html.j2
+      dest: "/var/www/{{ domain }}/index.html"
+      owner: "www-data"
+      group: "www-data"
+      mode: '0644'
     when: should_renew|bool == true
 
   - name: Restarting apache2

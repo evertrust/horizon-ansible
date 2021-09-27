@@ -33,10 +33,6 @@
       contact_email: "{{ contact_email }}"
     register: enrolled_certificate
 
-  - name: Looking up for enrolled certificate in Horizon
-    set_fact:
-      lookup_result: "{{ lookup('evertrust.horizon.horizon_lookup', pem=enrolled_certificate['certificate'], x_api_id=api_id, x_api_key=api_key, endpoint=horizon_endpoint) }}"
-
   - name: Creating the SSL directory
     file:
       path: /etc/apache2/ssl
@@ -47,7 +43,7 @@
 
   - name: Uploading the {{ domain }} certificate
     copy:
-      content: "{{ enrolled_certificate['certificate'] }}"
+      content: "{{ enrolled_certificate['certificate']['certificate'] }}"
       dest: "/etc/apache2/ssl/{{ domain }}.crt"
       mode: '0775'
       owner: "www-data"
