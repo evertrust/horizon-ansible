@@ -60,7 +60,7 @@ EXAMPLES = '''
 # language=yaml
 RETURN = '''
 p12:
-  description: PKCS#12 returned by the API (base64-encoded)
+  description: Base64-encoded PKCS#12
   returned: If enrollement mode is "centralized"
   type: str
 p12_password:
@@ -70,7 +70,7 @@ p12_password:
 certificate:
   description: Enrolled certificate object
   returned: Always
-  type: str
+  type: dict
   contains:
     _id:
       description: Horizon internal certificate ID.

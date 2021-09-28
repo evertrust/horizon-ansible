@@ -25,6 +25,17 @@ options:
       - Name of the profile that will be used to enroll the certificate.
     required: true
     type: str
+  csr:
+    description:
+      - A certificate signing request, or the path to the CSR file.
+      - If none is provided, one will be generated on-the-fly.
+    required: false
+    type: str
+    suboptions:
+      src:
+        description: The path to a CSR file
+        required: false
+        type: path
   password:
     description:
       - Security password for the certificate.
@@ -67,7 +78,7 @@ options:
   sans:
     description:
       - Certificate's subject alternative names (SANs) of the certificate.
-    required: true
+    required: false
     type: dict
   labels:
     description:
@@ -101,7 +112,7 @@ EXAMPLES = '''
     x_api_id: "<horizon-id>"
     x_api_key: "<horizon-password>"
     mode: "decentralized"
-    csr: <a_csr_file>
+    csr: "CSR content"
     password: "examplePassword"
     key_type: "rsa-2048"
     profile: "exampleProfile"
@@ -134,24 +145,24 @@ EXAMPLES = '''
     sans:
       dnsname.1: "exampleDnsName"
     labels:
-      snow_id: "value1"
-      exp_tech: "value2"
+      label1: "value1"
+      label2: "value2"
 '''
 
 # language=yaml
 RETURN = '''
 p12:
-  description: PKCS#12 returned by the API (base64-encoded)
-  returned: If enrollement mode is "centralized"
+  description: Base64-encoded PKCS#12
+  returned: If enrollement mode is "centralized" or if a key pair was generated on-the-fly
   type: str
 p12_password:
   description: PKCS#12 password
-  returned: If enrollement mode is "centralized"
+  returned: If enrollement mode is "centralized" or if a key pair was generated on-the-fly
   type: str
 certificate:
   description: Enrolled certificate object
   returned: Always
-  type: str
+  type: dict
   contains:
     _id:
       description: Horizon internal certificate ID.

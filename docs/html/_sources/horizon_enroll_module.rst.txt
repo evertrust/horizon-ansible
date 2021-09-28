@@ -67,12 +67,12 @@ Parameters
 
     <table  border=0 cellpadding=0 class="documentation-table">
         <tr>
-            <th colspan="1">Parameter</th>
+            <th colspan="2">Parameter</th>
             <th>Choices/<font color="blue">Defaults</font></th>
                         <th width="100%">Comments</th>
         </tr>
                     <tr>
-                                                                <td colspan="1">
+                                                                <td colspan="2">
                     <div class="ansibleOptionAnchor" id="parameter-ca_bundle"></div>
                     <b>ca_bundle</b>
                     <a class="ansibleOptionLink" href="#parameter-ca_bundle" title="Permalink to this option"></a>
@@ -87,7 +87,7 @@ Parameters
                                                         </td>
             </tr>
                                 <tr>
-                                                                <td colspan="1">
+                                                                <td colspan="2">
                     <div class="ansibleOptionAnchor" id="parameter-client_cert"></div>
                     <b>client_cert</b>
                     <a class="ansibleOptionLink" href="#parameter-client_cert" title="Permalink to this option"></a>
@@ -103,7 +103,7 @@ Parameters
                                                         </td>
             </tr>
                                 <tr>
-                                                                <td colspan="1">
+                                                                <td colspan="2">
                     <div class="ansibleOptionAnchor" id="parameter-client_key"></div>
                     <b>client_key</b>
                     <a class="ansibleOptionLink" href="#parameter-client_key" title="Permalink to this option"></a>
@@ -119,7 +119,40 @@ Parameters
                                                         </td>
             </tr>
                                 <tr>
-                                                                <td colspan="1">
+                                                                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="parameter-csr"></div>
+                    <b>csr</b>
+                    <a class="ansibleOptionLink" href="#parameter-csr" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                                                                    </div>
+                                                        </td>
+                                <td>
+                                                                                                                                                            </td>
+                                                                <td>
+                                            <div>A certificate signing request, or the path to the CSR file.</div>
+                                            <div>If none is provided, one will be generated on-the-fly.</div>
+                                                        </td>
+            </tr>
+                                        <tr>
+                                                    <td class="elbow-placeholder"></td>
+                                                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-csr/src"></div>
+                    <b>src</b>
+                    <a class="ansibleOptionLink" href="#parameter-csr/src" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">path</span>
+                                                                    </div>
+                                                        </td>
+                                <td>
+                                                                                                                                                            </td>
+                                                                <td>
+                                            <div>The path to a CSR file</div>
+                                                        </td>
+            </tr>
+                    
+                                <tr>
+                                                                <td colspan="2">
                     <div class="ansibleOptionAnchor" id="parameter-endpoint"></div>
                     <b>endpoint</b>
                     <a class="ansibleOptionLink" href="#parameter-endpoint" title="Permalink to this option"></a>
@@ -135,7 +168,7 @@ Parameters
                                                         </td>
             </tr>
                                 <tr>
-                                                                <td colspan="1">
+                                                                <td colspan="2">
                     <div class="ansibleOptionAnchor" id="parameter-key_type"></div>
                     <b>key_type</b>
                     <a class="ansibleOptionLink" href="#parameter-key_type" title="Permalink to this option"></a>
@@ -162,7 +195,7 @@ Parameters
                                                         </td>
             </tr>
                                 <tr>
-                                                                <td colspan="1">
+                                                                <td colspan="2">
                     <div class="ansibleOptionAnchor" id="parameter-labels"></div>
                     <b>labels</b>
                     <a class="ansibleOptionLink" href="#parameter-labels" title="Permalink to this option"></a>
@@ -177,7 +210,7 @@ Parameters
                                                         </td>
             </tr>
                                 <tr>
-                                                                <td colspan="1">
+                                                                <td colspan="2">
                     <div class="ansibleOptionAnchor" id="parameter-mode"></div>
                     <b>mode</b>
                     <a class="ansibleOptionLink" href="#parameter-mode" title="Permalink to this option"></a>
@@ -197,7 +230,7 @@ Parameters
                                                         </td>
             </tr>
                                 <tr>
-                                                                <td colspan="1">
+                                                                <td colspan="2">
                     <div class="ansibleOptionAnchor" id="parameter-password"></div>
                     <b>password</b>
                     <a class="ansibleOptionLink" href="#parameter-password" title="Permalink to this option"></a>
@@ -214,7 +247,7 @@ Parameters
                                                         </td>
             </tr>
                                 <tr>
-                                                                <td colspan="1">
+                                                                <td colspan="2">
                     <div class="ansibleOptionAnchor" id="parameter-profile"></div>
                     <b>profile</b>
                     <a class="ansibleOptionLink" href="#parameter-profile" title="Permalink to this option"></a>
@@ -229,13 +262,13 @@ Parameters
                                                         </td>
             </tr>
                                 <tr>
-                                                                <td colspan="1">
+                                                                <td colspan="2">
                     <div class="ansibleOptionAnchor" id="parameter-sans"></div>
                     <b>sans</b>
                     <a class="ansibleOptionLink" href="#parameter-sans" title="Permalink to this option"></a>
                     <div style="font-size: small">
                         <span style="color: purple">dictionary</span>
-                                                 / <span style="color: red">required</span>                    </div>
+                                                                    </div>
                                                         </td>
                                 <td>
                                                                                                                                                             </td>
@@ -244,7 +277,7 @@ Parameters
                                                         </td>
             </tr>
                                 <tr>
-                                                                <td colspan="1">
+                                                                <td colspan="2">
                     <div class="ansibleOptionAnchor" id="parameter-subject"></div>
                     <b>subject</b>
                     <a class="ansibleOptionLink" href="#parameter-subject" title="Permalink to this option"></a>
@@ -261,7 +294,7 @@ Parameters
                                                         </td>
             </tr>
                                 <tr>
-                                                                <td colspan="1">
+                                                                <td colspan="2">
                     <div class="ansibleOptionAnchor" id="parameter-x_api_id"></div>
                     <b>x_api_id</b>
                     <a class="ansibleOptionLink" href="#parameter-x_api_id" title="Permalink to this option"></a>
@@ -277,7 +310,7 @@ Parameters
                                                         </td>
             </tr>
                                 <tr>
-                                                                <td colspan="1">
+                                                                <td colspan="2">
                     <div class="ansibleOptionAnchor" id="parameter-x_api_key"></div>
                     <b>x_api_key</b>
                     <a class="ansibleOptionLink" href="#parameter-x_api_key" title="Permalink to this option"></a>
@@ -338,7 +371,7 @@ Examples
         x_api_id: "<horizon-id>"
         x_api_key: "<horizon-password>"
         mode: "decentralized"
-        csr: <a_csr_file>
+        csr: "CSR content"
         password: "examplePassword"
         key_type: "rsa-2048"
         profile: "exampleProfile"
@@ -371,8 +404,8 @@ Examples
         sans:
           dnsname.1: "exampleDnsName"
         labels:
-          snow_id: "value1"
-          exp_tech: "value2"
+          label1: "value1"
+          label2: "value2"
 
 
 
@@ -400,7 +433,7 @@ Common return values are documented :ref:`here <common_return_values>`, the foll
                     <b>certificate</b>
                     <a class="ansibleOptionLink" href="#return-certificate" title="Permalink to this return value"></a>
                     <div style="font-size: small">
-                      <span style="color: purple">string</span>
+                      <span style="color: purple">dictionary</span>
                                           </div>
                                     </td>
                 <td>Always</td>
@@ -438,24 +471,6 @@ Common return values are documented :ref:`here <common_return_values>`, the foll
                 <td>Always</td>
                 <td>
                                             <div>Certificate in PEM format.</div>
-                                        <br/>
-                                    </td>
-            </tr>
-                                <tr>
-                                    <td class="elbow-placeholder">&nbsp;</td>
-                                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="return-certificate/discoveredTrusted"></div>
-                    <b>discoveredTrusted</b>
-                    <a class="ansibleOptionLink" href="#return-certificate/discoveredTrusted" title="Permalink to this return value"></a>
-                    <div style="font-size: small">
-                      <span style="color: purple">boolean</span>
-                                          </div>
-                                    </td>
-                <td>Always</td>
-                <td>
-                                            <div>True if the certificate was discovered and trusted.</div>
-                                            <div>False if the certificate was discovered.</div>
-                                            <div>Absent if the certificate was not discovered.</div>
                                         <br/>
                                     </td>
             </tr>
@@ -638,38 +653,6 @@ Common return values are documented :ref:`here <common_return_values>`, the foll
                                 <tr>
                                     <td class="elbow-placeholder">&nbsp;</td>
                                 <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="return-certificate/revocationDate"></div>
-                    <b>revocationDate</b>
-                    <a class="ansibleOptionLink" href="#return-certificate/revocationDate" title="Permalink to this return value"></a>
-                    <div style="font-size: small">
-                      <span style="color: purple">string</span>
-                                          </div>
-                                    </td>
-                <td>Always</td>
-                <td>
-                                            <div>Certificate revocation date (UNIX timestamp in millis).</div>
-                                        <br/>
-                                    </td>
-            </tr>
-                                <tr>
-                                    <td class="elbow-placeholder">&nbsp;</td>
-                                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="return-certificate/revocationReason"></div>
-                    <b>revocationReason</b>
-                    <a class="ansibleOptionLink" href="#return-certificate/revocationReason" title="Permalink to this return value"></a>
-                    <div style="font-size: small">
-                      <span style="color: purple">string</span>
-                                          </div>
-                                    </td>
-                <td>Always</td>
-                <td>
-                                            <div>Certificate revocation reason.</div>
-                                        <br/>
-                                    </td>
-            </tr>
-                                <tr>
-                                    <td class="elbow-placeholder">&nbsp;</td>
-                                <td colspan="1">
                     <div class="ansibleOptionAnchor" id="return-certificate/serial"></div>
                     <b>serial</b>
                     <a class="ansibleOptionLink" href="#return-certificate/serial" title="Permalink to this return value"></a>
@@ -715,22 +698,6 @@ Common return values are documented :ref:`here <common_return_values>`, the foll
                                         <br/>
                                     </td>
             </tr>
-                                <tr>
-                                    <td class="elbow-placeholder">&nbsp;</td>
-                                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="return-certificate/thirdPartyData"></div>
-                    <b>thirdPartyData</b>
-                    <a class="ansibleOptionLink" href="#return-certificate/thirdPartyData" title="Permalink to this return value"></a>
-                    <div style="font-size: small">
-                      <span style="color: purple">list</span>
-                       / <span style="color: purple">elements=dictionary</span>                    </div>
-                                    </td>
-                <td>Always</td>
-                <td>
-                                            <div>Certificate third-party data.</div>
-                                        <br/>
-                                    </td>
-            </tr>
                     
                                 <tr>
                                 <td colspan="2">
@@ -771,9 +738,9 @@ Common return values are documented :ref:`here <common_return_values>`, the foll
                       <span style="color: purple">string</span>
                                           </div>
                                     </td>
-                <td>If enrollement mode is &quot;centralized&quot;</td>
+                <td>If enrollement mode is &quot;centralized&quot; or if a key pair was generated on-the-fly</td>
                 <td>
-                                            <div>PKCS#12 returned by the API (base64-encoded)</div>
+                                            <div>Base64-encoded PKCS#12</div>
                                         <br/>
                                     </td>
             </tr>
@@ -786,7 +753,7 @@ Common return values are documented :ref:`here <common_return_values>`, the foll
                       <span style="color: purple">string</span>
                                           </div>
                                     </td>
-                <td>If enrollement mode is &quot;centralized&quot;</td>
+                <td>If enrollement mode is &quot;centralized&quot; or if a key pair was generated on-the-fly</td>
                 <td>
                                             <div>PKCS#12 password</div>
                                         <br/>

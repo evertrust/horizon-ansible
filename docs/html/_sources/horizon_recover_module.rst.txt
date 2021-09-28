@@ -179,21 +179,6 @@ Parameters
             </tr>
                                 <tr>
                                                                 <td colspan="2">
-                    <div class="ansibleOptionAnchor" id="parameter-profile"></div>
-                    <b>profile</b>
-                    <a class="ansibleOptionLink" href="#parameter-profile" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">string</span>
-                                                 / <span style="color: red">required</span>                    </div>
-                                                        </td>
-                                <td>
-                                                                                                                                                            </td>
-                                                                <td>
-                                            <div>Horizon certificate profile</div>
-                                                        </td>
-            </tr>
-                                <tr>
-                                                                <td colspan="2">
                     <div class="ansibleOptionAnchor" id="parameter-x_api_id"></div>
                     <b>x_api_id</b>
                     <a class="ansibleOptionLink" href="#parameter-x_api_id" title="Permalink to this option"></a>
@@ -272,6 +257,352 @@ Examples
 
 .. Return values
 
+Return Values
+-------------
+Common return values are documented :ref:`here <common_return_values>`, the following are the fields unique to this module:
+
+.. raw:: html
+
+    <table border=0 cellpadding=0 class="documentation-table">
+        <tr>
+            <th colspan="2">Key</th>
+            <th>Returned</th>
+            <th width="100%">Description</th>
+        </tr>
+                    <tr>
+                                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="return-certificate"></div>
+                    <b>certificate</b>
+                    <a class="ansibleOptionLink" href="#return-certificate" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">dictionary</span>
+                                          </div>
+                                    </td>
+                <td>Always</td>
+                <td>
+                                            <div>Enrolled certificate object</div>
+                                        <br/>
+                                    </td>
+            </tr>
+                                        <tr>
+                                    <td class="elbow-placeholder">&nbsp;</td>
+                                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="return-certificate/_id"></div>
+                    <b>_id</b>
+                    <a class="ansibleOptionLink" href="#return-certificate/_id" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">string</span>
+                                          </div>
+                                    </td>
+                <td>Always</td>
+                <td>
+                                            <div>Horizon internal certificate ID.</div>
+                                        <br/>
+                                    </td>
+            </tr>
+                                <tr>
+                                    <td class="elbow-placeholder">&nbsp;</td>
+                                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="return-certificate/certificate"></div>
+                    <b>certificate</b>
+                    <a class="ansibleOptionLink" href="#return-certificate/certificate" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">string</span>
+                                          </div>
+                                    </td>
+                <td>Always</td>
+                <td>
+                                            <div>Certificate in PEM format.</div>
+                                        <br/>
+                                    </td>
+            </tr>
+                                <tr>
+                                    <td class="elbow-placeholder">&nbsp;</td>
+                                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="return-certificate/dn"></div>
+                    <b>dn</b>
+                    <a class="ansibleOptionLink" href="#return-certificate/dn" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">string</span>
+                                          </div>
+                                    </td>
+                <td>Always</td>
+                <td>
+                                            <div>Certificate DN.</div>
+                                        <br/>
+                                    </td>
+            </tr>
+                                <tr>
+                                    <td class="elbow-placeholder">&nbsp;</td>
+                                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="return-certificate/holderId"></div>
+                    <b>holderId</b>
+                    <a class="ansibleOptionLink" href="#return-certificate/holderId" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">string</span>
+                                          </div>
+                                    </td>
+                <td>Always</td>
+                <td>
+                                            <div>Certificate holder ID.</div>
+                                        <br/>
+                                    </td>
+            </tr>
+                                <tr>
+                                    <td class="elbow-placeholder">&nbsp;</td>
+                                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="return-certificate/issuer"></div>
+                    <b>issuer</b>
+                    <a class="ansibleOptionLink" href="#return-certificate/issuer" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">string</span>
+                                          </div>
+                                    </td>
+                <td>Always</td>
+                <td>
+                                            <div>Certificate issuer DN.</div>
+                                        <br/>
+                                    </td>
+            </tr>
+                                <tr>
+                                    <td class="elbow-placeholder">&nbsp;</td>
+                                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="return-certificate/keyType"></div>
+                    <b>keyType</b>
+                    <a class="ansibleOptionLink" href="#return-certificate/keyType" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">string</span>
+                                          </div>
+                                    </td>
+                <td>Always</td>
+                <td>
+                                            <div>Certificate key type.</div>
+                                        <br/>
+                                    </td>
+            </tr>
+                                <tr>
+                                    <td class="elbow-placeholder">&nbsp;</td>
+                                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="return-certificate/labels"></div>
+                    <b>labels</b>
+                    <a class="ansibleOptionLink" href="#return-certificate/labels" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">list</span>
+                       / <span style="color: purple">elements=dictionary</span>                    </div>
+                                    </td>
+                <td>If present</td>
+                <td>
+                                            <div>Certificate labels.</div>
+                                        <br/>
+                                    </td>
+            </tr>
+                                <tr>
+                                    <td class="elbow-placeholder">&nbsp;</td>
+                                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="return-certificate/metadata"></div>
+                    <b>metadata</b>
+                    <a class="ansibleOptionLink" href="#return-certificate/metadata" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">list</span>
+                       / <span style="color: purple">elements=dictionary</span>                    </div>
+                                    </td>
+                <td>Always</td>
+                <td>
+                                            <div>Certificate metadata.</div>
+                                        <br/>
+                                    </td>
+            </tr>
+                                <tr>
+                                    <td class="elbow-placeholder">&nbsp;</td>
+                                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="return-certificate/module"></div>
+                    <b>module</b>
+                    <a class="ansibleOptionLink" href="#return-certificate/module" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">string</span>
+                                          </div>
+                                    </td>
+                <td>Always</td>
+                <td>
+                                            <div>Certificate module.</div>
+                                        <br/>
+                                    </td>
+            </tr>
+                                <tr>
+                                    <td class="elbow-placeholder">&nbsp;</td>
+                                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="return-certificate/notAfter"></div>
+                    <b>notAfter</b>
+                    <a class="ansibleOptionLink" href="#return-certificate/notAfter" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">integer</span>
+                                          </div>
+                                    </td>
+                <td>Always</td>
+                <td>
+                                            <div>Certificate expiration date (UNIX timestamp in millis).</div>
+                                        <br/>
+                                    </td>
+            </tr>
+                                <tr>
+                                    <td class="elbow-placeholder">&nbsp;</td>
+                                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="return-certificate/notBefore"></div>
+                    <b>notBefore</b>
+                    <a class="ansibleOptionLink" href="#return-certificate/notBefore" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">integer</span>
+                                          </div>
+                                    </td>
+                <td>Always</td>
+                <td>
+                                            <div>Certificate issuance date (UNIX timestamp in millis).</div>
+                                        <br/>
+                                    </td>
+            </tr>
+                                <tr>
+                                    <td class="elbow-placeholder">&nbsp;</td>
+                                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="return-certificate/owner"></div>
+                    <b>owner</b>
+                    <a class="ansibleOptionLink" href="#return-certificate/owner" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">string</span>
+                                          </div>
+                                    </td>
+                <td>Always</td>
+                <td>
+                                            <div>Certificate owner.</div>
+                                        <br/>
+                                    </td>
+            </tr>
+                                <tr>
+                                    <td class="elbow-placeholder">&nbsp;</td>
+                                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="return-certificate/profile"></div>
+                    <b>profile</b>
+                    <a class="ansibleOptionLink" href="#return-certificate/profile" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">string</span>
+                                          </div>
+                                    </td>
+                <td>Always</td>
+                <td>
+                                            <div>Certificate profile.</div>
+                                        <br/>
+                                    </td>
+            </tr>
+                                <tr>
+                                    <td class="elbow-placeholder">&nbsp;</td>
+                                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="return-certificate/serial"></div>
+                    <b>serial</b>
+                    <a class="ansibleOptionLink" href="#return-certificate/serial" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">string</span>
+                                          </div>
+                                    </td>
+                <td>Always</td>
+                <td>
+                                            <div>Certificate serial number (hexadecimal format).</div>
+                                        <br/>
+                                    </td>
+            </tr>
+                                <tr>
+                                    <td class="elbow-placeholder">&nbsp;</td>
+                                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="return-certificate/signingAlgorithm"></div>
+                    <b>signingAlgorithm</b>
+                    <a class="ansibleOptionLink" href="#return-certificate/signingAlgorithm" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">string</span>
+                                          </div>
+                                    </td>
+                <td>Always</td>
+                <td>
+                                            <div>Certificate signing algorithm.</div>
+                                        <br/>
+                                    </td>
+            </tr>
+                                <tr>
+                                    <td class="elbow-placeholder">&nbsp;</td>
+                                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="return-certificate/subjectAlternateNames"></div>
+                    <b>subjectAlternateNames</b>
+                    <a class="ansibleOptionLink" href="#return-certificate/subjectAlternateNames" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">list</span>
+                       / <span style="color: purple">elements=dictionary</span>                    </div>
+                                    </td>
+                <td>If present</td>
+                <td>
+                                            <div>Certificate subject alternate names (SAN).</div>
+                                        <br/>
+                                    </td>
+            </tr>
+                    
+                                <tr>
+                                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="return-chain"></div>
+                    <b>chain</b>
+                    <a class="ansibleOptionLink" href="#return-chain" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">string</span>
+                                          </div>
+                                    </td>
+                <td>Always</td>
+                <td>
+                                            <div>Certificate&#x27;s trust chain</div>
+                                        <br/>
+                                    </td>
+            </tr>
+                                <tr>
+                                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="return-key"></div>
+                    <b>key</b>
+                    <a class="ansibleOptionLink" href="#return-key" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">string</span>
+                                          </div>
+                                    </td>
+                <td>If enrollement mode is &quot;centralized&quot; or if a key pair was generated on-the-fly</td>
+                <td>
+                                            <div>Certificate&#x27;s private key</div>
+                                        <br/>
+                                    </td>
+            </tr>
+                                <tr>
+                                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="return-p12"></div>
+                    <b>p12</b>
+                    <a class="ansibleOptionLink" href="#return-p12" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">string</span>
+                                          </div>
+                                    </td>
+                <td>If enrollement mode is &quot;centralized&quot;</td>
+                <td>
+                                            <div>Base64-encoded PKCS#12</div>
+                                        <br/>
+                                    </td>
+            </tr>
+                                <tr>
+                                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="return-p12_password"></div>
+                    <b>p12_password</b>
+                    <a class="ansibleOptionLink" href="#return-p12_password" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">string</span>
+                                          </div>
+                                    </td>
+                <td>If enrollement mode is &quot;centralized&quot;</td>
+                <td>
+                                            <div>PKCS#12 password</div>
+                                        <br/>
+                                    </td>
+            </tr>
+                        </table>
+    <br/><br/>
 
 ..  Status (Presently only deprecated)
 
