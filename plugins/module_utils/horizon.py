@@ -15,7 +15,6 @@ from requests.exceptions import HTTPError
 
 
 class Horizon:
-
     REQUEST_SUBMIT_URL = "/api/v1/requests/submit"
     REQUEST_TEMPLATE_URL = "/api/v1/requests/template"
     CERTIFICATES_SHOW_URL = "/api/v1/certificates/"
@@ -355,7 +354,8 @@ class Horizon:
 
         raise HTTPError(content)
 
-    def __set_labels(self, labels):
+    @staticmethod
+    def __set_labels(labels):
         """
         Format labels returned by the API
         :param labels: a dict containing the labels of the certificate
@@ -368,7 +368,8 @@ class Horizon:
 
         return my_labels
 
-    def __set_sans(self, sans):
+    @staticmethod
+    def __set_sans(sans):
         """
         Format SANs returned by the API
         :param sans: a dict containing the subject alternates names of the certificate
@@ -389,7 +390,8 @@ class Horizon:
 
         return my_sans
 
-    def __set_subject(self, subject, template):
+    @staticmethod
+    def __set_subject(subject, template):
         """
         Format subject returned by the API
         :param subject: a dict contaning the subject's informations of the certificate
@@ -436,7 +438,8 @@ class Horizon:
 
         return my_subject
 
-    def __check_mode(self, template, mode=None):
+    @staticmethod
+    def __check_mode(template, mode=None):
         """
         :param template: the template of the request
         :param mode: mode precised in the playbook
@@ -452,8 +455,8 @@ class Horizon:
         else:
             raise AnsibleError(f'The mode: {mode} is not available.')
 
-
-    def __format_response(self, response, fields):
+    @staticmethod
+    def __format_response(response, fields):
         """
         :param response: an answer from the API
         :param fields: list of fields
@@ -493,7 +496,8 @@ class Horizon:
 
         return result
 
-    def __load_file_or_string(self, content):
+    @staticmethod
+    def __load_file_or_string(content):
         """
         Opens a certificate if a path is given
         :param content:
