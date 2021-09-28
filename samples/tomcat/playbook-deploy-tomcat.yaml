@@ -64,10 +64,10 @@
       owner: tomcat 
       group: tomcat 
     
-  - name: Uploading the {{ domain }} private key
+  - name: Uploading the {{ domain }} certificate
     copy:
-      content: "{{ enrolled_certificate['key'] }}"
-      dest: "/etc/tomcat9/ssl/{{ domain }}.key"
+      content: "{{ enrolled_certificate['certificate']['certificate'] }}"
+      dest: "/etc/tomcat9/ssl/{{ domain }}.crt"
       mode: '0660'
       owner: tomcat 
       group: tomcat
