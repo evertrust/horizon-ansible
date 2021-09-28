@@ -47,7 +47,7 @@ EXAMPLES = '''
       endpoint: "https://<horizon-endpoint>"
       x_api_id: "<horizon-id>"
       x_api_key: "<horizon-password>"
-      certificate_pem: <certificate_in_pem>
+      certificate_pem: "-----BEGIN CERTIFICATE----- ... -----END CERTIFICATE-----"
 
 - name: Revoke a certificate by its file
     evertrust.horizon.horizon_revoke:

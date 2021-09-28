@@ -251,7 +251,7 @@ Examples
           x_api_key: "<horizon-password>"
           labels:
             label1: "exampleLabel"
-          certificate_pem: <certificate_in_pem>
+          certificate_pem: "-----BEGIN CERTIFICATE----- ... -----END CERTIFICATE-----"
 
     - name: Update a certificate by its file
         evertrust.horizon.horizon_update:

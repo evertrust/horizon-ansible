@@ -311,7 +311,7 @@ Examples
           x_api_key: "<horizon-password>"
           campaign: exampleCampaign
           ip: localhost
-          certificate: <certificate_in_pem>
+          certificate_pem: "-----BEGIN CERTIFICATE----- ... -----END CERTIFICATE-----"
 
     - name: Feed a certificate by a file
         evertrust.horizon.horizon_feed:

@@ -237,7 +237,7 @@ Examples
           endpoint: "https://<horizon-endpoint>"
           x_api_id: "<horizon-id>"
           x_api_key: "<horizon-password>"
-          certificate_pem: <certificate_in_pem>
+          certificate_pem: "-----BEGIN CERTIFICATE----- ... -----END CERTIFICATE-----"
           password: "examplePassword"
 
     - name: Recover a certificate by a file
