@@ -54,7 +54,7 @@ class Horizon:
         Enroll a certificate
         :type profile: str
         :type mode: str
-        :type csr: str
+        :type csr: Union[str,dict]
         :type password: str
         :type key_type: str
         :type labels: dict
@@ -66,6 +66,7 @@ class Horizon:
         template = self.__get_template(profile, "enroll", "webra")
         password = self.__check_password_policy(password, template)
         mode = self.__check_mode(template, mode=mode)
+        csr = self.__load_file_or_string(csr)
 
         if mode == "decentralized":
             if csr is None:
@@ -95,7 +96,7 @@ class Horizon:
     def recover(self, certificate_pem, password):
         """
         Recover a certificate
-        :type certificate_pem: Union[string,dict]
+        :type certificate_pem: Union[str,dict]
         :type password: str
         :rtype: dict
         """
@@ -107,7 +108,7 @@ class Horizon:
             "workflow": "recover",
             "profile": profile,
             "password": password,
-            "certificatePem": self.__get_certificate(certificate_pem)
+            "certificatePem": self.__load_file_or_string(certificate_pem)
         }
 
         return self.post(self.REQUEST_SUBMIT_URL, json)
@@ -115,13 +116,13 @@ class Horizon:
     def revoke(self, certificate_pem, revocation_reason):
         """
         Revoke a certificate
-        :type certificate_pem: Union[string,dict]
+        :type certificate_pem: Union[str,dict]
         :type revocation_reason: str
         :rtype: dict
         """
         json = {
             "workflow": "revoke",
-            "certificatePem": self.__get_certificate(certificate_pem),
+            "certificatePem": self.__load_file_or_string(certificate_pem),
             "revocationReason": revocation_reason
         }
 
@@ -130,13 +131,13 @@ class Horizon:
     def update(self, certificate_pem, labels={}):
         """
         Update a certificate
-        :type certificate_pem: Union[string,dict]
+        :type certificate_pem: Union[str,dict]
         :type labels: dict
         :rtype: dict
         """
         json = {
             "workflow": "update",
-            "certificatePem": self.__get_certificate(certificate_pem),
+            "certificatePem": self.__load_file_or_string(certificate_pem),
             "labels": self.__set_labels(labels)
         }
         return self.post(self.REQUEST_SUBMIT_URL, json)
@@ -170,7 +171,7 @@ class Horizon:
         """
         Feed a certificate to Horizon
         :type campaign: str
-        :type certificate_pem: Union[string,dict]
+        :type certificate_pem: Union[str,dict]
         :type ip: str
         :type hostnames: list
         :type operating_systems: list
@@ -181,7 +182,7 @@ class Horizon:
         """
         json = {
             "campaign": campaign,
-            "certificate": self.__get_certificate(certificate_pem),
+            "certificate": self.__load_file_or_string(certificate_pem),
             "hostDiscoveryData": {
                 "ip": ip,
                 "hostnames": hostnames,
@@ -197,11 +198,11 @@ class Horizon:
     def certificate(self, certificate_pem, fields=None):
         """
         Retrieve a certificate's attributes
-        :type certificate_pem: Union[string,dict]
+        :type certificate_pem: Union[str,dict]
         :type fields: list
         :rtype: dict
         """
-        pem = self.__get_certificate(certificate_pem)
+        pem = self.__load_file_or_string(certificate_pem)
         pem = urllib.parse.quote(pem, safe='')
 
         response = self.get(self.CERTIFICATES_SHOW_URL + pem)
@@ -215,10 +216,10 @@ class Horizon:
     def chain(self, certificate_pem):
         """
         Returns the trust chain for a certificate PEM
-        :type certificate_pem: Union[string,dict]
+        :type certificate_pem: Union[str,dict]
         :rtype: str
         """
-        pem = self.__get_certificate(certificate_pem)
+        pem = self.__load_file_or_string(certificate_pem)
         pem = urllib.parse.quote(pem, safe='')
         return self.get(self.RFC5280_TC_URL + pem)
 
@@ -558,17 +559,17 @@ class Horizon:
 
         return result
 
-    def __get_certificate(self, certificate_pem):
+    def __load_file_or_string(self, content):
         """
         Opens a certificate if a path is given
-        :param certificate_pem:
+        :param content:
         :return:
         """
-        if isinstance(certificate_pem, dict):
-            if "src" in certificate_pem:
-                with open(certificate_pem["src"], 'r') as file:
-                    cert = file.read()
-                return cert
+        if isinstance(content, dict):
+            if "src" in content:
+                with open(content["src"], 'r') as file:
+                    pulled_content = file.read()
+                return pulled_content
             else:
-                raise AnsibleError('certificate_pem format is not readable.')
-        return certificate_pem
+                raise AnsibleError('You must specify an src attribute when passing a dict')
+        return content
