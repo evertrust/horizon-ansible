@@ -48,7 +48,7 @@ class Horizon:
         else:
             raise AnsibleError('You have to inform authentication parameters')
 
-    def enroll(self, profile, mode=None, csr=None, password=None, key_type=None, labels={}, sans={}, subject={},
+    def enroll(self, profile, mode=None, csr=None, password=None, key_type=None, labels=None, sans=None, subject=None,
                contact_email=None):
         """
         Enroll a certificate
@@ -63,6 +63,12 @@ class Horizon:
         :type contact_email: str
         :rtype: dict
         """
+        if subject is None:
+            subject = {}
+        if sans is None:
+            sans = {}
+        if labels is None:
+            labels = {}
         template = self.__get_template(profile, "enroll", "webra")
         password = self.__check_password_policy(password, template)
         mode = self.__check_mode(template, mode=mode)
@@ -142,7 +148,7 @@ class Horizon:
         }
         return self.post(self.REQUEST_SUBMIT_URL, json)
 
-    def search(self, query=None, fields=[]):
+    def search(self, query=None, fields=None):
         """
         Search for certificates
         :type query: str
@@ -153,8 +159,10 @@ class Horizon:
             "query": query,
             "withCount": True,
             "pageIndex": 1,
-            "fields": ["module", "profile", "labels", "subjectAlternateNames"].extend(fields)
         }
+        if fields is not None:
+            json["fields"] = fields
+
         results = []
         has_more = True
         while has_more:
@@ -444,80 +452,6 @@ class Horizon:
         else:
             raise AnsibleError(f'The mode: {mode} is not available.')
 
-    def get_hostnames(self, certificate, hostnames):
-        """
-        :param certificate: the certificate from which we took informations
-        :param hostnames: a list of hostname destination variables in order of preference
-        :return the preferred identifer for the host
-        """
-        if not hostnames:
-            hostnames = []
-        hostnames.append("san.dns")
-        hostnames.append("san.ip")
-
-        hostname = None
-
-        for preference in hostnames:
-            if preference == 'san.ip':
-                if 'subjectAlternateNames' in certificate:
-                    for san in certificate["subjectAlternateNames"]:
-                        if san["sanType"] == "IPADDRESS":
-                            hostname = san["value"]
-                        break
-                else:
-                    pass
-
-            elif preference == 'san.dns':
-                if 'subjectAlternateNames' in certificate:
-                    for san in certificate["subjectAlternateNames"]:
-                        if san["sanType"] == "DNSNAME":
-                            hostname = san["value"]
-                        break
-                else:
-                    pass
-
-            elif preference == 'discoveryData.ip':
-                for data in certificate["hostDiscoveryData"]:
-                    if data["ip"]:
-                        hostname = data["value"]
-                    break
-
-            elif preference == 'discoveryData.hostname':
-                for data in certificate["hostDiscoveryData"]:
-                    if data["hostname"]:
-                        hostname = data["value"]
-                    break
-
-            elif self.__is_label_pref(preference):
-                if 'labels' in certificate:
-                    label_pref = self.__get_label_pref(preference)
-                    for label in certificate["labels"]:
-                        if label["key"] == label_pref:
-                            hostname = label["value"]
-                            break
-
-            if hostname is not None:
-                break
-
-        if hostname:
-            return hostname
-
-    def __is_label_pref(self, preference):
-        """
-        :param preference: a destination hostname
-        :return True if preference look like label.<key>
-        """
-        if preference not in ["san.ip", "san.dns", "discoveryData.ip", "discoveryData.Hostname"]:
-            return preference.split('.')[0] == 'label'
-        return False
-
-    def __get_label_pref(self, preference):
-        """
-        :param preference: a destination hostname which look like label.<key>
-        :return the <key> of the label
-        """
-        if self.__is_label_pref(preference):
-            return preference.split('.')[1]
 
     def __format_response(self, response, fields):
         """

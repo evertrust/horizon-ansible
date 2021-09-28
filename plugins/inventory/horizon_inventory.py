@@ -83,7 +83,6 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
 
     def __init__(self):
         super(InventoryModule, self).__init__()
-        self.client = self._get_client()
 
     def _populate(self, certificates, hostnames, fields):
         '''
@@ -106,7 +105,7 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
             :param fields: a list of fields
         '''
         for host in hosts:
-            hostname = self.client.get_hostnames(host, hostnames)
+            hostname = self.get_hostnames(host, hostnames)
 
             if not hostname:
                 continue
@@ -156,8 +155,10 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
         return valid
 
     def parse(self, inventory, loader, path, cache):
-
         super().parse(inventory, loader, path, cache=cache)
+
+        self.config = self._read_config_data(path)
+        self.client = self._get_client()
 
         try:
             content = self._get_content()
@@ -169,7 +170,7 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
 
         response = self.client.search(**content)
 
-        self._populate(response, content["hostnames"], content["fields"])
+        self._populate(response, self.config.get("hostnames"), content["fields"])
 
     def _auth_args(self):
         return ["endpoint", "x_api_id", "x_api_key", "ca_bundle", "client_cert", "client_key"]
@@ -181,7 +182,7 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
         return auth
 
     def _args(self):
-        return ["query", "fields", "hostnames"]
+        return ["query", "fields"]
 
     def _get_content(self):
         content = {}
@@ -191,3 +192,46 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
 
     def _get_client(self):
         return Horizon(**self._get_auth())
+
+
+    def get_hostnames(self, certificate, hostnames):
+        """
+        :param certificate: the certificate from which we took informations
+        :param hostnames: a list of hostname destination variables in order of preference
+        :return the preferred identifer for the host
+        """
+        if not hostnames:
+            hostnames = []
+        hostnames.append("san.dns")
+        hostnames.append("san.ip")
+
+        for preference in hostnames:
+
+            if preference == 'san.ip':
+                if 'subjectAlternateNames' in certificate:
+                    for san in certificate["subjectAlternateNames"]:
+                        if san["sanType"] == "IPADDRESS":
+                            return san["value"]
+
+            elif preference == 'san.dns':
+                if 'subjectAlternateNames' in certificate:
+                    for san in certificate["subjectAlternateNames"]:
+                        if san["sanType"] == "DNSNAME":
+                            return san["value"]
+
+            elif preference == 'discoveryData.ip':
+                for data in certificate["discoveryData"]:
+                    if data["ip"]:
+                        return data["value"]
+
+            elif preference == 'discoveryData.hostname':
+                for data in certificate["discoveryData"]:
+                    if data["hostname"]:
+                        return data["value"]
+
+            elif preference.startswith('label.'):
+                if 'labels' in certificate:
+                    label_pref = preference.split('.')[1]
+                    for label in certificate["labels"]:
+                        if label["key"] == label_pref:
+                            return label["value"]
