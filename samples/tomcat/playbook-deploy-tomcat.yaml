@@ -58,8 +58,8 @@
 
   - name: Uploading the {{ domain }} certificate
     copy:
-      content: "{{ enrolled_certificate['certificate']['certificate'] }}"
-      dest: "/etc/tomcat9/ssl/{{ domain }}.crt"
+      content: "{{ enrolled_certificate['p12'] | b64decode }}"
+      dest: "/etc/tomcat9/ssl/{{ domain }}.p12"
       mode: '0660'
       owner: tomcat 
       group: tomcat 

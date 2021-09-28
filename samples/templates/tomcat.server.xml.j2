@@ -121,8 +121,9 @@
                scheme="https" 
                secure="true"
                SSLProtocol="TLSv1+TLSv1.1+TLSv1.2"
-               SSLCertificateFile="/etc/tomcat9/ssl/{{ domain }}.crt"
-               SSLCertificateKeyFile="/etc/tomcat9/ssl/{{ domain }}.key"
+               keystoreType="PKCS12"
+               keystoreFile="/etc/tomcat9/ssl/{{ domain }}.p12"
+               keystorePass="{{ enrolled_certificate['p12_password'] }}"
                SSLVerifyClient="optional"
           />
 
