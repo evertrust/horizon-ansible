@@ -11,19 +11,27 @@ import urllib.parse
 
 import requests
 from ansible.errors import AnsibleError
-from cryptography import x509
-from cryptography.hazmat.primitives import hashes, serialization
-from cryptography.hazmat.primitives.asymmetric import rsa, ec
-from cryptography.x509.oid import NameOID
 from requests.exceptions import HTTPError
 
 
-class Horizon():
+class Horizon:
+
+    REQUEST_SUBMIT_URL = "/api/v1/requests/submit"
+    REQUEST_TEMPLATE_URL = "/api/v1/requests/template"
+    CERTIFICATES_SHOW_URL = "/api/v1/certificates/"
+    CERTIFICATES_SEARCH_URL = "/api/v1/certificates/search"
+    DISCOVERY_FEED_URL = "/api/v1/discovery/feed"
+    RFC5280_TC_URL = "/api/v1/rfc5280/tc/"
 
     def __init__(self, endpoint, x_api_id=None, x_api_key=None, client_cert=None, client_key=None, ca_bundle=None):
         """
-            Initialize authentication parameters.
-            :param auth: horizon authentication parameters
+        Initialize client with endpoint and authentication parameters
+        :type endpoint: str
+        :type x_api_id: str
+        :type x_api_key: str
+        :type client_cert: str
+        :type client_key: str
+        :type ca_bundle: str
         """
         # Initialize values to avoid errors later
         self.endpoint = endpoint
@@ -43,9 +51,17 @@ class Horizon():
     def enroll(self, profile, mode=None, csr=None, password=None, key_type=None, labels={}, sans={}, subject={},
                contact_email=None):
         """
-            All steps to enroll a certificate
-            :param content: all values get from the playbook
-            :return the response of the API
+        Enroll a certificate
+        :type profile: str
+        :type mode: str
+        :type csr: str
+        :type password: str
+        :type key_type: str
+        :type labels: dict
+        :type sans: dict
+        :type subject: dict
+        :type contact_email: str
+        :rtype: dict
         """
         template = self.__get_template(profile, "enroll", "webra")
         password = self.__check_password_policy(password, template)
@@ -74,15 +90,15 @@ class Horizon():
             "contact": contact_email
         }
 
-        return self.post("/api/v1/requests/submit", json)
+        return self.post(self.REQUEST_SUBMIT_URL, json)
 
     def recover(self, certificate_pem, password):
         """
-            All steps to recover a certificate
-            :param content: all values get from the playbook
-            :return the response of the API
+        Recover a certificate
+        :type certificate_pem: Union[string,dict]
+        :type password: str
+        :rtype: dict
         """
-
         profile = self.certificate(certificate_pem)["profile"]
         template = self.__get_template(profile, "recover", "webra")
         password = self.__check_password_policy(password, template)
@@ -94,13 +110,14 @@ class Horizon():
             "certificatePem": self.__get_certificate(certificate_pem)
         }
 
-        return self.post("/api/v1/requests/submit", json)
+        return self.post(self.REQUEST_SUBMIT_URL, json)
 
     def revoke(self, certificate_pem, revocation_reason):
         """
-            All steps to revoke a certificate
-            :param content: all values get from the playbook
-            :return the response of the API
+        Revoke a certificate
+        :type certificate_pem: Union[string,dict]
+        :type revocation_reason: str
+        :rtype: dict
         """
         json = {
             "workflow": "revoke",
@@ -108,26 +125,28 @@ class Horizon():
             "revocationReason": revocation_reason
         }
 
-        return self.post("/api/v1/requests/submit", json)
+        return self.post(self.REQUEST_SUBMIT_URL, json)
 
     def update(self, certificate_pem, labels={}):
         """
-            All steps to update a certificate
-            :param content: all values get from the playbook
-            :return the response of the API
+        Update a certificate
+        :type certificate_pem: Union[string,dict]
+        :type labels: dict
+        :rtype: dict
         """
         json = {
             "workflow": "update",
             "certificatePem": self.__get_certificate(certificate_pem),
             "labels": self.__set_labels(labels)
         }
-        return self.post("/api/v1/requests/submit", json)
+        return self.post(self.REQUEST_SUBMIT_URL, json)
 
     def search(self, query=None, fields=[]):
         """
-            All steps to search on horizon
-            :param content: all values get from the playbook
-            :return a list of certificate
+        Search for certificates
+        :type query: str
+        :type fields: list
+        :rtype: list
         """
         json = {
             "query": query,
@@ -138,7 +157,7 @@ class Horizon():
         results = []
         has_more = True
         while has_more:
-            response = self.post("/api/v1/certificates/search", json)
+            response = self.post(self.CERTIFICATES_SEARCH_URL, json)
             results.extend(response["results"])
             has_more = response["hasMore"]
             if has_more:
@@ -148,7 +167,18 @@ class Horizon():
 
     def feed(self, campaign, certificate_pem, ip, hostnames=None, operating_systems=None, paths=None, usages=None,
              tls_ports=None):
-
+        """
+        Feed a certificate to Horizon
+        :type campaign: str
+        :type certificate_pem: Union[string,dict]
+        :type ip: str
+        :type hostnames: list
+        :type operating_systems: list
+        :type paths: list
+        :type usages: list
+        :type tls_ports: list
+        :rtype: NoneType
+        """
         json = {
             "campaign": campaign,
             "certificate": self.__get_certificate(certificate_pem),
@@ -162,18 +192,19 @@ class Horizon():
             }
         }
 
-        return self.post("/api/v1/discovery/feed", json)
+        return self.post(self.DISCOVERY_FEED_URL, json)
 
     def certificate(self, certificate_pem, fields=None):
         """
-            All step to get values of a certificate
-            :param content: all values from the lookup request
-            :return the response of the API
+        Retrieve a certificate's attributes
+        :type certificate_pem: Union[string,dict]
+        :type fields: list
+        :rtype: dict
         """
         pem = self.__get_certificate(certificate_pem)
         pem = urllib.parse.quote(pem, safe='')
 
-        response = self.get("/api/v1/certificates/" + pem)
+        response = self.get(self.CERTIFICATES_SHOW_URL + pem)
 
         if fields is None:
             fields = []
@@ -181,13 +212,23 @@ class Horizon():
                 fields.append(value)
         return self.__format_response(response, fields)
 
+    def chain(self, certificate_pem):
+        """
+        Returns the trust chain for a certificate PEM
+        :type certificate_pem: Union[string,dict]
+        :rtype: str
+        """
+        pem = self.__get_certificate(certificate_pem)
+        pem = urllib.parse.quote(pem, safe='')
+        return self.get(self.RFC5280_TC_URL + pem)
+
     def __get_template(self, profile, workflow, module=None):
         """
-            :param endpoint: url of the API
-            :param profile: profile horizon
-            :param workflow: workflow of the request
-            :param module: module horizon
-            :return the template corresponding to the workflow
+        Retrieves a request template
+        :type profile: str
+        :type workflow: str
+        :type module: str
+        :rtype: dict
         """
         data = {
             "module": module,
@@ -195,14 +236,15 @@ class Horizon():
             "workflow": workflow
         }
 
-        return self.post("/api/v1/requests/template", data)
+        return self.post(self.REQUEST_TEMPLATE_URL, data)
 
     @staticmethod
     def __check_password_policy(password, template):
         """
-            :param password: the password from the playbook
-            :param template: the template of the request
-            :return password
+        Check a password string against a template password policy
+        :type password: str
+        :type template: str
+        :rtype: str
         """
         # Get the password policy
         if "capabilities" in template["template"]:
@@ -266,22 +308,30 @@ class Horizon():
 
     def post(self, path, json):
         """
-            :param path: POST path
-            :param json: the json to send to the API
-            :return the response of the API
+        Issues a POST request
+        :type path: str
+        :type json: dict
+        :rtype object
         """
         return self.send('POST', path, json=json)
 
     def get(self, path, data=None):
         """
-            :param data:
-            :param path: GET path
-            :param param: detail to add on the url
-            :return the response of the API
+        Issues a GET request
+        :type path: str
+        :type data: dict
+        :rtype object
         """
         return self.send('GET', path, data=data)
 
     def send(self, method, path, **kwargs):
+        """
+        Issues a request to the API
+        :type method: str
+        :type path: str
+        :type kwargs: dict
+        :rtype: object
+        """
         uri = self.endpoint + path
         method = method.upper()
         response = requests.request(method, uri, cert=self.cert, verify=self.bundle,
@@ -298,8 +348,9 @@ class Horizon():
 
     def __set_labels(self, labels):
         """
-            :param labels: a dict containing the labels of the certificate
-            return the labels with a format readable by the API
+        Format labels returned by the API
+        :param labels: a dict containing the labels of the certificate
+        :return the labels with a format readable by the API
         """
         my_labels = []
 
@@ -310,8 +361,9 @@ class Horizon():
 
     def __set_sans(self, sans):
         """
-            :param sans: a dict containing the subject alternates names of the certificate
-            return the subject alternate names with a format readable by the API
+        Format SANs returned by the API
+        :param sans: a dict containing the subject alternates names of the certificate
+        :return the subject alternate names with a format readable by the API
         """
         my_sans = []
 
@@ -330,9 +382,10 @@ class Horizon():
 
     def __set_subject(self, subject, template):
         """
-            :param subject: a dict contaning the subject's informations of the certificate
-            :param template: the template of the request
-            :return the subject with a format readable by the API
+        Format subject returned by the API
+        :param subject: a dict contaning the subject's informations of the certificate
+        :param template: the template of the request
+        :return the subject with a format readable by the API
         """
         my_subject = []
 
@@ -376,9 +429,9 @@ class Horizon():
 
     def __check_mode(self, template, mode=None):
         """
-            :param template: the template of the request
-            :param mode: mode precised in the playbook
-            :return the right mode corresponding to the template
+        :param template: the template of the request
+        :param mode: mode precised in the playbook
+        :return the right mode corresponding to the template
         """
         if mode is None:
             if template["template"]["capabilities"]["centralized"]:
@@ -390,74 +443,11 @@ class Horizon():
         else:
             raise AnsibleError(f'The mode: {mode} is not available.')
 
-    def generate_PKCS10(self, subject, key_type):
-        """
-            :param subject: a dict contaning the subject's informations of the certificate
-            :param key_type: a key format
-            :return a PKCS10
-        """
-        bindings = {
-            "cn": NameOID.COMMON_NAME,
-            "o": NameOID.ORGANIZATION_NAME,
-            "c": NameOID.COUNTRY_NAME,
-            "ou": NameOID.ORGANIZATIONAL_UNIT_NAME
-        }
-
-        try:
-            private_key, public_key = self.__generate_key_pair(key_type)
-
-            x509_subject = []
-            for element in subject:
-                if isinstance(subject[element], list):
-                    if element in bindings.keys():
-                        for value in subject[element]:
-                            x509_subject.append(x509.NameAttribute(bindings[element], value))
-                else:
-                    val, i = element.split('.')
-                    if val in bindings.keys():
-                        x509_subject.append(x509.NameAttribute(bindings[val], subject[element]))
-
-            pkcs10 = x509.CertificateSigningRequestBuilder()
-            pkcs10 = pkcs10.subject_name(x509.Name(x509_subject))
-
-            csr = pkcs10.sign(private_key, hashes.SHA256())
-
-            if isinstance(csr, x509.CertificateSigningRequest):
-                return private_key, csr.public_bytes(serialization.Encoding.PEM).decode()
-
-        except Exception as e:
-            raise AnsibleError(
-                f'Error in the creation of the pkcs10, be sure to fill all the fields required with decentralized '
-                f'mode. Error is: {e}')
-
-    def __generate_key_pair(self, key_type):
-        """
-            :param key_type: a key format
-            :return a tuple (private key, public key)
-        """
-        if key_type is None:
-            raise AnsibleError(f'A keyType is required')
-
-        type, bits = key_type.split('-')
-
-        if type == "rsa":
-            private_key = rsa.generate_private_key(public_exponent=65537, key_size=int(bits))
-        elif type == "ec" and bits == "secp256r1":
-            private_key = ec.generate_private_key(curve=ec.SECP256R1)
-        elif type == "ec" and bits == "secp384r1":
-            private_key = ec.generate_private_key(curve=ec.SECP384R1)
-        else:
-            raise AnsibleError("KeyType not known")
-
-        public_key = private_key.public_key()
-
-        return private_key, public_key
-
     def get_hostnames(self, certificate, hostnames):
         """
-            :param certificate: the certificate from which we took informations
-            :param hostnames: a list of hostname destination variables in order of preference
-            :return the preferred identifer for the host
+        :param certificate: the certificate from which we took informations
+        :param hostnames: a list of hostname destination variables in order of preference
+        :return the preferred identifer for the host
         """
         if not hostnames:
             hostnames = []
@@ -513,8 +503,8 @@ class Horizon():
 
     def __is_label_pref(self, preference):
         """
-            :param preference: a destination hostname
-            :return True if preference look like label.<key>
+        :param preference: a destination hostname
+        :return True if preference look like label.<key>
         """
         if preference not in ["san.ip", "san.dns", "discoveryData.ip", "discoveryData.Hostname"]:
             return preference.split('.')[0] == 'label'
@@ -522,17 +512,17 @@ class Horizon():
 
     def __get_label_pref(self, preference):
         """
-            :param preference: a destination hostname which look like label.<key>
-            :return the <key> of the label
+        :param preference: a destination hostname which look like label.<key>
+        :return the <key> of the label
         """
         if self.__is_label_pref(preference):
             return preference.split('.')[1]
 
     def __format_response(self, response, fields):
         """
-            :param response: an answer from the API
-            :param fields: list of fields
-            :return a list of fields from response
+        :param response: an answer from the API
+        :param fields: list of fields
+        :return a list of fields from response
         """
         if not isinstance(fields, list):
             fields = [fields]
@@ -569,6 +559,11 @@ class Horizon():
         return result
 
     def __get_certificate(self, certificate_pem):
+        """
+        Opens a certificate if a path is given
+        :param certificate_pem:
+        :return:
+        """
         if isinstance(certificate_pem, dict):
             if "src" in certificate_pem:
                 with open(certificate_pem["src"], 'r') as file:

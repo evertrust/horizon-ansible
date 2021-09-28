@@ -8,13 +8,14 @@ __metaclass__ = type
 
 from ansible.errors import AnsibleAction
 from ansible_collections.evertrust.horizon.plugins.module_utils.horizon_action import HorizonAction
+from ansible_collections.evertrust.horizon.plugins.module_utils.horizon_crypto import HorizonCrypto
 
 
 class ActionModule(HorizonAction):
     TRANSFERS_FILES = True
 
     def _args(self):
-        return ["password", "profile", "certificate_pem"]
+        return ["password", "certificate_pem"]
 
     def run(self, tmp=None, task_vars=None):
         result = super(ActionModule, self).run(tmp, task_vars)
@@ -22,11 +23,14 @@ class ActionModule(HorizonAction):
         try:
             client = self._get_client()
             content = self._get_content()
-            result = client.recover(**content)
+            response = client.recover(**content)
+            chain = client.chain(response["certificate"]["certificate"])
             return {
+                "chain": chain,
+                "certificate": response["certificate"],
                 "p12": response["pkcs12"]["value"],
                 "p12_password": response["password"]["value"],
-                "key": self.__get_key_from_p12(response["pkcs12"]["value"], response["password"]["value"])
+                "key": HorizonCrypto.get_key_from_p12(response["pkcs12"]["value"], response["password"]["value"])
             }
 
         except AnsibleAction as e:
