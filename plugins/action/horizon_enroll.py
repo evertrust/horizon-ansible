@@ -6,13 +6,10 @@ from __future__ import (absolute_import, division, print_function)
 
 __metaclass__ = type
 
-import base64
-import urllib.parse
-
 from ansible.errors import AnsibleAction
 from ansible_collections.evertrust.horizon.plugins.module_utils.horizon_action import HorizonAction
-from cryptography.hazmat.primitives import serialization
-from cryptography.hazmat.primitives.serialization import pkcs12
+from ansible_collections.evertrust.horizon.plugins.module_utils.horizon_crypto import HorizonCrypto
+
 
 
 class ActionModule(HorizonAction):
@@ -32,7 +29,8 @@ class ActionModule(HorizonAction):
 
             # Generate a key pair and CSR if none was provided
             if should_generate_csr:
-                generated_key, csr = client.generate_PKCS10(subject=content['subject'], key_type=content['key_type'])
+                private_key, public_key = HorizonCrypto.generate_key_pair(content['key_type'])
+                csr = HorizonCrypto.generate_pckcs10(subject=content['subject'], private_key=private_key)
                 content['csr'] = csr
 
             result = {}
@@ -40,33 +38,21 @@ class ActionModule(HorizonAction):
 
             if "certificate" in response:
                 result["certificate"] = response["certificate"]
-                result["chain"] = client.get('/api/v1/rfc5280/tc/' + urllib.parse.quote(result["certificate"]["certificate"], safe=''))
+                result["chain"] = client.chain(result["certificate"]["certificate"])
 
             if should_generate_csr:
-                result["key"] = self.__get_key_bytes(generated_key)
+                result["key"] = HorizonCrypto.get_key_bytes(private_key)
+                p12, p12_password = HorizonCrypto.get_p12_from_key(result["key"], result["certificate"]["certificate"])
+                result["p12"] = p12
+                result["p12_password"] = p12_password
             elif "pkcs12" in response.keys():
                 result["p12"] = response["pkcs12"]["value"]
                 result["p12_password"] = response["password"]["value"]
-                result["key"] = self.__get_key_from_p12(response["pkcs12"]["value"], response["password"]["value"])
+                result["key"] = HorizonCrypto.get_key_from_p12(response["pkcs12"]["value"], response["password"]["value"])
 
         except AnsibleAction as e:
             result.update(e.result)
 
         return result
 
-    def __get_key_from_p12(self, p12, password):
-        """
-            :param p12: a PKCS12 certificate
-            :param password: the password corresponding to the certificate
-            : return the public key of the PKCS12
-        """
-        encoded_key = pkcs12.load_key_and_certificates(base64.b64decode(p12), password.encode())
 
-        return self.__get_key_bytes(encoded_key[0])
-
-    def __get_key_bytes(self, encoded_key):
-        return encoded_key.private_bytes(
-            encoding=serialization.Encoding.PEM,
-            format=serialization.PrivateFormat.TraditionalOpenSSL,
-            encryption_algorithm=serialization.NoEncryption()
-        ).decode()
