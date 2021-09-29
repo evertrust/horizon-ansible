@@ -2,28 +2,25 @@
 - hosts: webserver
   become: yes
   tasks:
-  - name: get certificate
-    shell: "cat /etc/nginx/ssl-files/{{domain}}.crt"
-    register: data
+  - name: Retrieving current certificate for domain {{ domain }} 
+    shell: "cat /etc/nginx/ssl/{{ domain }}.crt"
+    register: current_certificate
 
-  - name: Stop Nginx Services
+  - name: Stopping nginx
     service:
       name: nginx
       state: stopped
 
-  - name: Uninstall Nginx
-    become: yes
+  - name: Uninstalling nginx
     apt:
       name: nginx
       state: absent
+      purge: yes
 
-  - name: Clean
-    command: rm -r -f /etc/nginx /var/log/nginx
-    become: true
 
-  - name: horizon_revoke
+  - name: Revoking the current certificate
     evertrust.horizon.horizon_revoke:
-      endpoint: "https://horizon-demo.evertrust.fr" 
-      x_api_id: "{{api_id}}"
-      x_api_key: "{{api_key}}"
-      certificate_pem: "{{ data['stdout'] }}"
+      endpoint: "{{ horizon_endpoint }}" 
+      x_api_id: "{{ api_id }}"
+      x_api_key: "{{ api_key }}"
+      certificate_pem: "{{ current_certificate['stdout'] }}"

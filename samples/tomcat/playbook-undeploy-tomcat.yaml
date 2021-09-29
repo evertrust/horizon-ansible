@@ -1,31 +1,25 @@
----
 - hosts: webserver
   become: yes
-  
   tasks:
-  - name: get certificate
-    shell: "cat /etc/apache2/ssl-files/{{domain}}.crt"
-    register: data
+  - name: Retrieving current certificate for domain {{ domain }}
+    shell: "cat /etc/tomcat9/ssl/{{ domain }}.crt"
+    register: current_certificate
 
-  - name: Stop tomcat
+  - name: Stopping tomcat
     become: yes
-    service: 
+    service:
       name: tomcat9
       state: stopped
 
-  - name: uninstall tomcat
+  - name: Uninstalling tomcat
     apt: 
       name: tomcat9
       state: absent
       purge: yes
 
-  - name: Clean
-    command: rm -r -f /etc/tomcat9 /var/log/tomcat9
-    become: true
-  
-  - name: horizon_revoke
+  - name: Revoking the current certificate
     evertrust.horizon.horizon_revoke:
-      endpoint: "https://horizon-demo.evertrust.fr" 
-      x_api_id: "{{api_id}}"
-      x_api_key: "{{api_key}}"
-      certificate_pem: "{{ data['stdout'] }}"
+      endpoint: "{{ horizon_endpoint }}"
+      x_api_id: "{{ api_id }}"
+      x_api_key: "{{ api_key }}"
+      certificate_pem: "{{ current_certificate['stdout'] }}"

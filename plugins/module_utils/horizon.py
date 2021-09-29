@@ -1,235 +1,259 @@
-from __future__ import print_function
-from os import pathconf_names
-from re import sub
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
 
-import requests, string, urllib
+from __future__ import (absolute_import, division, print_function)
 
+__metaclass__ = type
+
+import re
+import string
+import urllib.parse
+
+import requests
 from ansible.errors import AnsibleError
-from requests.api import head
 from requests.exceptions import HTTPError
 
-from cryptography import x509
-from cryptography.x509.oid import NameOID
-from cryptography.hazmat.primitives import hashes, serialization
-from cryptography.hazmat.primitives.asymmetric import rsa, ec
-from cryptography.hazmat.primitives.serialization import pkcs12
 
-import base64, re
+class Horizon:
+    REQUEST_SUBMIT_URL = "/api/v1/requests/submit"
+    REQUEST_TEMPLATE_URL = "/api/v1/requests/template"
+    CERTIFICATES_SHOW_URL = "/api/v1/certificates/"
+    CERTIFICATES_SEARCH_URL = "/api/v1/certificates/search"
+    DISCOVERY_FEED_URL = "/api/v1/discovery/feed"
+    RFC5280_TC_URL = "/api/v1/rfc5280/tc/"
 
-path_template = "/api/v1/requests/template"
-path_submit = "/api/v1/requests/submit"
-path_search = "/api/v1/certificates/search"
-path_feed = "/api/v1/discovery/feed"
-path_certificate= "/api/v1/certificates/"
-use_path = path_submit
-
-class Horizon():
-
-    def __init__(self, authent):
-        ''' 
-            Initialize authentication parameters.
-            :param authent: horizon authentication parameters
-        '''
+    def __init__(self, endpoint, x_api_id=None, x_api_key=None, client_cert=None, client_key=None, ca_bundle=None):
+        """
+        Initialize client with endpoint and authentication parameters
+        :type endpoint: str
+        :type x_api_id: str
+        :type x_api_key: str
+        :type client_cert: str
+        :type client_key: str
+        :type ca_bundle: str
+        """
         # Initialize values to avoid errors later
+        self.endpoint = endpoint
         self.headers = None
         self.cert = None
-        self.bundle = authent["ca_bundle"] 
+        self.bundle = ca_bundle
         # commplete the anthentication system
-        if authent["client_cert"] != None and authent["client_key"] != None:
-            self.cert = (authent["client_cert"], authent["client_key"])
+        if client_cert is not None and client_key is not None:
+            self.cert = (client_cert, client_key)
 
-        elif authent["api_id"] != None and authent["api_key"] != None:
-            self.headers = {"x-api-id": authent["api_id"], "x-api-key": authent["api_key"]}
+        elif x_api_id is not None and x_api_key is not None:
+            self.headers = {"x-api-id": x_api_id, "x-api-key": x_api_key}
 
         else:
-            raise AnsibleError(f'You have to inform authentication parameters')
+            raise AnsibleError('You have to inform authentication parameters')
 
-    
-    def enroll(self, content):
-        '''
-            All steps to enroll a certificate
-            :param content: all values get from the playbook
-            :return the response of the API
-        '''
-        template = self.__get_template(content["endpoint"], content["profile"], "enroll", "webra")
-        password = self.__check_password_policy(content["password"], template)
-        mode = self.__check_mode(template, mode=content["mode"])
-        key_type = content["key_type"]
-        csr = content["csr"]
+    def enroll(self, profile, mode=None, csr=None, password=None, key_type=None, labels=None, sans=None, subject=None,
+               contact_email=None):
+        """
+        Enroll a certificate
+        :type profile: str
+        :type mode: str
+        :type csr: Union[str,dict]
+        :type password: str
+        :type key_type: str
+        :type labels: dict
+        :type sans: dict
+        :type subject: dict
+        :type contact_email: str
+        :rtype: dict
+        """
+        if subject is None:
+            subject = {}
+        if sans is None:
+            sans = {}
+        if labels is None:
+            labels = {}
+        template = self.__get_template(profile, "enroll", "webra")
+        password = self.__check_password_policy(password, template)
+        mode = self.__check_mode(template, mode=mode)
+        csr = self.__load_file_or_string(csr)
 
         if mode == "decentralized":
-            if key_type in template["template"]["keyTypes"]:
-                if csr == None:
-                    csr = self.__generate_PKCS10(content["subject"], key_type)
-            else:
-                raise AnsibleError(f'key_type not in list')
+            if csr is None:
+                raise AnsibleError("You must specify a CSR when using decentralized enrollment")
+        if key_type not in template["template"]["keyTypes"]:
+            raise AnsibleError(f'key_type not in list')
 
-        json = self.__generate_json(workflow="enroll", template=template, module="webra", profile=content["profile"], password=password, key_type=key_type, labels=content["labels"], sans=content["sans"], subject=content["subject"], csr=csr)
-        return self.__post_request(json, content["endpoint"])
-    
-
-    def recover(self, content):
-        '''
-            All steps to recover a certificate
-            :param content: all values get from the playbook
-            :return the response of the API
-        '''
-        global use_path
-
-        param = {
-            "endpoint": content["endpoint"],
-            "pem": content["certificate_pem"]
+        json = {
+            "workflow": "enroll",
+            "module": "webra",
+            "profile": profile,
+            "password": {
+                "value": password
+            },
+            "template": {
+                "keyTypes": [key_type],
+                "sans": self.__set_sans(sans),
+                "subject": self.__set_subject(subject, template),
+                "csr": csr,
+                "labels": self.__set_labels(labels),
+            },
+            "contact": contact_email
         }
-        profile = self.certificate(param)[0]["profile"][0]
-        
-        template = self.__get_template(content["endpoint"], profile, "recover", "webra")
-        password = self.__check_password_policy(content["password"], template)
-        json = self.__generate_json(workflow="recover", profile=profile, password=password, certificate_pem=content["certificate_pem"])
-        use_path = path_submit
-        return self.__post_request(json, content["endpoint"])
-    
 
-    def revoke(self, content):
-        '''
-            All steps to revoke a certificate
-            :param content: all values get from the playbook
-            :return the response of the API
-        '''
-        json = self.__generate_json(workflow="revoke", revocation_reason=content["revocation_reason"], certificate_pem=content["certificate_pem"])
-        return self.__post_request(json, content["endpoint"])
+        return self.post(self.REQUEST_SUBMIT_URL, json)
 
-    
-    def update(self, content):
-        '''
-            All steps to update a certificate
-            :param content: all values get from the playbook
-            :return the response of the API
-        '''
-        json = self.__generate_json(workflow="update", certificate_pem=content["certificate_pem"], labels=content["labels"])
-        return self.__post_request(json, content["endpoint"])
+    def recover(self, certificate_pem, password):
+        """
+        Recover a certificate
+        :type certificate_pem: Union[str,dict]
+        :type password: str
+        :rtype: dict
+        """
+        profile = self.certificate(certificate_pem)["profile"]
+        template = self.__get_template(profile, "recover", "webra")
+        password = self.__check_password_policy(password, template)
 
-    
-    def search(self, content):
-        '''
-            All steps to search on horizon
-            :param content: all values get from the playbook
-            :return a list of certificate
-        '''
-        global use_path
-        use_path = path_search
+        json = {
+            "workflow": "recover",
+            "profile": profile,
+            "password": password,
+            "certificatePem": self.__load_file_or_string(certificate_pem)
+        }
 
-        json = self.__generate_json(workflow=None, query=content["query"], with_count=True, fields=content["fields"])
+        return self.post(self.REQUEST_SUBMIT_URL, json)
+
+    def revoke(self, certificate_pem, revocation_reason):
+        """
+        Revoke a certificate
+        :type certificate_pem: Union[str,dict]
+        :type revocation_reason: str
+        :rtype: dict
+        """
+        json = {
+            "workflow": "revoke",
+            "certificatePem": self.__load_file_or_string(certificate_pem),
+            "revocationReason": revocation_reason
+        }
+
+        return self.post(self.REQUEST_SUBMIT_URL, json)
+
+    def update(self, certificate_pem, labels={}):
+        """
+        Update a certificate
+        :type certificate_pem: Union[str,dict]
+        :type labels: dict
+        :rtype: dict
+        """
+        json = {
+            "workflow": "update",
+            "certificatePem": self.__load_file_or_string(certificate_pem),
+            "labels": self.__set_labels(labels)
+        }
+        return self.post(self.REQUEST_SUBMIT_URL, json)
+
+    def search(self, query=None, fields=None):
+        """
+        Search for certificates
+        :type query: str
+        :type fields: list
+        :rtype: list
+        """
+        json = {
+            "query": query,
+            "withCount": True,
+            "pageIndex": 1,
+        }
+        if fields is not None:
+            json["fields"] = fields
 
         results = []
         has_more = True
         while has_more:
-            response = self.__post_request(json, content["endpoint"])
-            results.append(response["results"][0])
+            response = self.post(self.CERTIFICATES_SEARCH_URL, json)
+            results.extend(response["results"])
             has_more = response["hasMore"]
-            if has_more == True:
+            if has_more:
                 json["pageIndex"] += 1
 
         return results
-    
 
-    def feed(self, content):
-        '''
-            All steps to feed a certificate
-            :param content: all values get from the playbook
-            :return the response of the API
-        '''
-        global use_path
-        use_path = path_feed
+    def feed(self, campaign, certificate_pem, ip, hostnames=None, operating_systems=None, paths=None, usages=None,
+             tls_ports=None):
+        """
+        Feed a certificate to Horizon
+        :type campaign: str
+        :type certificate_pem: Union[str,dict]
+        :type ip: str
+        :type hostnames: list
+        :type operating_systems: list
+        :type paths: list
+        :type usages: list
+        :type tls_ports: list
+        :rtype: NoneType
+        """
+        json = {
+            "campaign": campaign,
+            "certificate": self.__load_file_or_string(certificate_pem),
+            "hostDiscoveryData": {
+                "ip": ip,
+                "hostnames": hostnames,
+                "operatingSystems": operating_systems,
+                "paths": paths,
+                "usages": usages,
+                "tlsPorts": tls_ports
+            }
+        }
 
-        json = self.__generate_json(workflow=None, campaign=content["campaign"], ip=content["ip"], certificate=content["certificate"], hostnames=content["hostnames"], operating_systems=content["operating_systems"], paths=content["paths"], usages=content["usages"])
-        return self.__post_request(json, content["endpoint"], feed=True)
+        return self.post(self.DISCOVERY_FEED_URL, json)
 
-    
-    def certificate(self, content):
-        '''
-            All step to get values of a certificate
-            :param content: all values from the lookup request
-            :return the response of the API
-        '''
-        global use_path
-        use_path = path_certificate
+    def certificate(self, certificate_pem, fields=None):
+        """
+        Retrieve a certificate's attributes
+        :type certificate_pem: Union[str,dict]
+        :type fields: list
+        :rtype: dict
+        """
+        pem = self.__load_file_or_string(certificate_pem)
+        pem = urllib.parse.quote(pem, safe='')
 
-        pem = self.__set_certificate(content["pem"])
-        pem = urllib.parse.quote(pem)
-        pem = pem.replace('/', "%2F")
+        response = self.get(self.CERTIFICATES_SHOW_URL + pem)
 
-        response = self.__get_request(endpoint=content["endpoint"], param=pem)
-
-        if not "attributes" in content:
+        if fields is None:
             fields = []
             for value in response:
                 fields.append(value)
-            return self.__format_response(response, fields)
-        else:
-            return self.__format_response(response, content["attributes"])
+        return self.__format_response(response, fields)
 
-    
-    def __debug(self, response):
-        '''
-            Catch the errors returned by the API
-            :param response: an answer from the API
-            :return Boolean
-        '''
-        if isinstance(response, list):
-            message = ""
-            for elmt in response:
-                if "error" in elmt:
-                    message += f'Error: { elmt["error"] }, Message: { elmt["message"] }, Details: { elmt["detail"] }, '
-            raise AnsibleError(message)
+    def chain(self, certificate_pem):
+        """
+        Returns the trust chain for a certificate PEM
+        :type certificate_pem: Union[str,dict]
+        :rtype: str
+        """
+        pem = self.__load_file_or_string(certificate_pem)
+        pem = urllib.parse.quote(pem, safe='')
+        return self.get(self.RFC5280_TC_URL + pem)
 
-        elif "error" in response:
-            message = f'Error: { response["error"] }'
-            if "message" in response:
-                message += f', Message: { response["message"] }'
-            if "detail" in response:
-                message += f', Details: { response["detail"] }'
-            raise AnsibleError(message)
-        
-        else:
-            return True
-
-
-    def __get_template(self, endpoint, profile, workflow, module=None):
-        ''' 
-            :param endpoint: url of the API
-            :param profile: profile horizon
-            :param workflow: workflow of the request
-            :param module: module horizon
-            :return the template corresponding to the workflow
-        '''
-        data =  { 
-            "module": module, 
-            "profile": profile, 
+    def __get_template(self, profile, workflow, module=None):
+        """
+        Retrieves a request template
+        :type profile: str
+        :type workflow: str
+        :type module: str
+        :rtype: dict
+        """
+        data = {
+            "module": module,
+            "profile": profile,
             "workflow": workflow
         }
 
-        # Construct the api endpoint
-        endpoint = endpoint + path_template
+        return self.post(self.REQUEST_TEMPLATE_URL, data)
 
-        try:
-            # Get the template
-            template = requests.post(url=endpoint, verify=self.bundle, cert=self.cert, headers=self.headers, json=data).json()
-            # Test the response
-            if self.__debug(template):
-                return template
-
-        except HTTPError as http_err:
-            raise AnsibleError(f'HTTP error occurred: {http_err}')
-        except Exception as err:
-            raise AnsibleError(f'{err}')
-
-    
-    def __check_password_policy(self, password, template):
-        ''' 
-            :param password: the password from the playbook
-            :param template: the template of the request
-            :return password 
-        '''
+    @staticmethod
+    def __check_password_policy(password, template):
+        """
+        Check a password string against a template password policy
+        :type password: str
+        :type template: str
+        :rtype: str
+        """
         # Get the password policy
         if "capabilities" in template["template"]:
             if "p12passwordMode" in template["template"]["capabilities"]:
@@ -239,13 +263,13 @@ class Horizon():
         if "passwordPolicy" in template["template"]:
             password_policy = template["template"]["passwordPolicy"]
         # Check if the password is needed and given
-        if password_mode == "manual" and password == None:
+        if password_mode == "manual" and password is None:
             message = f'A password is required. '
-            message += f'The password has to contains between { password_policy["minChar"] } and { password_policy["maxChar"] } characters, ' 
-            message += f'it has to contains at least : { password_policy["minLoChar"] } lowercase letter, { password_policy["minUpChar"] } uppercase letter, '
-            message += f'{ password_policy["minDiChar"] } number ' 
+            message += f'The password has to contains between {password_policy["minChar"]} and {password_policy["maxChar"]} characters, '
+            message += f'it has to contains at least : {password_policy["minLoChar"]} lowercase letter, {password_policy["minUpChar"]} uppercase letter, '
+            message += f'{password_policy["minDiChar"]} number '
             if "spChar" in password_policy:
-                f'and { password_policy["minSpChar"] } symbol characters in { password_policy["spChar"] }'
+                f'and {password_policy["minSpChar"]} symbol characters in {password_policy["spChar"]}'
             raise AnsibleError(message)
         # Verify if the password follow the password policy
         if "passwordPolicy" in template["template"]:
@@ -269,142 +293,74 @@ class Horizon():
                 elif c in string.ascii_lowercase:
                     minLo -= 1
                 elif c in string.ascii_uppercase:
-                    minUp -= 1 
+                    minUp -= 1
                 elif c in whiteList:
                     minSp -= 1
                 else:
                     c_not_allowed = True
                     break
 
-            if minDi > 0 or minLo > 0 or minUp > 0 or minSp > 0 or len(password) < minChar or len(password) > maxChar or c_not_allowed == True:
-                message = f'Your password does not match the password policy { password_policy["name"] }. '
-                message += f'The password has to contains between { password_policy["minChar"] } and { password_policy["maxChar"] } characters, ' 
-                message += f'it has to contains at least : { password_policy["minLoChar"] } lowercase letter, { password_policy["minUpChar"] } uppercase letter, '
-                message += f'{ password_policy["minDiChar"] } number ' 
+            if minDi > 0 or minLo > 0 or minUp > 0 or minSp > 0 or len(password) < minChar or len(
+                    password) > maxChar or c_not_allowed:
+                message = f'Your password does not match the password policy {password_policy["name"]}. '
+                message += f'The password has to contains between {password_policy["minChar"]} and {password_policy["maxChar"]} characters, '
+                message += f'it has to contains at least : {password_policy["minLoChar"]} lowercase letter, {password_policy["minUpChar"]} uppercase letter, '
+                message += f'{password_policy["minDiChar"]} number '
                 if "spChar" in password_policy:
-                    message += f'and { password_policy["minSpChar"] } special characters in { password_policy["spChar"] }'
+                    message += f'and {password_policy["minSpChar"]} special characters in {password_policy["spChar"]}'
                 else:
-                    message += f'but no special characters'
+                    message += 'but no special characters'
                 raise AnsibleError(message)
-        
+
         return password
 
-    
-    def __generate_json(self, workflow, template=None, module=None, profile=None, password=None, certificate_pem=None, revocation_reason=None, csr=None, labels=None, sans=None, subject=None, key_type=None, campaign=None, ip=None, certificate=None, hostnames=None, operating_systems=None, paths=None, usages=None, query=None, fields=None, with_count=None, page_index=1):
-        ''' 
-            params: fields to create the json parameter to send to the API
-        '''
-        # Initialize my_json
-        if template != None:
-            my_json = template
-        elif workflow == "update":
-            my_json = {"template": {}}
+    def post(self, path, json):
+        """
+        Issues a POST request
+        :type path: str
+        :type json: dict
+        :rtype object
+        """
+        return self.send('POST', path, json=json)
+
+    def get(self, path, data=None):
+        """
+        Issues a GET request
+        :type path: str
+        :type data: dict
+        :rtype object
+        """
+        return self.send('GET', path, data=data)
+
+    def send(self, method, path, **kwargs):
+        """
+        Issues a request to the API
+        :type method: str
+        :type path: str
+        :type kwargs: dict
+        :rtype: object
+        """
+        uri = self.endpoint + path
+        method = method.upper()
+        response = requests.request(method, uri, cert=self.cert, verify=self.bundle,
+                                    headers=self.headers, **kwargs)
+        if 'Content-Type' in response.headers and response.headers['Content-Type'] == 'application/json':
+            content = response.json()
         else:
-            my_json = {}
-        
-        if workflow != None:
-            my_json["workflow"] = workflow
-        
-            if module != None:
-                my_json["module"] = module
-            if profile != None:
-                my_json["profile"] = profile
-            if password != None:
-                my_json["password"] = {"value": password}
-            if certificate_pem != None:
-                certificate_pem = self.__set_certificate(certificate_pem)
-                my_json["certificatePem"] = certificate_pem
-            if revocation_reason != None:
-                my_json["revocationReason"] = revocation_reason
-            if key_type != None:
-                my_json["template"]["keyTypes"] = [key_type]
-            if sans != None:
-                my_json["template"]["sans"] = self.__set_sans(sans)
-            if subject != None:
-                my_json["template"]["subject"] = self.__set_subject(subject, template)
-            if csr != None:
-                my_json["template"]["csr"] = csr
-            if labels != None:    
-                my_json["template"]["labels"] = self.__set_labels(labels)
+            content = response.content.decode()
 
-        elif query != None:
-            my_json["query"] = self.__set_query(query)
-            my_json["withCount"] = with_count
-            my_json["pageIndex"] = page_index
-            my_json["fields"] = self.__set_fields(fields)
-        
-        else:
-            my_json["campaign"] = campaign
-            my_json["certificate"] = certificate
-            my_json["hostDiscoveryData"] = {}
-            my_json["hostDiscoveryData"]["ip"] = ip
-            if hostnames != None:
-                my_json["hostDiscoveryData"]["hostnames"] = hostnames
-            if operating_systems != None:
-                my_json["hostDiscoveryData"]["operatingSystems"] = operating_systems
-            if paths != None:
-                my_json["hostDiscoveryData"]["paths"] = paths
-            if usages != None:
-                my_json["hostDiscoveryData"]["usages"] = usages
+        if response.ok:
+            return content
 
-        return my_json
+        raise HTTPError(content)
 
-
-    def __post_request(self, json, endpoint, feed=False):
-        '''
-            :param json: the json to send to the API
-            :param endpoint: url of the API
-            :param feed: Boolean
-            :return the response of the API
-        '''
-        ''' Send the request to the API. '''
-        # Construct the API endpoint
-        endpoint = endpoint + use_path
-
-        try:
-            # Ask the API
-            response = requests.post(endpoint, verify=self.bundle, cert=self.cert, json=json, headers=self.headers)
-            # Test the response
-            if feed == False:
-                response = response.json()
-                if self.__debug(response):
-                    return response
-
-        except HTTPError as http_err:
-            raise AnsibleError(f'HTTP error occurred: {http_err}')
-        except Exception as err:
-            raise AnsibleError(f'{err}')
-
-    
-    def __get_request(self, endpoint, param=None):
-        '''
-            :param endpoint: url of the API
-            :param param: detail to add on the url
-            :return the response of the API
-        '''
-        # Construct the API endpoint
-        endpoint = endpoint + use_path
-        if param != None:
-            endpoint = endpoint + param
-
-        try:
-            # Ask the API
-            response = requests.get(endpoint, verify=self.bundle, cert=self.cert, headers=self.headers).json()
-            # Test the response
-            if self.__debug(response):
-                return response
-
-        except HTTPError as http_err:
-            raise AnsibleError(f'HTTP error occurred: {http_err}')
-        except Exception as err:
-            raise AnsibleError(f'{err}')
-
-    
-    def __set_labels(self, labels):
-        '''
-            :param labels: a dict containing the labels of the certificate
-            return the labels with a format readable by the API
-        '''
+    @staticmethod
+    def __set_labels(labels):
+        """
+        Format labels returned by the API
+        :param labels: a dict containing the labels of the certificate
+        :return the labels with a format readable by the API
+        """
         my_labels = []
 
         for label in labels:
@@ -412,34 +368,36 @@ class Horizon():
 
         return my_labels
 
-
-    def __set_sans(self, sans):
-        '''
-            :param sans: a dict containing the subject alternates names of the certificate
-            return the subject alternate names with a format readable by the API
-        '''
+    @staticmethod
+    def __set_sans(sans):
+        """
+        Format SANs returned by the API
+        :param sans: a dict containing the subject alternates names of the certificate
+        :return the subject alternate names with a format readable by the API
+        """
         my_sans = []
 
         for element in sans:
-            if sans[element] == "" or sans[element] == None:
-                raise AnsibleError(f'the san value for { element } is not allowed')
-            
+            if sans[element] == "" or sans[element] is None:
+                raise AnsibleError(f'the san value for {element} is not allowed')
+
             elif isinstance(sans[element], list):
-                for i in range (len(sans[element])):
-                    san_name = element.lower() + "." + str(i+1)
+                for i in range(len(sans[element])):
+                    san_name = element.lower() + "." + str(i + 1)
                     my_sans.append({"element": san_name, "value": sans[element][i]})
 
             my_sans.append({"element": element, "value": sans[element]})
 
         return my_sans
 
-
-    def __set_subject(self, subject, template):
-        '''
-            :param subject: a dict contaning the subject's informations of the certificate
-            :param template: the template of the request
-            :return the subject with a format readable by the API
-        '''
+    @staticmethod
+    def __set_subject(subject, template):
+        """
+        Format subject returned by the API
+        :param subject: a dict contaning the subject's informations of the certificate
+        :param template: the template of the request
+        :return the subject with a format readable by the API
+        """
         my_subject = []
 
         if "dn" in subject:
@@ -450,276 +408,73 @@ class Horizon():
                 if len(ma_val) == 2:
                     dn_element = ma_val[0].lower()
                     if dn_element in temp_subject or dn_element + '.1' in temp_subject:
-                        if isinstance( temp_subject[dn_element + '.1'], str ):
+                        if isinstance(temp_subject[dn_element + '.1'], str):
                             temp_subject[dn_element] = [temp_subject[dn_element + '.1']]
                             del temp_subject[dn_element + '.1']
                         temp_subject[dn_element].append(ma_val[1])
                     else:
                         temp_subject[dn_element + '.1'] = ma_val[1]
-                        
-                else: 
-                    raise AnsibleError(f'Error in the dn, some values are not understood.')
-        
+
+                else:
+                    raise AnsibleError('Error in the dn, some values are not understood.')
+
             subject = temp_subject
 
         for element in subject:
-            if subject[element] == "" or subject[element] == None:
-                raise AnsibleError(f'the subject value for { element } is not allowed')
+            if subject[element] == "" or subject[element] is None:
+                raise AnsibleError(f'the subject value for {element} is not allowed')
 
             elif isinstance(subject[element], list):
-                for i in range (len(subject[element])):
-                    element_name = element + "." + str(i+1)
+                for i in range(len(subject[element])):
+                    element_name = element + "." + str(i + 1)
 
                     for subject_element in template["template"]["subject"]:
-                        if subject_element["element"] == element_name and subject_element["editable"] == True:
+                        if subject_element["element"] == element_name and subject_element["editable"]:
                             my_subject.append({"element": element_name, "value": subject[element][i]})
 
             for subject_element in template["template"]["subject"]:
-                if subject_element["element"] == element and subject_element["editable"] == True:
+                if subject_element["element"] == element and subject_element["editable"]:
                     my_subject.append({"element": element, "value": subject[element]})
 
         return my_subject
 
-
-    def __set_query(self, query):
-        '''
-            :param query: a request 
-            :return the query with a format readable by the API
-        '''
-        if query == 'null':
-            my_query = None
-        else:
-            my_query = '\"'
-            for c in query:
-                if c == '\"':
-                    my_query += '\\'
-                my_query += c
-            my_query += '\"'
-
-        return my_query
-
-    
-    def __set_fields(self, fields):
-        '''
-            :param fields: list of fields 
-            :return a list of fields
-        '''
-        if fields == None:
-            fields = []
-
-        my_fields = ["module", "profile", "labels", "subjectAlternateNames"]
-        for field in fields:
-            my_fields.append(field)
-        
-        return my_fields
-
-
-    def __check_mode(self, template, mode=None):
-        '''
-            :param template: the template of the request
-            :param mode: mode precised in the playbook
-            :return the right mode corresponding to the template
-        '''
-        if mode == None:
+    @staticmethod
+    def __check_mode(template, mode=None):
+        """
+        :param template: the template of the request
+        :param mode: mode precised in the playbook
+        :return the right mode corresponding to the template
+        """
+        if mode is None:
             if template["template"]["capabilities"]["centralized"]:
                 return "centralized"
             else:
                 return "decentralized"
         elif template["template"]["capabilities"][mode]:
-            return mode 
+            return mode
         else:
-            raise AnsibleError(f'The mode: { mode } is not available.')
-    
+            raise AnsibleError(f'The mode: {mode} is not available.')
 
-    def __generate_PKCS10(self, subject, key_type):
-        ''' 
-            :param subject: a dict contaning the subject's informations of the certificate
-            :param key_type: a key format
-            :return a PKCS10 
-        '''
-        try:
-            private_key, public_key = self.__generate_biKey(key_type)
-
-            x509_subject = []
-            for element in subject:
-
-                if isinstance(subject[element], list):
-                    if element == "cn":
-                        for value in subject[element]:
-                            x509_subject.append(x509.NameAttribute(NameOID.COMMON_NAME, value))
-                    elif element == "o":
-                        for value in subject[element]:
-                            x509_subject.append(x509.NameAttribute(NameOID.ORGANIZATION_NAME, value))
-                    elif element == "c":
-                        for value in subject[element]:
-                            x509_subject.append(x509.NameAttribute(NameOID.COUNTRY_NAME, value))
-                    elif element == "ou":
-                        for value in subject[element]:
-                            x509_subject.append(x509.NameAttribute(NameOID.ORGANIZATIONAL_UNIT_NAME, value))
-                
-                else:
-                    val, i = element.split('.')
-
-                    if val == "cn":
-                        x509_subject.append(x509.NameAttribute(NameOID.COMMON_NAME, subject[element]))
-                    elif val == "o":
-                        x509_subject.append(x509.NameAttribute(NameOID.ORGANIZATION_NAME, subject[element]))
-                    elif val == "c":
-                        x509_subject.append(x509.NameAttribute(NameOID.COUNTRY_NAME, subject[element]))
-                    elif val == "ou":
-                        x509_subject.append(x509.NameAttribute(NameOID.ORGANIZATIONAL_UNIT_NAME, subject[element]))
-
-            pkcs10 = x509.CertificateSigningRequestBuilder()
-            pkcs10 = pkcs10.subject_name(x509.Name( x509_subject ))
-
-            csr = pkcs10.sign( private_key, hashes.SHA256() )
-
-            if isinstance(csr, x509.CertificateSigningRequest):
-                return csr.public_bytes(serialization.Encoding.PEM).decode()
-        
-        except Exception as e:
-            raise AnsibleError(f'Error in the creation of the pkcs10, be sure to fill all the fields required with decentralized mode. Error is: {e}')
-    
-
-    def __generate_biKey(self, key_type):
-        '''
-            :param key_type: a key format
-            :return a tuple (private key, public key)
-        '''
-        if key_type == None:
-            raise AnsibleError(f'A keyType is required')
-
-        type, bits = key_type.split('-')
-
-        if type == "rsa":
-            private_key = rsa.generate_private_key(public_exponent=65537, key_size=int(bits))
-        elif type == "ec" and bits == "secp256r1":
-            private_key = ec.generate_private_key(curve = ec.SECP256R1)
-        elif type == "ec" and bits == "secp384r1":
-            private_key = ec.generate_private_key(curve = ec.SECP384R1)
-        else: 
-            raise AnsibleError("KeyType not known")
-
-        public_key = private_key.public_key()
-
-        return ( private_key, public_key )
-
-        
-    def get_key(self, p12, password):
-        '''
-            :param p12: a PKCS12 certificate
-            :param password: the password corresponding to the certificate
-            : return the public key of the PKCS12
-        '''
-        encoded_key = pkcs12.load_key_and_certificates( base64.b64decode(p12), password.encode() )
-
-        key  = encoded_key[0].private_bytes(
-            encoding=serialization.Encoding.PEM,
-            format=serialization.PrivateFormat.TraditionalOpenSSL,
-            encryption_algorithm=serialization.NoEncryption()
-        ).decode()
-
-        return key
-
-
-    def get_hostnames(self, certificate, hostnames):
-        '''
-            :param certificate: the certificate from which we took informations
-            :param hostnames: a list of hostname destination variables in order of preference
-            :return the preferred identifer for the host
-        '''
-        if not hostnames:
-            hostnames = []
-        hostnames.append("san.dns")
-        hostnames.append("san.ip")
-
-        hostname = None
-
-        for preference in hostnames:
-            if preference == 'san.ip':
-                if 'subjectAlternateNames' in certificate:
-                    for san in certificate["subjectAlternateNames"]:
-                        if san["sanType"] == "IPADDRESS":
-                            hostname = san["value"]
-                        break
-                else:
-                    pass
-
-            elif preference == 'san.dns':
-                if 'subjectAlternateNames' in certificate:
-                    for san in certificate["subjectAlternateNames"]:
-                        if san["sanType"] == "DNSNAME":
-                            hostname = san["value"]
-                        break
-                else:
-                    pass
-
-            elif preference == 'discoveryData.ip':
-                for data in certificate["hostDiscoveryData"]:
-                    if data["ip"]:
-                        hostname = data["value"]
-                    break
-
-            elif preference == 'discoveryData.hostname':
-                for data in certificate["hostDiscoveryData"]:
-                    if data["hostname"]:
-                        hostname = data["value"]
-                    break
-
-            elif self.__is_label_pref(preference):
-                if 'labels' in certificate:
-                    label_pref = self.__get_label_pref(preference)
-                    for label in certificate["labels"]:
-                        if label["key"] == label_pref:
-                            hostname = label["value"]
-                        break
-                
-            if hostname != None:
-                break
-
-        if hostname:
-            return hostname
-
-    
-    def __is_label_pref(self, preference):
-        '''
-            :param preference: a destination hostname
-            :return True if preference look like label.<key>
-        '''
-        if not preference in ["san.ip", "san.dns", "discoveryData.ip", "discoveryData.Hostname"]:
-            return preference.split('.')[0] == 'label'
-        return False
-
-    
-    def __get_label_pref(self, preference):
-        '''
-            :param preference: a destination hostname which look like label.<key>
-            :return the <key> of the label
-        '''
-        if self.__is_label_pref(preference):
-            return preference.split('.')[1]
-
-        
-    def __format_response(self, response, fields):
-        '''
-            :param response: an answer from the API
-            :param fields: list of fields
-            :return a list of fields from response
-        '''
+    @staticmethod
+    def __format_response(response, fields):
+        """
+        :param response: an answer from the API
+        :param fields: list of fields
+        :return a list of fields from response
+        """
         if not isinstance(fields, list):
             fields = [fields]
-        
+
         result = {}
 
         for field in fields:
-
-            result[field] = []
+            result[field] = response[field]
 
             if field == "metadata":
                 metadata = {}
                 for data in response[field]:
                     metadata[data['key']] = data['value']
-                result[field].append(metadata)
+                result[field] = metadata
 
             elif field == "subjectAlternateNames":
                 sans = {}
@@ -728,33 +483,31 @@ class Horizon():
                     while san_name in sans:
                         index = int(san_name[-1:])
                         san_name = san_name[:-1] + str(index + 1)
-                    
+
                     sans[san_name] = san["value"]
 
-                result[field].append(sans)
+                result[field] = sans
 
             elif field == "labels":
                 labels = {}
                 for label in response[field]:
                     labels[label['key']] = label['value']
-                result[field].append(labels)
+                result[field] = labels
 
+        return result
+
+    @staticmethod
+    def __load_file_or_string(content):
+        """
+        Opens a certificate if a path is given
+        :param content:
+        :return:
+        """
+        if isinstance(content, dict):
+            if "src" in content:
+                with open(content["src"], 'r') as file:
+                    pulled_content = file.read()
+                return pulled_content
             else:
-                result[field].append(response[field])
-
-        return [result]
-
-    
-    def __set_certificate(self, certificate_pem):
-        if isinstance(certificate_pem, dict):
-            if "src" in certificate_pem:
-                f = open(certificate_pem["src"], 'r')
-                cert = ""
-                for line in f.readlines():
-                    cert += line
-                f.close()
-                certificate_pem = cert
-            else:
-                raise AnsibleError(f'certificate_pem format is not readable.')
-        return certificate_pem
-        
+                raise AnsibleError('You must specify an src attribute when passing a dict')
+        return content

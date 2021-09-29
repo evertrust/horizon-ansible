@@ -1,0 +1,13 @@
+plugin: evertrust.horizon.horizon_inventory
+
+query:
+fields:
+  - labels
+  - module
+  - subjectAlternateNames
+
+# hostname destination variable, order by preference
+# values : [san.ip, san.dns, discoveryData.ip, discoveryData.Hostname, label.<key>]
+hostnames:
+  - label.ansible_host
+  - san.dns

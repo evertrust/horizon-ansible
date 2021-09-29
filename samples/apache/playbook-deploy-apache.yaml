@@ -1,65 +1,63 @@
 - hosts: webserver
   become: yes
   tasks:
-  - name: update
+  - name: Updating APT cache
     apt: update_cache=yes  
   
-  - name: Install apache
+  - name: Installing apache
     apt: 
       name: apache2 
       state: latest
 
-  - name: Activation ssl module
+  - name: Enabling the SSL module
     command: "a2enmod ssl"
     become: true
     become_user: root
   
-  - name: horizon_enroll
+  - name: Enrolling a certificate on Horizon for domain {{ domain }}
     evertrust.horizon.horizon_enroll:
-      endpoint: "https://horizon-demo.evertrust.fr"
+      endpoint: "{{ horizon_endpoint }}"
       mode: "centralized"
-      password: "Aa1"
-      key_type: "rsa-2048"
+      key_type: "{{ key_type }}"
       x_api_id: "{{ api_id }}"
       x_api_key: "{{ api_key }}"
-      profile: "DefaultSSLInternalCA"
-      module: "webra"
+      profile: "{{ profile }}"
       subject:
         cn.1: "{{ domain }}"
-        o.1: "Evertrust"
-        c.1: "FR"
       sans:
         dnsname.1: "{{ domain }}"
+        dnsname.2: "www.{{ domain }}"
       labels:
-        snow_id: "needed"
-      
-    register: value
+        business_unit: "{{ business_unit }}"
+        ansible_host: "{{ ansible_host }}"
+      contact_email: "{{ contact_email }}"
+    register: enrolled_certificate
 
-  - name: create ssl directory
+  - name: Creating the SSL directory
     file:
-      path: /etc/apache2/ssl-files
+      path: /etc/apache2/ssl
       state: directory
       mode: '0775'
       owner: "www-data"
       group: "www-data"
 
-  - name: create file crt
+  - name: Uploading the {{ domain }} certificate
     copy:
-      content: "{{ value['certificate'] }}"
-      dest: "/etc/apache2/ssl-files/{{ domain }}.crt"
-      mode: '0660'
+      content: "{{ enrolled_certificate['certificate']['certificate'] }}"
+      dest: "/etc/apache2/ssl/{{ domain }}.crt"
+      mode: '0775'
       owner: "www-data"
       group: "www-data"
     
-  - name: create file key
+  - name: Uploading the {{ domain }} private key
     copy:
-      content: "{{ value['key'] }}"
-      dest: "/etc/apache2/ssl-files/{{ domain }}.key"
+      content: "{{ enrolled_certificate['key'] }}"
+      dest: "/etc/apache2/ssl/{{ domain }}.key"
       mode: '0660'
       owner: "www-data"
       group: "www-data"
 
-  - name: "create www directory"
+  - name: Creating the {{ domain }} webroot directory
     file:
       path: /var/www/{{ domain }}
       state: directory
@@ -67,7 +65,15 @@
       owner: "www-data"
       group: "www-data"
 
-  - name: copy apache site.conf
+  - name: Deploying the {{ domain }} index page
+    template:
+      src: ../templates/index.html.j2
+      dest: "/var/www/{{ domain }}/index.html"
+      owner: "www-data"
+      group: "www-data"
+      mode: '0644'
+
+  - name: Uploading the {{ domain }} site config
     template:
       src: ../templates/apache.conf.j2
       dest: "/etc/apache2/sites-available/{{ domain }}.conf"
@@ -75,12 +81,12 @@
       group: root
       mode: '0644'
 
-  - name: Activation ssl site
+  - name: Activating SSL for {{ domain }}
     command: "a2ensite {{ domain }}"
     become: true
     become_user: root
 
-  - name: restart apache
-    ansible.builtin.service: 
-      name: apache2 
+  - name: Restarting Apache
+    service:
+      name: apache2
       state: restarted

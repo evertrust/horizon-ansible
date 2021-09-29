@@ -1,18 +1,22 @@
 namespace: evertrust
 name: horizon
-version: 0.1.1
+version: 1.0.0
 readme: README.md
 authors:
-- Adrien Ducourthial <adu@evertrust.fr>
+- EverTrust R&D (@Evertrust)
 
-description: ''
-license_file: ''
+description: 'EverTrust Horizon collection for Ansible.'
+license_file: 'LICENSE.md'
 
 tags: [evertrust, horizon]
 repository: https://github.com/EverTrust/horizon-ansible
 homepage: https://github.com/EverTrust/horizon-ansible
+documentation: https://evertrust.github.io/horizon-ansible/html/
 issues: https://github.com/EverTrust/horizon-ansible/issues
 
 build_ignore:
   - .gitignore
   - changelogs/.plugin-cache.yaml
+  - .idea
+  - venv
+  - docs/html

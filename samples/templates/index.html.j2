@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>EverTrust</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="msapplication-TileColor" content="#da532c">
+    <meta name="theme-color" content="#ffffff">
+    <link rel="stylesheet" media="all" href="css/app.css">
+</head>
+<body>
+<style>
+  /* FONT POLICE */
+
+  @import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Poppins:wght@300;400;500;600&display=swap");
+  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap');
+
+
+  /* CORPS SITE */
+
+
+  html {
+    -ms-text-size-adjust: 100%;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  img, fieldset, a img {
+    border: none;
+  }
+
+
+
+  div, input, textarea, select, button,
+  h1, h2, h3, h4, h5, h6, a, span, a:focus {
+    outline: none;
+  }
+
+
+  table {
+    border-spacing: 0;
+    border-collapse: collapse;
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    line-height: 2;
+    font-size: 20px;
+  }
+
+  .page {
+    overflow: hidden;
+  }
+
+  html {
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+  }
+
+  *, *:before, *:after {
+    -webkit-box-sizing: inherit;
+    box-sizing: inherit;
+  }
+
+  a {
+    text-decoration: none;
+  }
+
+  a,
+  button {
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+  }
+
+  .justify {
+    text-align: justify;
+    font-size: 22px!important;
+    font-style: italic;
+  }
+
+  .right {
+    text-align: right!important;
+    font-size: 15px;
+    font-style: bold;
+  }
+
+  .main {
+    position: center;
+    z-index: 2;
+    padding: 220px 0 100px;
+  }
+
+  .main__title {
+    margin-bottom: 21px;
+  }
+
+  .main__wrap {
+    max-width: 640px;
+    font-family: 'Arial';
+  }
+
+  .center {
+    max-width: 1184px;
+    margin: 0 auto;
+    padding: 0 72px;
+  }
+
+  .header {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 10;
+    padding: 48px 0;
+  }
+
+  .header > .header__center {
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-align: center;
+    -ms-flex-align: center;
+    align-items: center;
+  }
+
+  .header__center {
+    max-width: 1440px;
+    padding: 0 100px;
+    margin-right: auto;
+    margin-left: auto;
+  }
+
+  .header__logo {
+    margin-right: auto;
+    margin-left: auto;
+  }
+
+  .header__logo .header__pic {
+    width: 100%;
+  }
+
+  .title {
+    position: relative;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 80px;
+    font-weight: 500;
+    line-height: 1;
+    letter-spacing: -.025em;
+  }
+
+  .title_sm {
+    font-size: 40px;
+    letter-spacing: -.045em;
+  }
+
+  .title_big {
+    font-size: 70px;
+    text-align: center!important;
+    line-height: 1.2;
+  }
+
+  .title__color {
+    color: #5C66D9;
+
+  }
+
+</style>
+<div class="page">
+    <div class="main">
+        <div class="header js-header" id="header">
+            <div class="header__center center">
+              <a class="header__logo" href="https://evertrust.fr">
+                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="393" height="122" viewBox="0 0 393 122" class="header__pic">
+                  <defs>
+                    <linearGradient id="linear-gradient" x1="0.5" x2="0.5" y2="1" gradientUnits="objectBoundingBox">
+                      <stop offset="0" stop-color="#21969a"/>
+                      <stop offset="1" stop-color="#5c66d9"/>
+                    </linearGradient>
+                    <filter id="Soustraction_542" x="33.85" y="22.11" width="325.301" height="53.561" filterUnits="userSpaceOnUse">
+                      <feOffset dy="3" input="SourceAlpha"/>
+                      <feGaussianBlur stdDeviation="1.5" result="blur"/>
+                      <feFlood flood-opacity="0.282"/>
+                      <feComposite operator="in" in2="blur"/>
+                      <feComposite in="SourceGraphic"/>
+                    </filter>
+                    <clipPath id="clip-Horizon">
+                      <rect width="393" height="122"/>
+                    </clipPath>
+                  </defs>
+                  <g id="Horizon" clip-path="url(#clip-Horizon)">
+                    <g transform="matrix(1, 0, 0, 1, 0, 0)" filter="url(#Soustraction_542)">
+                      <path id="Soustraction_542-2" data-name="Soustraction 542" d="M-2065.869-1558.439a24,24,0,0,1-8.9-1.64,20.586,20.586,0,0,1-6.973-4.548,20.412,20.412,0,0,1-4.551-6.9,22.187,22.187,0,0,1-1.077-3.5c3.147.277,6.3.576,9.378.887a12.626,12.626,0,0,0,2.572,3.851,12.328,12.328,0,0,0,4.217,2.811,14.179,14.179,0,0,0,5.334,1,14.228,14.228,0,0,0,5.346-1,12.306,12.306,0,0,0,4.215-2.811,12.33,12.33,0,0,0,1.018-1.183c3.1.416,6.22.856,9.264,1.306a20.345,20.345,0,0,1-3.956,5.54,20.634,20.634,0,0,1-6.983,4.548A24.028,24.028,0,0,1-2065.869-1558.439Zm-169.591,0a23.987,23.987,0,0,1-8.9-1.64,20.6,20.6,0,0,1-6.974-4.548,20.312,20.312,0,0,1-3.856-5.356c3.134-.447,6.271-.875,9.325-1.275a12.437,12.437,0,0,0,.854.968,12.34,12.34,0,0,0,4.218,2.811,14.179,14.179,0,0,0,5.334,1,14.223,14.223,0,0,0,5.346-1,12.316,12.316,0,0,0,4.217-2.811,12.571,12.571,0,0,0,2.446-3.585c3.152-.323,6.336-.631,9.466-.914a22.021,22.021,0,0,1-1.026,3.262,20.4,20.4,0,0,1-4.559,6.9,20.632,20.632,0,0,1-6.984,4.548A24.025,24.025,0,0,1-2235.46-1558.439Zm242.761-.779h-7.861l-2.262-2.979c5.727,1.3,9.2,2.217,10.123,2.467v.512Zm-198.78,0h-8.37v-16.717c8.639-.622,17.273-1.092,25.664-1.4a18.831,18.831,0,0,1-5.384,1.285l12.929,16.828-10.138,0-12.24-16.71h-2.459v16.71Zm-79.56,0h-8.37v-6.928c2.783-.486,5.6-.961,8.37-1.413v8.341Zm172.919,0h-32.939v-6.54l9.02-11.477c3.277.129,6.591.283,9.852.457l-7.742,9.851h21.809v7.709Zm76.23,0h-8.369v-8.419c2.841.492,5.659,1,8.377,1.51l-.008,6.908Zm-122.789,0h-8.371v-18.56c1.14-.006,2.229-.008,3.238-.008h.477c1.559,0,3.125.008,4.656.019v18.548Zm-154.95,0H-2308v-1.258c1.017-.239,3.868-.892,8.37-1.827v3.083Zm306.931-3.647,0,0c-1.234-1.391-7.011-3.634-15.076-5.856l-14.082-18.545-.017,15.162c-2.67-.564-5.491-1.122-8.384-1.658v-27.454h7.829l21.331,28.05v-28.05h8.4v38.353Zm-315.3-.658v-37.695h8.37v16.92h20.22v-16.92h8.37v27.969c-2.857.5-5.673,1.016-8.37,1.543v-4.791h-20.22v9.541c-4.668,1.379-7.64,2.6-8.368,3.432Zm50.946-11.954h0a24.423,24.423,0,0,1-.456-4.74,23.185,23.185,0,0,1,1.627-8.693,20.4,20.4,0,0,1,4.549-6.9,20.6,20.6,0,0,1,6.974-4.548,23.989,23.989,0,0,1,8.9-1.64,24.027,24.027,0,0,1,8.9,1.64,20.644,20.644,0,0,1,6.984,4.548,20.406,20.406,0,0,1,4.559,6.9,23.1,23.1,0,0,1,1.632,8.591c-2.914.233-5.866.485-8.773.751.007-.205.012-.423.012-.649a15.471,15.471,0,0,0-.993-5.589,12.677,12.677,0,0,0-2.764-4.341,12.288,12.288,0,0,0-4.217-2.81,14.209,14.209,0,0,0-5.346-1,14.164,14.164,0,0,0-5.334,1,12.327,12.327,0,0,0-4.218,2.81,12.711,12.711,0,0,0-2.772,4.341,15.436,15.436,0,0,0-1,5.589,16.327,16.327,0,0,0,.379,3.547c-2.905.379-5.816.781-8.652,1.194Zm212.92-.611h0c-2.825-.427-5.74-.841-8.664-1.23a16.632,16.632,0,0,0,.249-2.9,15.478,15.478,0,0,0-.993-5.589,12.7,12.7,0,0,0-2.765-4.341,12.28,12.28,0,0,0-4.215-2.81,14.214,14.214,0,0,0-5.346-1,14.165,14.165,0,0,0-5.334,1,12.315,12.315,0,0,0-4.217,2.81,12.692,12.692,0,0,0-2.772,4.341,15.4,15.4,0,0,0-1,5.589v.015c-2.845-.248-5.779-.485-8.721-.7a23.042,23.042,0,0,1,1.618-8,20.4,20.4,0,0,1,4.551-6.9,20.59,20.59,0,0,1,6.973-4.548,24,24,0,0,1,8.9-1.64,24.029,24.029,0,0,1,8.9,1.64,20.647,20.647,0,0,1,6.983,4.548,20.418,20.418,0,0,1,4.56,6.9,23.156,23.156,0,0,1,1.632,8.693,24.544,24.544,0,0,1-.345,4.129Zm-155.715-5.2h0v-19.932h17.76c4.945,0,8.8,1.135,11.452,3.375a10.525,10.525,0,0,1,2.942,4.017,13.887,13.887,0,0,1,1,5.388,12.183,12.183,0,0,1-1.354,5.76c-10.693.272-21.389.741-31.793,1.394Zm8.37-12.223v10.29h9.24a8.685,8.685,0,0,0,5.174-1.283,4.6,4.6,0,0,0,1.755-3.937c0-3.364-2.331-5.07-6.929-5.07Zm83.482,11.4h0c-3.252-.15-6.583-.283-9.9-.395l8.647-11H-2131v-7.71h32.879v6.54l-9.876,12.567Zm-45.052-.824h0v-.037h3.067c1.868,0,3.8,0,3.813,0C-2148.375-1582.968-2150.689-1582.957-2153.049-1582.936Zm8.37-.039h0c-.42,0-1,0-1.659,0h-6.709v-18.245h8.371v18.244Z" transform="translate(2346.85 1626.11)" stroke="rgba(0,0,0,0)" stroke-width="1" fill="url(#linear-gradient)"/>
+                    </g>
+                    <path id="Tracé_1387" data-name="Tracé 1387" d="M8.393-2.107H3.227V-3.9H8.064V-6H3.227V-7.693H8.365V-9.8H.889V0h7.5ZM33.166-9.8H30.73L28.168-2.408,25.62-9.8H23.135L26.761,0h2.786ZM55.643-2.107H50.477V-3.9h4.837V-6H50.477V-7.693h5.138V-9.8H48.139V0h7.5ZM71.239-9.8V0h2.338V-3.668h.343L76.5,0h2.786L76.475-3.738a2.884,2.884,0,0,0,2.737-2.926C79.212-8.6,77.924-9.8,75.5-9.8Zm4.235,2.121c.826,0,1.358.322,1.358,1.015s-.518,1.029-1.358,1.029h-1.9V-7.679ZM102.046-9.8H93.905v2.17h2.9V0h2.338V-7.63h2.9Zm15.064,0V0h2.338V-3.668h.343L122.374,0h2.786l-2.814-3.738a2.884,2.884,0,0,0,2.737-2.926c0-1.932-1.288-3.136-3.71-3.136Zm4.235,2.121c.826,0,1.358.322,1.358,1.015s-.518,1.029-1.358,1.029h-1.9V-7.679ZM149.023-9.8h-2.345v5.754a1.776,1.776,0,0,1-1.946,1.981,1.774,1.774,0,0,1-1.939-1.981V-9.8h-2.345v5.845c0,2.681,1.617,4.137,4.284,4.137s4.291-1.456,4.291-4.137Zm23.618.861a7.524,7.524,0,0,0-3.955-1.036c-2.289,0-3.913,1.2-3.948,3.108-.035,1.764,1.057,2.674,3.073,2.989l.49.077c1.281.2,1.939.364,1.939.952,0,.609-.672.91-1.554.91a5.5,5.5,0,0,1-3.164-1.029l-1.169,1.9A7.315,7.315,0,0,0,168.665.182c2.1,0,4.109-.973,4.109-3.3,0-1.6-1.2-2.492-3.1-2.821l-.406-.07c-1.085-.189-2.016-.336-2.016-.952,0-.581.651-.882,1.54-.882a5.457,5.457,0,0,1,2.807.826ZM195.524-9.8h-8.141v2.17h2.9V0h2.338V-7.63h2.9Z" transform="translate(100 93.89)" fill="#0b2236"/>
+                  </g>
+                </svg>
+              </a>
+            </div>
+        </div>
+
+        <div class="main__center center">
+            <h1 class="main__title title title_big">This website certificate was enrolled using the Horizon Ansible collection</h1>
+        </div>
+    </div>
+
+    <table class="main__wrap">
+        <tr>
+            <td class="title__color">DN:</td>
+            <td class="right ">{{ enrolled_certificate['certificate']['dn'] }}</td>
+        </tr>
+        <tr>
+            <td class="title__color">Issuer DN:</td>
+            <td class="right">{{ enrolled_certificate['certificate']['issuer'] }}</td>
+        </tr>
+        <tr>
+            <td class="title__color">Not Before:</td>
+            <td class="right">{{ '%d %b %y %H:%M %Z' | strftime(enrolled_certificate['certificate']['notBefore']|int / 1000) }}</td>
+        </tr>
+        <tr>
+            <td class="title__color">Not After:</td>
+            <td class="right">{{ '%d %b %y %H:%M %Z' | strftime(enrolled_certificate['certificate']['notAfter']|int / 1000) }}</td>
+        </tr>
+        <tr>
+            <td class="title__color">Serial:</td>
+            <td class="right">0x{{ enrolled_certificate['certificate']['serial'] }}</td>
+        </tr>
+        <tr>
+            <td class="title__color">SANS:</td>
+            <td class="right">{{ enrolled_certificate['certificate']['subjectAlternateNames'] }}</td>
+        </tr>
+
+    </table>
+
+</div>
+</div>
+
+</body>
+</html>
