@@ -275,13 +275,13 @@ Examples
         src: /pem/file/path
       
       # Sets a variable containing only one field (module)
-      with_one: "{{ lookup('evertrust.horizon.horizon_lookup', x_api_id=x_api_id, x_api_key=x_api_key, pem=my_pem, fields='module', endpoint=horizon_endpoint) }}"
+      with_one: "{{ lookup('evertrust.horizon.horizon_lookup', x_api_id=x_api_id, x_api_key=x_api_key, certificate_pem=my_pem, fields='module', endpoint=horizon_endpoint, wantlist=True) }}"
 
       # Sets a variable containing a list of fields (module, _id)
-      with_list: "{{ lookup('evertrust.horizon.horizon_lookup', x_api_id=x_api_id, x_api_key=x_api_key, pem=my_pem, fields=['module', '_id'], endpoint=horizon_endpoint) }}"
+      with_list: "{{ lookup('evertrust.horizon.horizon_lookup', x_api_id=x_api_id, x_api_key=x_api_key, certificate_pem=my_pem, fields=['module', '_id'], endpoint=horizon_endpoint, wantlist=True) }}"
 
       # Sets a variable containing every certificate field.
-      without: "{{ lookup('evertrust.horizon.horizon_lookup', x_api_id=x_api_id, x_api_key=x_api_key, pem=pem_path, endpoint=horizon_endpoint) }}"
+      without: "{{ lookup('evertrust.horizon.horizon_lookup', x_api_id=x_api_id, x_api_key=x_api_key, certificate_pem=pem_path, endpoint=horizon_endpoint, wantlist=True) }}"
 
 
 
@@ -347,6 +347,21 @@ Common return values are documented :ref:`here <common_return_values>`, the foll
                                             <div>True if the certificate was discovered and trusted.</div>
                                             <div>False if the certificate was discovered.</div>
                                             <div>Absent if the certificate was not discovered.</div>
+                                        <br/>
+                                    </td>
+            </tr>
+                                <tr>
+                                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="return-discoveryData"></div>
+                    <b>discoveryData</b>
+                    <a class="ansibleOptionLink" href="#return-discoveryData" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">list</span>
+                       / <span style="color: purple">elements=dictionary</span>                    </div>
+                                    </td>
+                <td>Only if the certificate was discovered.</td>
+                <td>
+                                            <div>Certificate discovery data.</div>
                                         <br/>
                                     </td>
             </tr>
@@ -517,6 +532,21 @@ Common return values are documented :ref:`here <common_return_values>`, the foll
             </tr>
                                 <tr>
                                 <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="return-publicKeyThumbprint"></div>
+                    <b>publicKeyThumbprint</b>
+                    <a class="ansibleOptionLink" href="#return-publicKeyThumbprint" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">string</span>
+                                          </div>
+                                    </td>
+                <td>If specifically requested.</td>
+                <td>
+                                            <div>Certificate public key thumbprint.</div>
+                                        <br/>
+                                    </td>
+            </tr>
+                                <tr>
+                                <td colspan="1">
                     <div class="ansibleOptionAnchor" id="return-revocationDate"></div>
                     <b>revocationDate</b>
                     <a class="ansibleOptionLink" href="#return-revocationDate" title="Permalink to this return value"></a>
@@ -542,6 +572,21 @@ Common return values are documented :ref:`here <common_return_values>`, the foll
                 <td>If specifically requested.</td>
                 <td>
                                             <div>Certificate revocation reason.</div>
+                                        <br/>
+                                    </td>
+            </tr>
+                                <tr>
+                                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="return-selfSigned"></div>
+                    <b>selfSigned</b>
+                    <a class="ansibleOptionLink" href="#return-selfSigned" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">boolean</span>
+                                          </div>
+                                    </td>
+                <td>If specifically requested.</td>
+                <td>
+                                            <div>True if the certificate is self-signed.</div>
                                         <br/>
                                     </td>
             </tr>
@@ -602,6 +647,36 @@ Common return values are documented :ref:`here <common_return_values>`, the foll
                 <td>If specifically requested.</td>
                 <td>
                                             <div>Certificate third-party data.</div>
+                                        <br/>
+                                    </td>
+            </tr>
+                                <tr>
+                                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="return-thumbprint"></div>
+                    <b>thumbprint</b>
+                    <a class="ansibleOptionLink" href="#return-thumbprint" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">string</span>
+                                          </div>
+                                    </td>
+                <td>If specifically requested.</td>
+                <td>
+                                            <div>Certificate public key thumbprint.</div>
+                                        <br/>
+                                    </td>
+            </tr>
+                                <tr>
+                                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="return-triggerResults"></div>
+                    <b>triggerResults</b>
+                    <a class="ansibleOptionLink" href="#return-triggerResults" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">list</span>
+                       / <span style="color: purple">elements=dictionary</span>                    </div>
+                                    </td>
+                <td>Only if present.</td>
+                <td>
+                                            <div>Certificate trigger results.</div>
                                         <br/>
                                     </td>
             </tr>

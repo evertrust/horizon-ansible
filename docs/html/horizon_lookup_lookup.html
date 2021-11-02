@@ -344,13 +344,13 @@
     <span class="nt">src</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">/pem/file/path</span>
 
   <span class="c1"># Sets a variable containing only one field (module)</span>
-  <span class="nt">with_one</span><span class="p">:</span> <span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">lookup</span><span class="o">(</span><span class="s1">&#39;evertrust.horizon.horizon_lookup&#39;</span><span class="o">,</span> <span class="nv">x_api_id</span><span class="o">=</span><span class="nv">x_api_id</span><span class="o">,</span> <span class="nv">x_api_key</span><span class="o">=</span><span class="nv">x_api_key</span><span class="o">,</span> <span class="nv">pem</span><span class="o">=</span><span class="nv">my_pem</span><span class="o">,</span> <span class="nv">fields</span><span class="o">=</span><span class="s1">&#39;module&#39;</span><span class="o">,</span> <span class="nv">endpoint</span><span class="o">=</span><span class="nv">horizon_endpoint</span><span class="o">)</span> <span class="cp">}}</span><span class="s">&quot;</span>
+  <span class="nt">with_one</span><span class="p">:</span> <span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">lookup</span><span class="o">(</span><span class="s1">&#39;evertrust.horizon.horizon_lookup&#39;</span><span class="o">,</span> <span class="nv">x_api_id</span><span class="o">=</span><span class="nv">x_api_id</span><span class="o">,</span> <span class="nv">x_api_key</span><span class="o">=</span><span class="nv">x_api_key</span><span class="o">,</span> <span class="nv">certificate_pem</span><span class="o">=</span><span class="nv">my_pem</span><span class="o">,</span> <span class="nv">fields</span><span class="o">=</span><span class="s1">&#39;module&#39;</span><span class="o">,</span> <span class="nv">endpoint</span><span class="o">=</span><span class="nv">horizon_endpoint</span><span class="o">,</span> <span class="nv">wantlist</span><span class="o">=</span><span class="kp">True</span><span class="o">)</span> <span class="cp">}}</span><span class="s">&quot;</span>
 
   <span class="c1"># Sets a variable containing a list of fields (module, _id)</span>
-  <span class="nt">with_list</span><span class="p">:</span> <span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">lookup</span><span class="o">(</span><span class="s1">&#39;evertrust.horizon.horizon_lookup&#39;</span><span class="o">,</span> <span class="nv">x_api_id</span><span class="o">=</span><span class="nv">x_api_id</span><span class="o">,</span> <span class="nv">x_api_key</span><span class="o">=</span><span class="nv">x_api_key</span><span class="o">,</span> <span class="nv">pem</span><span class="o">=</span><span class="nv">my_pem</span><span class="o">,</span> <span class="nv">fields</span><span class="o">=[</span><span class="s1">&#39;module&#39;</span><span class="o">,</span> <span class="s1">&#39;_id&#39;</span><span class="o">],</span> <span class="nv">endpoint</span><span class="o">=</span><span class="nv">horizon_endpoint</span><span class="o">)</span> <span class="cp">}}</span><span class="s">&quot;</span>
+  <span class="nt">with_list</span><span class="p">:</span> <span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">lookup</span><span class="o">(</span><span class="s1">&#39;evertrust.horizon.horizon_lookup&#39;</span><span class="o">,</span> <span class="nv">x_api_id</span><span class="o">=</span><span class="nv">x_api_id</span><span class="o">,</span> <span class="nv">x_api_key</span><span class="o">=</span><span class="nv">x_api_key</span><span class="o">,</span> <span class="nv">certificate_pem</span><span class="o">=</span><span class="nv">my_pem</span><span class="o">,</span> <span class="nv">fields</span><span class="o">=[</span><span class="s1">&#39;module&#39;</span><span class="o">,</span> <span class="s1">&#39;_id&#39;</span><span class="o">],</span> <span class="nv">endpoint</span><span class="o">=</span><span class="nv">horizon_endpoint</span><span class="o">,</span> <span class="nv">wantlist</span><span class="o">=</span><span class="kp">True</span><span class="o">)</span> <span class="cp">}}</span><span class="s">&quot;</span>
 
   <span class="c1"># Sets a variable containing every certificate field.</span>
-  <span class="nt">without</span><span class="p">:</span> <span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">lookup</span><span class="o">(</span><span class="s1">&#39;evertrust.horizon.horizon_lookup&#39;</span><span class="o">,</span> <span class="nv">x_api_id</span><span class="o">=</span><span class="nv">x_api_id</span><span class="o">,</span> <span class="nv">x_api_key</span><span class="o">=</span><span class="nv">x_api_key</span><span class="o">,</span> <span class="nv">pem</span><span class="o">=</span><span class="nv">pem_path</span><span class="o">,</span> <span class="nv">endpoint</span><span class="o">=</span><span class="nv">horizon_endpoint</span><span class="o">)</span> <span class="cp">}}</span><span class="s">&quot;</span>
+  <span class="nt">without</span><span class="p">:</span> <span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">lookup</span><span class="o">(</span><span class="s1">&#39;evertrust.horizon.horizon_lookup&#39;</span><span class="o">,</span> <span class="nv">x_api_id</span><span class="o">=</span><span class="nv">x_api_id</span><span class="o">,</span> <span class="nv">x_api_key</span><span class="o">=</span><span class="nv">x_api_key</span><span class="o">,</span> <span class="nv">certificate_pem</span><span class="o">=</span><span class="nv">pem_path</span><span class="o">,</span> <span class="nv">endpoint</span><span class="o">=</span><span class="nv">horizon_endpoint</span><span class="o">,</span> <span class="nv">wantlist</span><span class="o">=</span><span class="kp">True</span><span class="o">)</span> <span class="cp">}}</span><span class="s">&quot;</span>
 </pre></div>
 </div>
 </section>
@@ -407,6 +407,21 @@
                                         <div>True if the certificate was discovered and trusted.</div>
                                         <div>False if the certificate was discovered.</div>
                                         <div>Absent if the certificate was not discovered.</div>
+                                    <br/>
+                                </td>
+        </tr>
+                            <tr>
+                            <td colspan="1">
+                <div class="ansibleOptionAnchor" id="return-discoveryData"></div>
+                <b>discoveryData</b>
+                <a class="ansibleOptionLink" href="#return-discoveryData" title="Permalink to this return value"></a>
+                <div style="font-size: small">
+                  <span style="color: purple">list</span>
+                   / <span style="color: purple">elements=dictionary</span>                    </div>
+                                </td>
+            <td>Only if the certificate was discovered.</td>
+            <td>
+                                        <div>Certificate discovery data.</div>
                                     <br/>
                                 </td>
         </tr>
@@ -577,6 +592,21 @@
         </tr>
                             <tr>
                             <td colspan="1">
+                <div class="ansibleOptionAnchor" id="return-publicKeyThumbprint"></div>
+                <b>publicKeyThumbprint</b>
+                <a class="ansibleOptionLink" href="#return-publicKeyThumbprint" title="Permalink to this return value"></a>
+                <div style="font-size: small">
+                  <span style="color: purple">string</span>
+                                      </div>
+                                </td>
+            <td>If specifically requested.</td>
+            <td>
+                                        <div>Certificate public key thumbprint.</div>
+                                    <br/>
+                                </td>
+        </tr>
+                            <tr>
+                            <td colspan="1">
                 <div class="ansibleOptionAnchor" id="return-revocationDate"></div>
                 <b>revocationDate</b>
                 <a class="ansibleOptionLink" href="#return-revocationDate" title="Permalink to this return value"></a>
@@ -602,6 +632,21 @@
             <td>If specifically requested.</td>
             <td>
                                         <div>Certificate revocation reason.</div>
+                                    <br/>
+                                </td>
+        </tr>
+                            <tr>
+                            <td colspan="1">
+                <div class="ansibleOptionAnchor" id="return-selfSigned"></div>
+                <b>selfSigned</b>
+                <a class="ansibleOptionLink" href="#return-selfSigned" title="Permalink to this return value"></a>
+                <div style="font-size: small">
+                  <span style="color: purple">boolean</span>
+                                      </div>
+                                </td>
+            <td>If specifically requested.</td>
+            <td>
+                                        <div>True if the certificate is self-signed.</div>
                                     <br/>
                                 </td>
         </tr>
@@ -662,6 +707,36 @@
             <td>If specifically requested.</td>
             <td>
                                         <div>Certificate third-party data.</div>
+                                    <br/>
+                                </td>
+        </tr>
+                            <tr>
+                            <td colspan="1">
+                <div class="ansibleOptionAnchor" id="return-thumbprint"></div>
+                <b>thumbprint</b>
+                <a class="ansibleOptionLink" href="#return-thumbprint" title="Permalink to this return value"></a>
+                <div style="font-size: small">
+                  <span style="color: purple">string</span>
+                                      </div>
+                                </td>
+            <td>If specifically requested.</td>
+            <td>
+                                        <div>Certificate public key thumbprint.</div>
+                                    <br/>
+                                </td>
+        </tr>
+                            <tr>
+                            <td colspan="1">
+                <div class="ansibleOptionAnchor" id="return-triggerResults"></div>
+                <b>triggerResults</b>
+                <a class="ansibleOptionLink" href="#return-triggerResults" title="Permalink to this return value"></a>
+                <div style="font-size: small">
+                  <span style="color: purple">list</span>
+                   / <span style="color: purple">elements=dictionary</span>                    </div>
+                                </td>
+            <td>Only if present.</td>
+            <td>
+                                        <div>Certificate trigger results.</div>
                                     <br/>
                                 </td>
         </tr>

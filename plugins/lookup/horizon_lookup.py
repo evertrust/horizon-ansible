@@ -66,13 +66,13 @@ vars:
     src: /pem/file/path
   
   # Sets a variable containing only one field (module)
-  with_one: "{{ lookup('evertrust.horizon.horizon_lookup', x_api_id=x_api_id, x_api_key=x_api_key, pem=my_pem, fields='module', endpoint=horizon_endpoint) }}"
+  with_one: "{{ lookup('evertrust.horizon.horizon_lookup', x_api_id=x_api_id, x_api_key=x_api_key, certificate_pem=my_pem, fields='module', endpoint=horizon_endpoint, wantlist=True) }}"
 
   # Sets a variable containing a list of fields (module, _id)
-  with_list: "{{ lookup('evertrust.horizon.horizon_lookup', x_api_id=x_api_id, x_api_key=x_api_key, pem=my_pem, fields=['module', '_id'], endpoint=horizon_endpoint) }}"
+  with_list: "{{ lookup('evertrust.horizon.horizon_lookup', x_api_id=x_api_id, x_api_key=x_api_key, certificate_pem=my_pem, fields=['module', '_id'], endpoint=horizon_endpoint, wantlist=True) }}"
 
   # Sets a variable containing every certificate field.
-  without: "{{ lookup('evertrust.horizon.horizon_lookup', x_api_id=x_api_id, x_api_key=x_api_key, pem=pem_path, endpoint=horizon_endpoint) }}"
+  without: "{{ lookup('evertrust.horizon.horizon_lookup', x_api_id=x_api_id, x_api_key=x_api_key, certificate_pem=pem_path, endpoint=horizon_endpoint, wantlist=True) }}"
 """
 
 # language=yaml
@@ -164,6 +164,28 @@ thirdPartyData:
   type: list
   elements: dict
   returned: If specifically requested.
+selfSigned:
+  description: True if the certificate is self-signed.
+  type: bool
+  returned: If specifically requested.
+thumbprint:
+  description: Certificate public key thumbprint.
+  type: string
+  returned: If specifically requested.
+publicKeyThumbprint:
+  description: Certificate public key thumbprint.
+  type: string
+  returned: If specifically requested.
+triggerResults:
+  description: Certificate trigger results.
+  type: list
+  elements: dict
+  returned: Only if present.
+discoveryData:
+  description: Certificate discovery data.
+  type: list
+  elements: dict
+  returned: Only if the certificate was discovered.
 """
 
 from ansible_collections.evertrust.horizon.plugins.module_utils.horizon import Horizon
