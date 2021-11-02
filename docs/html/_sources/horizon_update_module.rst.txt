@@ -20,7 +20,7 @@ evertrust.horizon.horizon_update -- Horizon update plugin
 .. Collection note
 
 .. note::
-    This plugin is part of the `evertrust.horizon collection <https://galaxy.ansible.com/evertrust/horizon>`_ (version 1.0.0).
+    This plugin is part of the `evertrust.horizon collection <https://galaxy.ansible.com/evertrust/horizon>`_ (version 1.0.1).
 
     To install it use: :code:`ansible-galaxy collection install evertrust.horizon`.
 
