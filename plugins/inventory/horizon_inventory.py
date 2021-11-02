@@ -17,38 +17,13 @@ short_description: Horizon inventory plugin
 description:
     - Generate hosts inventory from Horizon using an HCQL query.
     - Use a YAML configuration file that ends with C(horizon_inventory.(yml|yaml)).
-extends_documentation_fragment: evertrust.horizon.auth_options
+extends_documentation_fragment: 
+    - evertrust.horizon.auth_options
+    - evertrust.horizon.fields.options
 options:
     query:
         description: HCQL query to filter the results.
         required: false
-    fields:
-      description:
-        - Fields to be retrieved from Horizon.
-        - If omitted, all fields will be returned.
-      type: list
-      elements: string
-      choices:
-        - _id
-        - certificate
-        - discoveredTrusted
-        - dn
-        - holderId
-        - issuer
-        - keyType
-        - labels
-        - metadata
-        - module
-        - notAfter
-        - notBefore
-        - owner
-        - profile
-        - revocationDate
-        - revocationReason
-        - serial
-        - signingAlgorithm
-        - subjectAlternateNames
-        - thirdPartyData
     hostnames:
         description:
             - A list in order of precedence for hostname variables.

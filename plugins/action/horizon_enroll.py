@@ -11,7 +11,6 @@ from ansible_collections.evertrust.horizon.plugins.module_utils.horizon_action i
 from ansible_collections.evertrust.horizon.plugins.module_utils.horizon_crypto import HorizonCrypto
 
 
-
 class ActionModule(HorizonAction):
     TRANSFERS_FILES = True
 
@@ -48,11 +47,10 @@ class ActionModule(HorizonAction):
             elif "pkcs12" in response.keys():
                 result["p12"] = response["pkcs12"]["value"]
                 result["p12_password"] = response["password"]["value"]
-                result["key"] = HorizonCrypto.get_key_from_p12(response["pkcs12"]["value"], response["password"]["value"])
+                result["key"] = HorizonCrypto.get_key_from_p12(response["pkcs12"]["value"],
+                                                               response["password"]["value"])
 
         except AnsibleAction as e:
             result.update(e.result)
 
         return result
-
-
