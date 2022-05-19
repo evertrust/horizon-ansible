@@ -6,7 +6,13 @@ This collection includes plenty of modules to interact with Horizon instances an
 
 ### System requirements
 
-This collection requires Python 3.6 or greater and has been tested against following versions >= 2.11.2,
+This collection requires Python 3.6 or greater. It offers compatibility with the following Horizon versions :
+
+| Collection version | Horizon version |
+|--------------------|-----------------|
+| 1.1.0              | 2.2.0+          |
+| 1.0.1              | 2.0.0+          |
+
 
 ### Ansible Galaxy
 You can install the Horizon collection with the Ansible Galaxy CLI:
