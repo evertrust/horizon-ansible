@@ -15,7 +15,7 @@ class ActionModule(HorizonAction):
     TRANSFERS_FILES = True
 
     def _args(self):
-        return ['mode', 'password', 'key_type', 'csr', 'profile', 'subject', 'sans', 'labels', 'contact_email']
+        return ['mode', 'password', 'key_type', 'csr', 'profile', 'subject', 'sans', 'labels', 'contact_email', 'owner', 'team']
 
     def run(self, tmp=None, task_vars=None):
         result = super(ActionModule, self).run(tmp, task_vars)

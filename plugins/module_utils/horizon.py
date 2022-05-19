@@ -48,7 +48,7 @@ class Horizon:
             raise AnsibleError('You have to inform authentication parameters')
 
     def enroll(self, profile, mode=None, csr=None, password=None, key_type=None, labels=None, sans=None, subject=None,
-               contact_email=None):
+               contact_email=None, owner=None, team=None):
         """
         Enroll a certificate
         :type profile: str
@@ -60,6 +60,8 @@ class Horizon:
         :type sans: dict
         :type subject: dict
         :type contact_email: str
+        :type owner: str
+        :type team: str
         :rtype: dict
         """
         if subject is None:
@@ -83,9 +85,6 @@ class Horizon:
             "workflow": "enroll",
             "module": "webra",
             "profile": profile,
-            "password": {
-                "value": password
-            },
             "template": {
                 "keyTypes": [key_type],
                 "sans": self.__set_sans(sans),
@@ -95,6 +94,13 @@ class Horizon:
             },
             "contact": contact_email
         }
+
+        if password is not None:
+            json["password"]["value"] = password
+        if owner is not None:
+            json["template"]["owner"] = {"value": owner}
+        if team is not None:
+            json["template"]["team"] = {"value": team}
 
         return self.post(self.REQUEST_SUBMIT_URL, json)
 
@@ -112,7 +118,9 @@ class Horizon:
         json = {
             "workflow": "recover",
             "profile": profile,
-            "password": password,
+            "password": {
+                "value": password,
+            },
             "certificatePem": self.__load_file_or_string(certificate_pem)
         }
 
@@ -128,23 +136,34 @@ class Horizon:
         json = {
             "workflow": "revoke",
             "certificatePem": self.__load_file_or_string(certificate_pem),
-            "revocationReason": revocation_reason
+            "template": {
+                "revocationReason": revocation_reason
+            }
         }
 
         return self.post(self.REQUEST_SUBMIT_URL, json)
 
-    def update(self, certificate_pem, labels={}):
+    def update(self, certificate_pem, labels={}, owner=None, team=None):
         """
         Update a certificate
         :type certificate_pem: Union[str,dict]
         :type labels: dict
+        :type owner: str
+        :type team: str
         :rtype: dict
         """
         json = {
             "workflow": "update",
             "certificatePem": self.__load_file_or_string(certificate_pem),
-            "labels": self.__set_labels(labels)
+            "labels": self.__set_labels(labels),
+            "template": {}
         }
+
+        if owner is not None:
+            json["template"]["owner"] = {"value": owner}
+        if team is not None:
+            json["template"]["team"] = {"value": team}
+
         return self.post(self.REQUEST_SUBMIT_URL, json)
 
     def search(self, query=None, fields=None):
