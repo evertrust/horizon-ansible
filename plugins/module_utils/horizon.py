@@ -42,7 +42,7 @@ class Horizon:
             self.cert = (client_cert, client_key)
 
         elif x_api_id is not None and x_api_key is not None:
-            self.headers = {"x-api-id": x_api_id, "x-api-key": x_api_key}
+            self.headers = {"x-api-id": str(x_api_id), "x-api-key": str(x_api_key)}
 
         else:
             raise AnsibleError('You have to inform authentication parameters')
