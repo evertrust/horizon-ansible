@@ -11,7 +11,7 @@ import urllib.parse
 
 import requests
 from ansible.errors import AnsibleError
-from requests.exceptions import HTTPError
+from ansible_collections.evertrust.horizon.plugins.module_utils.horizon_errors import HorizonError
 
 
 class Horizon:
@@ -381,7 +381,22 @@ class Horizon:
         if response.ok:
             return content
 
-        raise HTTPError(content)
+        if 'message' in content:
+            error_message = content['message']
+        else:
+            error_message = content
+
+        if 'detail' in content:
+            error_detail = content['detail']
+        else:
+            error_detail = None
+
+        if 'error' in content:
+            error_code = content['error']
+        else:
+            error_code = response.status_code
+
+        raise HorizonError(message=error_message, code=error_code, detail=error_detail, response=response)
 
     @staticmethod
     def __set_labels(labels):
