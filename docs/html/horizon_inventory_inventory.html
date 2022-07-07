@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>evertrust.horizon.horizon_inventory – Horizon inventory plugin &mdash; Horizon Ansible  documentation</title>
+  <title>evertrust.horizon.horizon_inventory inventory – Horizon inventory plugin &mdash; Horizon Ansible  documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/ansible.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/rtd-ethical-ads.css" type="text/css" />
@@ -21,7 +21,7 @@
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="evertrust.horizon.horizon_lookup – Horizon lookup plugin" href="horizon_lookup_lookup.html" />
+    <link rel="next" title="evertrust.horizon.horizon_lookup lookup – Horizon lookup plugin" href="horizon_lookup_lookup.html" />
     <link rel="prev" title="Evertrust.Horizon" href="index.html" /><!---- extra head elements for Ansible beyond RTD Sphinx Theme --->
 
 
@@ -70,21 +70,22 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
   
               <ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">evertrust.horizon.horizon_inventory – Horizon inventory plugin</a><ul>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">evertrust.horizon.horizon_inventory inventory – Horizon inventory plugin</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#synopsis">Synopsis</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#parameters">Parameters</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#examples">Examples</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#authors">Authors</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#collection-links">Collection links</a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="horizon_lookup_lookup.html">evertrust.horizon.horizon_lookup – Horizon lookup plugin</a></li>
-<li class="toctree-l1"><a class="reference internal" href="horizon_enroll_module.html">evertrust.horizon.horizon_enroll – Horizon enrollment plugin</a></li>
-<li class="toctree-l1"><a class="reference internal" href="horizon_feed_module.html">evertrust.horizon.horizon_feed – Horizon feed (discovery) plugin</a></li>
-<li class="toctree-l1"><a class="reference internal" href="horizon_recover_module.html">evertrust.horizon.horizon_recover – Horizon recover plugin</a></li>
-<li class="toctree-l1"><a class="reference internal" href="horizon_revoke_module.html">evertrust.horizon.horizon_revoke – Horizon revoke plugin</a></li>
-<li class="toctree-l1"><a class="reference internal" href="horizon_update_module.html">evertrust.horizon.horizon_update – Horizon update plugin</a></li>
+<li class="toctree-l1"><a class="reference internal" href="horizon_lookup_lookup.html">evertrust.horizon.horizon_lookup lookup – Horizon lookup plugin</a></li>
+<li class="toctree-l1"><a class="reference internal" href="horizon_enroll_module.html">evertrust.horizon.horizon_enroll module – Horizon enrollment plugin</a></li>
+<li class="toctree-l1"><a class="reference internal" href="horizon_feed_module.html">evertrust.horizon.horizon_feed module – Horizon feed (discovery) plugin</a></li>
+<li class="toctree-l1"><a class="reference internal" href="horizon_recover_module.html">evertrust.horizon.horizon_recover module – Horizon recover plugin</a></li>
+<li class="toctree-l1"><a class="reference internal" href="horizon_revoke_module.html">evertrust.horizon.horizon_revoke module – Horizon revoke plugin</a></li>
+<li class="toctree-l1"><a class="reference internal" href="horizon_update_module.html">evertrust.horizon.horizon_update module – Horizon update plugin</a></li>
 </ul>
 <!-- extra nav elements for Ansible beyond RTD Sphinx Theme --->
 
@@ -102,7 +103,7 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
-      <li>evertrust.horizon.horizon_inventory – Horizon inventory plugin</li>
+      <li>evertrust.horizon.horizon_inventory inventory – Horizon inventory plugin</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/horizon_inventory_inventory.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -114,12 +115,15 @@
   
            <div itemprop="articleBody">
              
-  <span class="target" id="ansible-collections-evertrust-horizon-horizon-inventory-inventory"></span><section id="evertrust-horizon-horizon-inventory-horizon-inventory-plugin">
-<h1>evertrust.horizon.horizon_inventory – Horizon inventory plugin<a class="headerlink" href="#evertrust-horizon-horizon-inventory-horizon-inventory-plugin" title="Permalink to this headline"></a></h1>
+  <span class="target" id="ansible-collections-evertrust-horizon-horizon-inventory-inventory"></span><section id="evertrust-horizon-horizon-inventory-inventory-horizon-inventory-plugin">
+<h1>evertrust.horizon.horizon_inventory inventory – Horizon inventory plugin<a class="headerlink" href="#evertrust-horizon-horizon-inventory-inventory-horizon-inventory-plugin" title="Permalink to this headline"></a></h1>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>This plugin is part of the <a class="reference external" href="https://galaxy.ansible.com/evertrust/horizon">evertrust.horizon collection</a> (version 1.0.1).</p>
-<p>To install it use: <code class="code docutils literal notranslate"><span class="pre">ansible-galaxy</span> <span class="pre">collection</span> <span class="pre">install</span> <span class="pre">evertrust.horizon</span></code>.</p>
+<p>This inventory plugin is part of the <a class="reference external" href="https://galaxy.ansible.com/evertrust/horizon">evertrust.horizon collection</a> (version 1.1.0).</p>
+<p>You might already have this collection installed if you are using the <code class="docutils literal notranslate"><span class="pre">ansible</span></code> package.
+It is not included in <code class="docutils literal notranslate"><span class="pre">ansible-core</span></code>.
+To check whether it is installed, run <code class="code docutils literal notranslate"><span class="pre">ansible-galaxy</span> <span class="pre">collection</span> <span class="pre">list</span></code>.</p>
+<p>To install it, use: <code class="code docutils literal notranslate"><span class="pre">ansible-galaxy</span> <span class="pre">collection</span> <span class="pre">install</span> <span class="pre">evertrust.horizon</span></code>.</p>
 <p>To use it in a playbook, specify: <code class="code docutils literal notranslate"><span class="pre">evertrust.horizon.horizon_inventory</span></code>.</p>
 </div>
 <div class="contents local topic" id="contents">
@@ -138,198 +142,110 @@
 </section>
 <section id="parameters">
 <h2><a class="toc-backref" href="#id2">Parameters</a><a class="headerlink" href="#parameters" title="Permalink to this headline"></a></h2>
-<table  border=0 cellpadding=0 class="documentation-table">
-    <tr>
-        <th colspan="1">Parameter</th>
-        <th>Choices/<font color="blue">Defaults</font></th>
-                        <th>Configuration</th>
-                    <th width="100%">Comments</th>
-    </tr>
-                <tr>
-                                                            <td colspan="1">
-                <div class="ansibleOptionAnchor" id="parameter-ca_bundle"></div>
-                <b>ca_bundle</b>
-                <a class="ansibleOptionLink" href="#parameter-ca_bundle" title="Permalink to this option"></a>
-                <div style="font-size: small">
-                    <span style="color: purple">path</span>
-                                                                </div>
-                                                    </td>
-                            <td>
-                                                                                                                                                        </td>
-                                                <td>
-                                                                                        </td>
-                                            <td>
-                                        <div>Path of a CA bundle used to validate the Horizon instance SSL certificate.</div>
-                                                    </td>
-        </tr>
-                            <tr>
-                                                            <td colspan="1">
-                <div class="ansibleOptionAnchor" id="parameter-client_cert"></div>
-                <b>client_cert</b>
-                <a class="ansibleOptionLink" href="#parameter-client_cert" title="Permalink to this option"></a>
-                <div style="font-size: small">
-                    <span style="color: purple">path</span>
-                                                                </div>
-                                                    </td>
-                            <td>
-                                                                                                                                                        </td>
-                                                <td>
-                                                                                        </td>
-                                            <td>
-                                        <div>Path of a client certificate.</div>
-                                        <div>Required if you use certificate based authentication</div>
-                                                    </td>
-        </tr>
-                            <tr>
-                                                            <td colspan="1">
-                <div class="ansibleOptionAnchor" id="parameter-client_key"></div>
-                <b>client_key</b>
-                <a class="ansibleOptionLink" href="#parameter-client_key" title="Permalink to this option"></a>
-                <div style="font-size: small">
-                    <span style="color: purple">path</span>
-                                                                </div>
-                                                    </td>
-                            <td>
-                                                                                                                                                        </td>
-                                                <td>
-                                                                                        </td>
-                                            <td>
-                                        <div>Path of a client certificate&#x27;s key.</div>
-                                        <div>Required if you use certificate based authentication</div>
-                                                    </td>
-        </tr>
-                            <tr>
-                                                            <td colspan="1">
-                <div class="ansibleOptionAnchor" id="parameter-endpoint"></div>
-                <b>endpoint</b>
-                <a class="ansibleOptionLink" href="#parameter-endpoint" title="Permalink to this option"></a>
-                <div style="font-size: small">
-                    <span style="color: purple">string</span>
-                                             / <span style="color: red">required</span>                    </div>
-                                                    </td>
-                            <td>
-                                                                                                                                                        </td>
-                                                <td>
-                                                                                        </td>
-                                            <td>
-                                        <div>Your Horizon instance base endpoint.</div>
-                                        <div>It must include the protocol (https://) and no trailing slash nor path.</div>
-                                                    </td>
-        </tr>
-                            <tr>
-                                                            <td colspan="1">
-                <div class="ansibleOptionAnchor" id="parameter-fields"></div>
-                <b>fields</b>
-                <a class="ansibleOptionLink" href="#parameter-fields" title="Permalink to this option"></a>
-                <div style="font-size: small">
-                    <span style="color: purple">list</span>
-                     / <span style="color: purple">elements=string</span>                                            </div>
-                                                    </td>
-                            <td>
-                                                                                                                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
-                                                                                                                                                            <li>_id</li>
-                                                                                                                                                                                            <li>certificate</li>
-                                                                                                                                                                                            <li>discoveredTrusted</li>
-                                                                                                                                                                                            <li>dn</li>
-                                                                                                                                                                                            <li>holderId</li>
-                                                                                                                                                                                            <li>issuer</li>
-                                                                                                                                                                                            <li>keyType</li>
-                                                                                                                                                                                            <li>labels</li>
-                                                                                                                                                                                            <li>metadata</li>
-                                                                                                                                                                                            <li>module</li>
-                                                                                                                                                                                            <li>notAfter</li>
-                                                                                                                                                                                            <li>notBefore</li>
-                                                                                                                                                                                            <li>owner</li>
-                                                                                                                                                                                            <li>profile</li>
-                                                                                                                                                                                            <li>revocationDate</li>
-                                                                                                                                                                                            <li>revocationReason</li>
-                                                                                                                                                                                            <li>serial</li>
-                                                                                                                                                                                            <li>signingAlgorithm</li>
-                                                                                                                                                                                            <li>subjectAlternateNames</li>
-                                                                                                                                                                                            <li>thirdPartyData</li>
-                                                                                </ul>
-                                                                        </td>
-                                                <td>
-                                                                                        </td>
-                                            <td>
-                                        <div>Fields to be retrieved from Horizon.</div>
-                                        <div>If omitted, all fields will be returned.</div>
-                                                    </td>
-        </tr>
-                            <tr>
-                                                            <td colspan="1">
-                <div class="ansibleOptionAnchor" id="parameter-hostnames"></div>
-                <b>hostnames</b>
-                <a class="ansibleOptionLink" href="#parameter-hostnames" title="Permalink to this option"></a>
-                <div style="font-size: small">
-                    <span style="color: purple">list</span>
-                     / <span style="color: purple">elements=string</span>                                            </div>
-                                                    </td>
-                            <td>
-                                                                                                                                                                <b>Default:</b><br/><div style="color: blue">[]</div>
-                                </td>
-                                                <td>
-                                                                                        </td>
-                                            <td>
-                                        <div>A list in order of precedence for hostname variables.</div>
-                                        <div>To use labels as hostnames use the syntax label.&lt;key&gt;.</div>
-                                                    </td>
-        </tr>
-                            <tr>
-                                                            <td colspan="1">
-                <div class="ansibleOptionAnchor" id="parameter-query"></div>
-                <b>query</b>
-                <a class="ansibleOptionLink" href="#parameter-query" title="Permalink to this option"></a>
-                <div style="font-size: small">
-                    <span style="color: purple">string</span>
-                                                                </div>
-                                                    </td>
-                            <td>
-                                                                                                                                                        </td>
-                                                <td>
-                                                                                        </td>
-                                            <td>
-                                        <div>HCQL query to filter the results.</div>
-                                                    </td>
-        </tr>
-                            <tr>
-                                                            <td colspan="1">
-                <div class="ansibleOptionAnchor" id="parameter-x_api_id"></div>
-                <b>x_api_id</b>
-                <a class="ansibleOptionLink" href="#parameter-x_api_id" title="Permalink to this option"></a>
-                <div style="font-size: small">
-                    <span style="color: purple">string</span>
-                                                                </div>
-                                                    </td>
-                            <td>
-                                                                                                                                                        </td>
-                                                <td>
-                                                                                        </td>
-                                            <td>
-                                        <div>Horizon identifier</div>
-                                        <div>Required if you use credentials authentication</div>
-                                                    </td>
-        </tr>
-                            <tr>
-                                                            <td colspan="1">
-                <div class="ansibleOptionAnchor" id="parameter-x_api_key"></div>
-                <b>x_api_key</b>
-                <a class="ansibleOptionLink" href="#parameter-x_api_key" title="Permalink to this option"></a>
-                <div style="font-size: small">
-                    <span style="color: purple">string</span>
-                                                                </div>
-                                                    </td>
-                            <td>
-                                                                                                                                                        </td>
-                                                <td>
-                                                                                        </td>
-                                            <td>
-                                        <div>Horizon password</div>
-                                        <div>Required if you use credentials authentication</div>
-                                                    </td>
-        </tr>
-                    </table>
-<br/></section>
+<table class="colwidths-auto ansible-option-table docutils align-default" style="width: 100%">
+<thead>
+<tr class="row-odd"><th class="head"><p>Parameter</p></th>
+<th class="head"><p>Comments</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-ca_bundle"></div><p class="ansible-option-title" id="ansible-collections-evertrust-horizon-horizon-inventory-inventory-parameter-ca-bundle"><strong>ca_bundle</strong></p>
+<a class="ansibleOptionLink" href="#parameter-ca_bundle" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">path</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Path of a CA bundle used to validate the Horizon instance SSL certificate.</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-client_cert"></div><p class="ansible-option-title" id="ansible-collections-evertrust-horizon-horizon-inventory-inventory-parameter-client-cert"><strong>client_cert</strong></p>
+<a class="ansibleOptionLink" href="#parameter-client_cert" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">path</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Path of a client certificate.</p>
+<p>Required if you use certificate based authentication</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-client_key"></div><p class="ansible-option-title" id="ansible-collections-evertrust-horizon-horizon-inventory-inventory-parameter-client-key"><strong>client_key</strong></p>
+<a class="ansibleOptionLink" href="#parameter-client_key" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">path</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Path of a client certificate’s key.</p>
+<p>Required if you use certificate based authentication</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-endpoint"></div><p class="ansible-option-title" id="ansible-collections-evertrust-horizon-horizon-inventory-inventory-parameter-endpoint"><strong>endpoint</strong></p>
+<a class="ansibleOptionLink" href="#parameter-endpoint" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span> / <span class="ansible-option-required">required</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Your Horizon instance base endpoint.</p>
+<p>It must include the protocol (<a class="reference external" href="https://">https://</a>) and no trailing slash nor path.</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-fields"></div><p class="ansible-option-title" id="ansible-collections-evertrust-horizon-horizon-inventory-inventory-parameter-fields"><strong>fields</strong></p>
+<a class="ansibleOptionLink" href="#parameter-fields" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Fields to be retrieved from Horizon.</p>
+<p>If omitted, all fields will be returned.</p>
+<p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
+<ul class="simple">
+<li><p><span class="ansible-option-choices-entry">_id</span></p></li>
+<li><p><span class="ansible-option-choices-entry">certificate</span></p></li>
+<li><p><span class="ansible-option-choices-entry">discoveredTrusted</span></p></li>
+<li><p><span class="ansible-option-choices-entry">dn</span></p></li>
+<li><p><span class="ansible-option-choices-entry">holderId</span></p></li>
+<li><p><span class="ansible-option-choices-entry">issuer</span></p></li>
+<li><p><span class="ansible-option-choices-entry">keyType</span></p></li>
+<li><p><span class="ansible-option-choices-entry">labels</span></p></li>
+<li><p><span class="ansible-option-choices-entry">metadata</span></p></li>
+<li><p><span class="ansible-option-choices-entry">module</span></p></li>
+<li><p><span class="ansible-option-choices-entry">notAfter</span></p></li>
+<li><p><span class="ansible-option-choices-entry">notBefore</span></p></li>
+<li><p><span class="ansible-option-choices-entry">owner</span></p></li>
+<li><p><span class="ansible-option-choices-entry">profile</span></p></li>
+<li><p><span class="ansible-option-choices-entry">revocationDate</span></p></li>
+<li><p><span class="ansible-option-choices-entry">revocationReason</span></p></li>
+<li><p><span class="ansible-option-choices-entry">serial</span></p></li>
+<li><p><span class="ansible-option-choices-entry">signingAlgorithm</span></p></li>
+<li><p><span class="ansible-option-choices-entry">subjectAlternateNames</span></p></li>
+<li><p><span class="ansible-option-choices-entry">thirdPartyData</span></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-hostnames"></div><p class="ansible-option-title" id="ansible-collections-evertrust-horizon-horizon-inventory-inventory-parameter-hostnames"><strong>hostnames</strong></p>
+<a class="ansibleOptionLink" href="#parameter-hostnames" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>A list in order of precedence for hostname variables.</p>
+<p>To use labels as hostnames use the syntax label.&lt;key&gt;.</p>
+<p class="ansible-option-line"><span class="ansible-option-default-bold">Default:</span> <span class="ansible-option-default">[]</span></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-query"></div><p class="ansible-option-title" id="ansible-collections-evertrust-horizon-horizon-inventory-inventory-parameter-query"><strong>query</strong></p>
+<a class="ansibleOptionLink" href="#parameter-query" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>HCQL query to filter the results.</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-x_api_id"></div><p class="ansible-option-title" id="ansible-collections-evertrust-horizon-horizon-inventory-inventory-parameter-x-api-id"><strong>x_api_id</strong></p>
+<a class="ansibleOptionLink" href="#parameter-x_api_id" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Horizon identifier</p>
+<p>Required if you use credentials authentication</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-x_api_key"></div><p class="ansible-option-title" id="ansible-collections-evertrust-horizon-horizon-inventory-inventory-parameter-x-api-key"><strong>x_api_key</strong></p>
+<a class="ansibleOptionLink" href="#parameter-x_api_key" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Horizon password</p>
+<p>Required if you use credentials authentication</p>
+</div></td>
+</tr>
+</tbody>
+</table>
+</section>
 <section id="examples">
 <h2><a class="toc-backref" href="#id3">Examples</a><a class="headerlink" href="#examples" title="Permalink to this headline"></a></h2>
 <div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="nt">plugin</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">evertrust.horizon.horizon_inventory</span>
@@ -353,7 +269,17 @@
 <ul class="simple">
 <li><p>Evertrust R&amp;D (&#64;EverTrust)</p></li>
 </ul>
+<div class="admonition hint">
+<p class="admonition-title">Hint</p>
+<p>Configuration entries for each entry type have a low to high priority order. For example, a variable that is lower in the list will override a variable that is higher up.</p>
+</div>
 </section>
+<section id="collection-links">
+<h3>Collection links<a class="headerlink" href="#collection-links" title="Permalink to this headline"></a></h3>
+<p class="ansible-links">
+  <a href="https://github.com/EverTrust/horizon-ansible/issues" aria-role="button" target="_blank" rel="noopener external">Issue Tracker</a>
+  <a href="https://github.com/EverTrust/horizon-ansible" aria-role="button" target="_blank" rel="noopener external">Repository (Sources)</a>
+</p></section>
 </section>
 </section>
 
@@ -364,7 +290,7 @@
 
 <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="index.html" class="btn btn-neutral float-left" title="Evertrust.Horizon" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="horizon_lookup_lookup.html" class="btn btn-neutral float-right" title="evertrust.horizon.horizon_lookup – Horizon lookup plugin" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="horizon_lookup_lookup.html" class="btn btn-neutral float-right" title="evertrust.horizon.horizon_lookup lookup – Horizon lookup plugin" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

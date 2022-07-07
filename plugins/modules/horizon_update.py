@@ -38,6 +38,14 @@ options:
       - labels of the certificate
     required: false
     type: dict
+  owner:
+    description: Certificate's owner
+    required: false
+    type: str
+  team:
+    description: Certificate's team.
+    required: false
+    type: str
 '''
 
 # language=yaml

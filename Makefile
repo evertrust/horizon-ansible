@@ -1,9 +1,9 @@
 # Makefile used to build the collection docs
 
-ANTSIBULLBUILD	?= antsibull-docs
-ANTSIBULLOPTS	?=
-SPHINXBUILD   	?= sphinx-build
-SPHINXOPTS   	?=
+ANTSIBULLBUILD ?= antsibull-docs
+ANTSIBULLOPTS	 ?=
+SPHINXBUILD    ?= sphinx-build
+SPHINXOPTS     ?=
 
 .PHONY: docs
 

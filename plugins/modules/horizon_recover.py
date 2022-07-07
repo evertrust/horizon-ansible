@@ -147,6 +147,10 @@ certificate:
       description: Certificate's owner.
       type: str
       returned: If specifically requested.
+    team:
+      description: Certificate's team.
+      type: str
+      returned: If specifically requested.
     profile:
       description: Certificate profile.
       type: str

@@ -11,7 +11,7 @@ import urllib.parse
 
 import requests
 from ansible.errors import AnsibleError
-from requests.exceptions import HTTPError
+from ansible_collections.evertrust.horizon.plugins.module_utils.horizon_errors import HorizonError
 
 
 class Horizon:
@@ -42,13 +42,13 @@ class Horizon:
             self.cert = (client_cert, client_key)
 
         elif x_api_id is not None and x_api_key is not None:
-            self.headers = {"x-api-id": x_api_id, "x-api-key": x_api_key}
+            self.headers = {"x-api-id": str(x_api_id), "x-api-key": str(x_api_key)}
 
         else:
             raise AnsibleError('You have to inform authentication parameters')
 
-    def enroll(self, profile, mode=None, csr=None, password=None, key_type=None, labels=None, sans=None, subject=None,
-               contact_email=None):
+    def enroll(self, profile, mode=None, csr=None, password=None, key_type=None, labels=None, metadata=None,
+               sans=None, subject=None, owner=None, team=None):
         """
         Enroll a certificate
         :type profile: str
@@ -57,9 +57,11 @@ class Horizon:
         :type password: str
         :type key_type: str
         :type labels: dict
+        :type metadata: dict
         :type sans: dict
         :type subject: dict
-        :type contact_email: str
+        :type owner: str
+        :type team: str
         :rtype: dict
         """
         if subject is None:
@@ -68,6 +70,8 @@ class Horizon:
             sans = {}
         if labels is None:
             labels = {}
+        if metadata is None:
+            metadata = {}
         template = self.__get_template(profile, "enroll", "webra")
         password = self.__check_password_policy(password, template)
         mode = self.__check_mode(template, mode=mode)
@@ -83,18 +87,22 @@ class Horizon:
             "workflow": "enroll",
             "module": "webra",
             "profile": profile,
-            "password": {
-                "value": password
-            },
             "template": {
                 "keyTypes": [key_type],
                 "sans": self.__set_sans(sans),
                 "subject": self.__set_subject(subject, template),
                 "csr": csr,
                 "labels": self.__set_labels(labels),
+                "metadata": self.__set_metadata(metadata)
             },
-            "contact": contact_email
         }
+
+        if password is not None:
+            json["password"]["value"] = password
+            if owner is not None:
+                json["template"]["owner"] = {"value": owner}
+            if team is not None:
+                json["template"]["team"] = {"value": team}
 
         return self.post(self.REQUEST_SUBMIT_URL, json)
 
@@ -112,7 +120,9 @@ class Horizon:
         json = {
             "workflow": "recover",
             "profile": profile,
-            "password": password,
+            "password": {
+                "value": password,
+            },
             "certificatePem": self.__load_file_or_string(certificate_pem)
         }
 
@@ -128,23 +138,42 @@ class Horizon:
         json = {
             "workflow": "revoke",
             "certificatePem": self.__load_file_or_string(certificate_pem),
-            "revocationReason": revocation_reason
+            "template": {
+                "revocationReason": revocation_reason
+            }
         }
 
         return self.post(self.REQUEST_SUBMIT_URL, json)
 
-    def update(self, certificate_pem, labels={}):
+    def update(self, certificate_pem, labels=None, metadata=None, owner=None, team=None):
         """
         Update a certificate
+        :param metadata:
         :type certificate_pem: Union[str,dict]
         :type labels: dict
+        :type owner: str
+        :type team: str
         :rtype: dict
         """
+        if metadata is None:
+            metadata = {}
+        if labels is None:
+            labels = {}
+
         json = {
             "workflow": "update",
             "certificatePem": self.__load_file_or_string(certificate_pem),
-            "labels": self.__set_labels(labels)
+            "labels": self.__set_labels(labels),
+            "template": {
+                "metadata": self.__set_metadata(metadata)
+            }
         }
+
+        if owner is not None:
+            json["template"]["owner"] = {"value": owner}
+        if team is not None:
+            json["template"]["team"] = {"value": team}
+
         return self.post(self.REQUEST_SUBMIT_URL, json)
 
     def search(self, query=None, fields=None):
@@ -352,7 +381,22 @@ class Horizon:
         if response.ok:
             return content
 
-        raise HTTPError(content)
+        if 'message' in content:
+            error_message = content['message']
+        else:
+            error_message = content
+
+        if 'detail' in content:
+            error_detail = content['detail']
+        else:
+            error_detail = None
+
+        if 'error' in content:
+            error_code = content['error']
+        else:
+            error_code = response.status_code
+
+        raise HorizonError(message=error_message, code=error_code, detail=error_detail, response=response)
 
     @staticmethod
     def __set_labels(labels):
@@ -389,6 +433,20 @@ class Horizon:
             my_sans.append({"element": element, "value": sans[element]})
 
         return my_sans
+
+    @staticmethod
+    def __set_metadata(metadata):
+        """
+        Format SANs returned by the API
+        :param sans: a dict containing the subject alternates names of the certificate
+        :return the subject alternate names with a format readable by the API
+        """
+        serialized_metadata = []
+
+        for element in metadata:
+            serialized_metadata.append({"metadata": element, "value": metadata[element]})
+
+        return serialized_metadata
 
     @staticmethod
     def __set_subject(subject, template):

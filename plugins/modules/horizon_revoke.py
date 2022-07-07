@@ -38,6 +38,12 @@ options:
     - SUPERSEDED
     - CESSATIONOFOPERATION
     type: str
+  skip_already_revoked:
+    description:
+      - Do not raise an exception when the certificate is already revoked
+    required: false
+    default: false
+    type: boolean
 '''
 
 # language=yaml
@@ -48,6 +54,7 @@ EXAMPLES = '''
       x_api_id: "<horizon-id>"
       x_api_key: "<horizon-password>"
       certificate_pem: "-----BEGIN CERTIFICATE----- ... -----END CERTIFICATE-----"
+      skip_already_revoked: true
 
 - name: Revoke a certificate by its file
     evertrust.horizon.horizon_revoke:
