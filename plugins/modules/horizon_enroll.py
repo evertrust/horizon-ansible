@@ -85,6 +85,14 @@ options:
       - Certificate's labels.
     required: false
     type: dict
+  owner:
+    description: Certificate's owner
+    required: false
+    type: str
+  team:
+    description: Certificate's team.
+    required: false
+    type: str
 '''
 
 # language=yaml
@@ -237,6 +245,10 @@ certificate:
       returned: If specifically requested.
     owner:
       description: Certificate's owner.
+      type: str
+      returned: If specifically requested.
+    team:
+      description: Certificate's team.
       type: str
       returned: If specifically requested.
     profile:
