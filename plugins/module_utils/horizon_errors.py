@@ -1,3 +1,5 @@
+from ansible.errors import AnsibleError
+
 class HorizonError(Exception):
     def __init__(self, code, message, response, detail=None):
         self.code = code
@@ -9,4 +11,4 @@ class HorizonError(Exception):
         if self.detail:
             full_message = "%s (%s)" % (full_message, self.detail)
 
-        super().__init__(full_message)
+        raise AnsibleError(full_message)

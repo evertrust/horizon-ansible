@@ -98,6 +98,7 @@ class Horizon:
         }
 
         if password is not None:
+            json["password"] = {}
             json["password"]["value"] = password
             if owner is not None:
                 json["template"]["owner"] = {"value": owner}
