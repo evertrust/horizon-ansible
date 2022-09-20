@@ -592,6 +592,6 @@ class Horizon:
             if 'template' in args['json'] and 'certificate' in content:
                 for arg in args['json']['template']:
                     if arg not in content['certificate'] and arg not in exception_list:
-                        message = 'WARNING: The value "%s" has not been read by the API, you may not use the latest version.' % (arg)
+                        message = 'The value "%s" has not been read by the API, you may not use the latest version.' % (arg)
 
         return message
