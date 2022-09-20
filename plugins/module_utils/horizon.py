@@ -12,6 +12,8 @@ import urllib.parse
 import requests
 from ansible.errors import AnsibleError
 from ansible_collections.evertrust.horizon.plugins.module_utils.horizon_errors import HorizonError
+from ansible.utils.display import Display
+
 
 
 class Horizon:
@@ -379,6 +381,11 @@ class Horizon:
         else:
             content = response.content.decode()
 
+        # Check les arguments retourné par l'API
+        warning = self.__get_warnings(kwargs, content=content)
+        if warning != '':
+            Display().warning(warning)
+
         if response.ok:
             return content
 
@@ -570,3 +577,21 @@ class Horizon:
             else:
                 raise AnsibleError('You must specify an src attribute when passing a dict')
         return content
+
+    @staticmethod
+    def __get_warnings(args, content):
+        """
+        Check if new args value are returned by the API.
+        :type args: dict
+        :type content: json() 
+        """
+        exception_list = ['mode', 'password', 'keyTypes', 'csr', 'profile', 'subject', 'sans', 'labels']
+        message = ''
+
+        if 'json' in args:
+            if 'template' in args['json'] and 'certificate' in content:
+                for arg in args['json']['template']:
+                    if arg not in content['certificate'] and arg not in exception_list:
+                        message = 'WARNING: The value "%s" has not been read by the API, you may not use the latest version.' % (arg)
+
+        return message
