@@ -138,9 +138,11 @@ class Horizon:
         :type revocation_reason: str
         :rtype: dict
         """
+        # Duplication of value is to support older API versions
         json = {
             "workflow": "revoke",
             "certificatePem": self.__load_file_or_string(certificate_pem),
+            "revocationReason": revocation_reason,
             "template": {
                 "revocationReason": revocation_reason
             }
