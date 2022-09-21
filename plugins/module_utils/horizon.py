@@ -39,7 +39,7 @@ class Horizon:
         self.headers = None
         self.cert = None
         self.bundle = ca_bundle
-        # commplete the anthentication system
+        # Complete the anthentication system
         if client_cert is not None and client_key is not None:
             self.cert = (client_cert, client_key)
 
@@ -381,10 +381,8 @@ class Horizon:
         else:
             content = response.content.decode()
 
-        # Check les arguments retourné par l'API
-        warning = self.__get_warnings(kwargs, content=content)
-        if warning != '':
-            Display().warning(warning)
+        # Check args returned by the API
+        self.__get_warnings(kwargs, content=content)
 
         if response.ok:
             return content
@@ -581,17 +579,19 @@ class Horizon:
     @staticmethod
     def __get_warnings(args, content):
         """
-        Check if new args value are returned by the API.
+        Check if args value are returned by the API.
+        Return True if there is at least one warning. Else return False
         :type args: dict
-        :type content: json() 
+        :type content: 
         """
-        exception_list = ['mode', 'password', 'keyTypes', 'csr', 'profile', 'subject', 'sans', 'labels']
-        message = ''
+        exception_list = ['csr', 'keyTypes', 'labels', 'mode', 'password', 'profile', 'sans', 'subject']
+        warning = False
 
         if 'json' in args:
             if 'template' in args['json'] and 'certificate' in content:
                 for arg in args['json']['template']:
                     if arg not in content['certificate'] and arg not in exception_list:
-                        message = 'The value "%s" has not been read by the API, you may not use the latest version.' % (arg)
+                        Display().warning('The value "%s" has not been read by the API, you may not use the latest version.' % (arg))
+                        warning = True
 
-        return message
+        return warning
