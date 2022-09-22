@@ -168,9 +168,9 @@ class Horizon:
         json = {
             "workflow": "update",
             "certificatePem": self.__load_file_or_string(certificate_pem),
-            "labels": self.__set_labels(labels),
             "template": {
-                "metadata": self.__set_metadata(metadata)
+                "metadata": self.__set_metadata(metadata),
+                "labels": self.__set_labels(labels)
             }
         }
 
