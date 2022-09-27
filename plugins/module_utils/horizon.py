@@ -15,7 +15,6 @@ from ansible_collections.evertrust.horizon.plugins.module_utils.horizon_errors i
 from ansible.utils.display import Display
 
 
-
 class Horizon:
     REQUEST_SUBMIT_URL = "/api/v1/requests/submit"
     REQUEST_TEMPLATE_URL = "/api/v1/requests/template"
@@ -584,16 +583,17 @@ class Horizon:
         Check if args value are returned by the API.
         Return True if there is at least one warning. Else return False
         :type args: dict
-        :type content: 
+        :type content:
         """
-        exception_list = ['csr', 'keyTypes', 'labels', 'mode', 'password', 'profile', 'sans', 'subject']
+        exception_list = ['csr', 'keyTypes', 'labels', 'mode', 'password', 'profile', 'sans', 'subject', 'revocationReason']
         warning = False
 
         if 'json' in args:
             if 'template' in args['json'] and 'certificate' in content:
                 for arg in args['json']['template']:
                     if arg not in content['certificate'] and arg not in exception_list:
-                        Display().warning('The value "%s" has not been read by the API, you may not use the latest version.' % (arg))
+                        #TODO: Write a better message for the warning.
+                        Display().warning('The value "%s" has not been returned by the API' % (arg))
                         warning = True
 
         return warning

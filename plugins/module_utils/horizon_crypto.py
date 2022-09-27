@@ -4,6 +4,8 @@
 # Standard base includes and define this as a metaclass of type
 from __future__ import (absolute_import, division, print_function)
 
+__metaclass__ = type
+
 import base64
 import secrets
 
@@ -89,7 +91,6 @@ class HorizonCrypto:
             .sign(private_key, hashes.SHA256())\
             .public_bytes(serialization.Encoding.PEM).decode()
 
-
     @staticmethod
     def generate_key_pair(key_type):
         """
@@ -113,4 +114,3 @@ class HorizonCrypto:
         public_key = private_key.public_key()
 
         return private_key, public_key
-

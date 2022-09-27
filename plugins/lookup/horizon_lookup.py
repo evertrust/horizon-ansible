@@ -12,7 +12,7 @@ author:
   - Evertrust R&D (@EverTrust)
 short_description: Horizon lookup plugin
 description: Retrieve certificate's information from Horizon.
-extends_documentation_fragment: 
+extends_documentation_fragment:
   - evertrust.horizon.auth_options
   - evertrust.horizon.fields.options
 options:
@@ -34,7 +34,7 @@ vars:
   endpoint: "https://<horizon-endpoint>"
   x_api_id: "<horizon-id>"
   x_api_key: "<horizon-password>"
-  # Send the certificate by specifying its content (string) 
+  # Send the certificate by specifying its content (string)
   my_pem: <a_webra_pem_file>
   # Send the certificate by specifying its file path
   pem_path:
@@ -61,9 +61,9 @@ certificate:
   type: str
   returned: If specifically requested.
 discoveredTrusted:
-  description: 
-  - True if the certificate was discovered and trusted. 
-  - False if the certificate was discovered. 
+  description:
+  - True if the certificate was discovered and trusted.
+  - False if the certificate was discovered.
   - Absent if the certificate was not discovered.
   type: bool
   returned: If present and specifically requested.
@@ -168,7 +168,7 @@ thirdPartyData:
   returned: If present and specifically requested.
   contains:
     connector:
-      description: Third party connector name. 
+      description: Third party connector name.
       type: string
       returned: Always.
     id:

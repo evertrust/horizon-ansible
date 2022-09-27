@@ -3,11 +3,12 @@
 
 # Standard base includes and define this as a metaclass of type
 from __future__ import (absolute_import, division, print_function)
+
 __metaclass__ = type
+
 
 from ansible.errors import AnsibleAction
 from ansible_collections.evertrust.horizon.plugins.module_utils.horizon_action import HorizonAction
-
 
 class ActionModule(HorizonAction):
     TRANSFERS_FILES = True
