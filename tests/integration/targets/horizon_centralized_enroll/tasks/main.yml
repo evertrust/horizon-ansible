@@ -1,0 +1,29 @@
+---
+- name: Centralized enrollment
+
+  vars_files:
+    - ../../../credentials.yml
+
+  hosts: "{{ hosts }}"
+
+  tasks:
+  - name: Centralize enrollment
+    evertrust.horizon.horizon_enroll:
+
+        endpoint: "{{ endpoint }}"
+        x_api_id: "{{ id }}"
+        x_api_key: "{{ pwd }}"
+
+        profile: "TestAnsible"
+        mode: "centralized"
+        key_type: "rsa-2048"
+        password: "Passw0rd-test"
+        
+        subject:
+          cn.1: "centralized"
+        sans:
+          dnsname.1: "TestAnsible"
+        labels: 
+          label1: "test"
+        team: "ansible2"
+        owner: "ansible"
