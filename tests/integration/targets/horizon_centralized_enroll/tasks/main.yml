@@ -12,18 +12,18 @@
 
         endpoint: "{{ endpoint }}"
         x_api_id: "{{ id }}"
-        x_api_key: "{{ pwd }}"
+        x_api_key: "{{ key }}"
 
-        profile: "TestAnsible"
+        profile: "{{ profile }}"
         mode: "centralized"
         key_type: "rsa-2048"
-        password: "Passw0rd-test"
+        password: "{{ password }}"
         
         subject:
-          cn.1: "centralized"
+          cn.1: "my cn ansible"
         sans:
-          dnsname.1: "TestAnsible"
+          dnsname.1: "my dns ansible"
         labels: 
           label1: "test"
-        team: "ansible2"
-        owner: "ansible"
+        team: "test"
+        owner: "test"

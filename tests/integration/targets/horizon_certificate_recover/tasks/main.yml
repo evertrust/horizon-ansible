@@ -1,0 +1,19 @@
+---
+- name: Certificate recovery
+
+  vars_files:
+    - ../../../credentials.yml
+
+  hosts: "{{ hosts }}"
+
+  tasks:
+  - name: Recover a certificate by its pem file
+      evertrust.horizon.horizon_recover:
+
+        endpoint: "{{ endpoint }}"
+        x_api_id: "{{ id }}"
+        x_api_key: "{{ key }}"
+
+        certificate_pem: "{{ pem }}"
+
+        password: "{{ password }}"

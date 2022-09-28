@@ -1,0 +1,27 @@
+---
+- name: horizon feed pem
+
+  vars_files:
+    - ../../../credentials.yml
+
+  hosts: "{{ hosts }}"
+
+
+  tasks:
+    - name: Feed a certificate by a file
+      evertrust.horizon.horizon_feed:
+
+        endpoint: "{{ endpoint }}"
+        x_api_id: "{{ id }}"
+        x_api_key: "{{ key }}"
+
+        certificate_pem: "{{ pem }}"
+
+        campaign: "{{ campaign }}"
+        ip: "{{ ip }}"
+        hostnames: "{{ hostnames }}"
+        operating_systems: "{{ ope_sys }}"
+        paths: "{{ path }}"
+        usages: "{{ usage }}"
+        tls_ports: "{{ tls }}"
+        rtype: "{{ rtype }}"

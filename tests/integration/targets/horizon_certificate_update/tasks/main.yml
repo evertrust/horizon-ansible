@@ -1,0 +1,22 @@
+---
+- name: certificate update
+
+  vars_files:
+    - ../../../credentials.yml
+
+  hosts: "{{ hosts }}"
+
+  tasks:
+  - name: Update a certificate by its content
+    evertrust.horizon.horizon_update:
+
+        endpoint: "{{ endpoint }}"
+        x_api_id: "{{ id }}"
+        x_api_key: "{{ key }}"
+
+        certificate_pem: "{{ pem }}"
+        
+        labels: "{{ labels }}"
+        metadata: "{{ metadata }}"
+        owner: "{{ owner }}"
+        team: "{{ team }}"
