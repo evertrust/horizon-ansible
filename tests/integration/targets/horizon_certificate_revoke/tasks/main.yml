@@ -18,3 +18,13 @@
 
         revocation_reason: "{{ revocation_reason }}"
         
+  - name: Revoke an already revoked certificate by its file
+      evertrust.horizon.horizon_revoke:
+
+        endpoint: "{{ endpoint }}"
+        x_api_id: "{{ id }}"
+        x_api_key: "{{ key }}"
+
+        certificate_pem: "{{ revoked_pem }}"
+
+        revocation_reason: "{{ revocation_reason }}"
