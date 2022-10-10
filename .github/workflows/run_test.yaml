@@ -8,14 +8,14 @@ jobs:
     steps:
 
     - name: Perform integration testing with ansible-test
-      uses: EverTrust/horizon-ansible@Adrien-updates
+      uses: ansible-community/ansible-test-gh-action@release/v1
       with:
         ansible-core-version: stable-2.14
         target-python-version: 3.9
         testing-type: integration
 
     - name: Perform unit testing with ansible-test
-      uses: EverTrust/horizon-ansible@Adrien-updates
+      uses: ansible-community/ansible-test-gh-action@release/v1
       with:
         ansible-core-version: stable-2.14
         target-python-version: 3.9
