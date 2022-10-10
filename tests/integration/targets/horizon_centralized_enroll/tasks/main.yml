@@ -52,7 +52,7 @@
 
 
   - name: Test centralize enrollment with unidentified profile
-      evertrust.horizon.horizon_enroll:
+    evertrust.horizon.horizon_enroll:
 
         endpoint: "{{ endpoint }}"
         x_api_id: "{{ id }}"
