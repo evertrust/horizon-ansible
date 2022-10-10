@@ -8,23 +8,23 @@
 
   tasks:
   - name: Recover a certificate by its pem file
-      evertrust.horizon.horizon_recover:
+    evertrust.horizon.horizon_recover:
 
-        endpoint: "{{ endpoint }}"
-        x_api_id: "{{ id }}"
-        x_api_key: "{{ key }}"
+      endpoint: "{{ endpoint }}"
+      x_api_id: "{{ id }}"
+      x_api_key: "{{ key }}"
 
-        certificate_pem: "{{ pem }}"
+      certificate_pem: "{{ pem }}"
 
-        password: "{{ password }}"
+      password: "{{ password }}"
 
   - name: Recover a certificate by its pem file with a wrong password
-      evertrust.horizon.horizon_recover:
+    evertrust.horizon.horizon_recover:
 
-        endpoint: "{{ endpoint }}"
-        x_api_id: "{{ id }}"
-        x_api_key: "{{ key }}"
+      endpoint: "{{ endpoint }}"
+      x_api_id: "{{ id }}"
+      x_api_key: "{{ key }}"
 
-        certificate_pem: "{{ pem }}"
+      certificate_pem: "{{ pem }}"
 
-        password: "wr0ng-passWord"
+      password: "wr0ng-passWord"

@@ -8,23 +8,24 @@
 
   tasks:
   - name: Revoke a certificate by its file
-      evertrust.horizon.horizon_revoke:
+    evertrust.horizon.horizon_revoke:
 
-        endpoint: "{{ endpoint }}"
-        x_api_id: "{{ id }}"
-        x_api_key: "{{ key }}"
+      endpoint: "{{ endpoint }}"
+      x_api_id: "{{ id }}"
+      x_api_key: "{{ key }}"
 
-        certificate_pem: "{{ pem }}"
+      certificate_pem: "{{ pem }}"
 
-        revocation_reason: "{{ revocation_reason }}"
+      revocation_reason: "{{ revocation_reason }}"
         
   - name: Revoke an already revoked certificate by its file
-      evertrust.horizon.horizon_revoke:
+    evertrust.horizon.horizon_revoke:
 
-        endpoint: "{{ endpoint }}"
-        x_api_id: "{{ id }}"
-        x_api_key: "{{ key }}"
+      endpoint: "{{ endpoint }}"
+      x_api_id: "{{ id }}"
+      x_api_key: "{{ key }}"
 
-        certificate_pem: "{{ revoked_pem }}"
+      certificate_pem: "{{ revoked_pem }}"
 
-        revocation_reason: "{{ revocation_reason }}"
+      revocation_reason: "{{ revocation_reason }}"
+      

@@ -8,41 +8,38 @@
 
 
   tasks:
-    - name: Feed a certificate by a file
-      evertrust.horizon.horizon_feed:
+  - name: Feed a certificate by a file
+    evertrust.horizon.horizon_feed:
 
-        endpoint: "{{ endpoint }}"
-        x_api_id: "{{ id }}"
-        x_api_key: "{{ key }}"
+      endpoint: "{{ endpoint }}"
+      x_api_id: "{{ id }}"
+      x_api_key: "{{ key }}"
 
-        certificate_pem: "{{ pem }}"
+      certificate_pem: "{{ pem }}"
+      campaign: "{{ campaign }}"
+      
+      ip: "{{ ip }}"
+      hostnames: "{{ hostnames }}"
+      operating_systems: "{{ ope_sys }}"
+      paths: "{{ path }}"
+      usages: "{{ usage }}"
+      tls_ports: "{{ tls }}"
+      rtype: "{{ rtype }}"
 
-        campaign: "{{ campaign }}"
-        
-        ip: "{{ ip }}"
-        hostnames: "{{ hostnames }}"
-        operating_systems: "{{ ope_sys }}"
-        paths: "{{ path }}"
-        usages: "{{ usage }}"
-        tls_ports: "{{ tls }}"
-        rtype: "{{ rtype }}"
+  - name: Feed a certificate without campaign
+    evertrust.horizon.horizon_feed:
 
-    - name: Feed a certificate without campaign
-      evertrust.horizon.horizon_feed:
-
-        endpoint: "{{ endpoint }}"
-        x_api_id: "{{ id }}"
-        x_api_key: "{{ key }}"
-
-        certificate_pem: "{{ pem }}"
-
-        # campaign: "{{ campaign }}"
-        
-        ip: "{{ ip }}"
-        hostnames: "{{ hostnames }}"
-        operating_systems: "{{ ope_sys }}"
-        paths: "{{ path }}"
-        usages: "{{ usage }}"
-        tls_ports: "{{ tls }}"
-        rtype: "{{ rtype }}"
-
+      endpoint: "{{ endpoint }}"
+      x_api_id: "{{ id }}"
+      x_api_key: "{{ key }}"
+      
+      certificate_pem: "{{ pem }}"
+      # campaign: "{{ campaign }}"
+      
+      ip: "{{ ip }}"
+      hostnames: "{{ hostnames }}"
+      operating_systems: "{{ ope_sys }}"
+      paths: "{{ path }}"
+      usages: "{{ usage }}"
+      tls_ports: "{{ tls }}"
+      rtype: "{{ rtype }}"
