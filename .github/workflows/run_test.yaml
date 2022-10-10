@@ -1,0 +1,21 @@
+name: Run test
+on: 
+  push:
+
+jobs:
+  tests:
+    steps:
+
+    - name: Perform integration testing with ansible-test
+      uses: EverTrust/horizon-ansible
+      with:
+        ansible-core-version: stable-2.14
+        target-python-version: 3.9
+        testing-type: integration
+
+    - name: Perform unit testing with ansible-test
+      uses: EverTrust/horizon-ansible
+      with:
+        ansible-core-version: stable-2.14
+        target-python-version: 3.9
+        testing-type: units
