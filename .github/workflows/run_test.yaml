@@ -4,6 +4,7 @@ on:
 
 jobs:
   tests:
+    runs-on: ubuntu-latest
     steps:
 
     - name: Perform integration testing with ansible-test
