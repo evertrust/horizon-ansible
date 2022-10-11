@@ -1,45 +1,39 @@
----
-- name: horizon feed pem
+- name: Feed a certificate by a file
+  evertrust.horizon.horizon_feed:
 
-  vars_files:
-    - ../../../credentials.yml
+    endpoint: "{{ endpoint }}"
+    x_api_id: "{{ id }}"
+    x_api_key: "{{ key }}"
 
-  hosts: "{{ hosts }}"
-
-
-  tasks:
-  - name: Feed a certificate by a file
-    evertrust.horizon.horizon_feed:
-
-      endpoint: "{{ endpoint }}"
-      x_api_id: "{{ id }}"
-      x_api_key: "{{ key }}"
-
-      certificate_pem: "{{ pem }}"
-      campaign: "{{ campaign }}"
+    certificate_pem: 
+      src: "{{ pem }}"
+    campaign: "{{ campaign }}"
       
-      ip: "{{ ip }}"
-      hostnames: "{{ hostnames }}"
-      operating_systems: "{{ ope_sys }}"
-      paths: "{{ path }}"
-      usages: "{{ usage }}"
-      tls_ports: "{{ tls }}"
-      rtype: "{{ rtype }}"
+    ip: "{{ ip }}"
+    hostnames: "{{ hostnames }}"
+    operating_systems: "{{ ope_sys }}"
+    paths: "{{ path }}"
+    usages: "{{ usage }}"
+    tls_ports: "{{ tls }}"
+    rtype: "{{ rtype }}"
 
-  - name: Feed a certificate without campaign
-    evertrust.horizon.horizon_feed:
+- name: Feed a certificate without campaign
+  evertrust.horizon.horizon_feed:
 
-      endpoint: "{{ endpoint }}"
-      x_api_id: "{{ id }}"
-      x_api_key: "{{ key }}"
+    endpoint: "{{ endpoint }}"
+    x_api_id: "{{ id }}"
+    x_api_key: "{{ key }}"
       
-      certificate_pem: "{{ pem }}"
-      # campaign: "{{ campaign }}"
+    certificate_pem: 
+      src: "{{ pem }}"
+    # campaign: "{{ campaign }}"
       
-      ip: "{{ ip }}"
-      hostnames: "{{ hostnames }}"
-      operating_systems: "{{ ope_sys }}"
-      paths: "{{ path }}"
-      usages: "{{ usage }}"
-      tls_ports: "{{ tls }}"
-      rtype: "{{ rtype }}"
+    ip: "{{ ip }}"
+    hostnames: "{{ hostnames }}"
+    operating_systems: "{{ ope_sys }}"
+    paths: "{{ path }}"
+    usages: "{{ usage }}"
+    tls_ports: "{{ tls }}"
+    rtype: "{{ rtype }}"
+    
+  ignore_errors: yes

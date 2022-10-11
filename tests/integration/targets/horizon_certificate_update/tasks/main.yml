@@ -1,22 +1,14 @@
----
-- name: certificate update
+- name: Update a certificate by its content
+  evertrust.horizon.horizon_update:
 
-  vars_files:
-    - ../../../credentials.yml
+    endpoint: "{{ endpoint }}"
+    x_api_id: "{{ id }}"
+    x_api_key: "{{ key }}"
 
-  hosts: "{{ hosts }}"
-
-  tasks:
-  - name: Update a certificate by its content
-    evertrust.horizon.horizon_update:
-
-      endpoint: "{{ endpoint }}"
-      x_api_id: "{{ id }}"
-      x_api_key: "{{ key }}"
-
-      certificate_pem: "{{ pem }}"
+    certificate_pem:
+      src: "{{ pem }}"
         
-      labels: "{{ labels }}"
-      metadata: "{{ metadata }}"
-      owner: "{{ owner }}"
-      team: "{{ team }}"
+    labels: "{{ labels }}"
+    metadata: "{{ metadata }}"
+    owner: "{{ owner }}"
+    team: "{{ team }}"

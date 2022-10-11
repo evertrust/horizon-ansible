@@ -1,0 +1,26 @@
+- name: Revoke a certificate by its file
+  evertrust.horizon.horizon_revoke:
+
+    endpoint: "{{ endpoint }}"
+    x_api_id: "{{ id }}"
+    x_api_key: "{{ key }}"
+
+    certificate_pem: 
+      src: "{{ pem }}"
+
+    revocation_reason: "{{ revocation_reason }}"
+        
+- name: Revoke an already revoked certificate by its file
+  evertrust.horizon.horizon_revoke:
+
+    endpoint: "{{ endpoint }}"
+    x_api_id: "{{ id }}"
+    x_api_key: "{{ key }}"
+
+    certificate_pem: 
+      src: "{{ pem }}"
+
+    revocation_reason: "{{ revocation_reason }}"
+
+  ignore_errors: yes
+      

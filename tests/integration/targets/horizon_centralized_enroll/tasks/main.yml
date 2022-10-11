@@ -1,162 +1,139 @@
----
-- name: Centralized enrollment
+- name: Test centralize enrollment without problems
+  evertrust.horizon.horizon_enroll:
 
-  vars_files:
-    - ../../../credentials.yml
+    endpoint: "{{ endpoint }}"
+    x_api_id: "{{ id }}"
+    x_api_key: "{{ key }}"
 
-  hosts: "{{ hosts }}"
+    profile: "{{ profile }}"
+    mode: "centralized"
+    key_type: "rsa-2048"
+    password: "{{ password }}"
+      
+    subject:
+      cn.1: "CItest"
+    sans:
+      dnsname.1: "my dns ansible"
+    labels: 
+      label1: "test"
+    team: "test"
+    owner: "test"
 
-  tasks:
-  - name: Test centralize enrollment without problems
-    evertrust.horizon.horizon_enroll:
 
-        endpoint: "{{ endpoint }}"
-        x_api_id: "{{ id }}"
-        x_api_key: "{{ key }}"
+- name: Test centralize enrollment with unidentified profile
+  evertrust.horizon.horizon_enroll:
 
-        profile: "{{ profile }}"
-        mode: "centralized"
-        key_type: "rsa-2048"
-        password: "{{ password }}"
+    endpoint: "{{ endpoint }}"
+    x_api_id: "{{ id }}"
+    x_api_key: "{{ key }}"
+
+    profile: "InexistantProfile"
+    mode: "centralized"
+    key_type: "rsa-2048"
+    password: "{{ password }}"
         
-        subject:
-          cn.1: "my cn ansible"
-        sans:
-          dnsname.1: "my dns ansible"
-        labels: 
-          label1: "test"
-        team: "test"
-        owner: "test"
+    subject:
+      cn.1: "my cn ansible"
+    sans:
+      dnsname.1: "my dns ansible"
+    labels: 
+      label1: "test"
+    team: "test"
+    owner: "test"
+
+  ignore_errors: yes
 
 
-  - name: Test centralize enrollment with wrong endpoint
-    evertrust.horizon.horizon_enroll:
+- name: Test centralize enrollment with wrong key_type
+  evertrust.horizon.horizon_enroll:
 
-        endpoint: "http://test.com"
-        x_api_id: "{{ id }}"
-        x_api_key: "{{ key }}"
+    endpoint: "{{ endpoint }}"
+    x_api_id: "{{ id }}"
+    x_api_key: "{{ key }}"
 
-        profile: "{{ profile }}"
-        mode: "centralized"
-        key_type: "rsa-2048"
-        password: "{{ password }}"
+    profile: "{{ profile }}"
+    mode: "centralized"
+    key_type: "rsa-12"
+    password: "{{ password }}"
         
-        subject:
-          cn.1: "my cn ansible"
-        sans:
-          dnsname.1: "my dns ansible"
-        labels: 
-          label1: "test"
-        team: "test"
-        owner: "test"
+    subject:
+      cn.1: "my cn ansible"
+    sans:
+      dnsname.1: "my dns ansible"
+    labels: 
+      label1: "test"
+    team: "test"
+    owner: "test"
+
+  ignore_errors: yes
 
 
-  - name: Test centralize enrollment with unidentified profile
-    evertrust.horizon.horizon_enroll:
+- name: Test centralize enrollment without password (on profile with a required manual password)
+  evertrust.horizon.horizon_enroll:
 
-        endpoint: "{{ endpoint }}"
-        x_api_id: "{{ id }}"
-        x_api_key: "{{ key }}"
+    endpoint: "{{ endpoint }}"
+    x_api_id: "{{ id }}"
+    x_api_key: "{{ key }}"
 
-        profile: "InexistantProfile"
-        mode: "centralized"
-        key_type: "rsa-2048"
-        password: "{{ password }}"
+    profile: "{{ profile }}"
+    mode: "centralized"
+    key_type: "rsa-2048"
+    # password: "{{ password }}"
         
-        subject:
-          cn.1: "my cn ansible"
-        sans:
-          dnsname.1: "my dns ansible"
-        labels: 
-          label1: "test"
-        team: "test"
-        owner: "test"
+    subject:
+      cn.1: "my cn ansible"
+    sans:
+      dnsname.1: "my dns ansible"
+    labels: 
+      label1: "test"
+    team: "test"
+    owner: "test"
 
-
-  - name: Test centralize enrollment with wrong key_type
-    evertrust.horizon.horizon_enroll:
-
-        endpoint: "{{ endpoint }}"
-        x_api_id: "{{ id }}"
-        x_api_key: "{{ key }}"
-
-        profile: "{{ profile }}"
-        mode: "centralized"
-        key_type: "rsa-12"
-        password: "{{ password }}"
-        
-        subject:
-          cn.1: "my cn ansible"
-        sans:
-          dnsname.1: "my dns ansible"
-        labels: 
-          label1: "test"
-        team: "test"
-        owner: "test"
-
-
-  - name: Test centralize enrollment without password (on profile with a required manual password)
-    evertrust.horizon.horizon_enroll:
-
-        endpoint: "{{ endpoint }}"
-        x_api_id: "{{ id }}"
-        x_api_key: "{{ key }}"
-
-        profile: "{{ profile }}"
-        mode: "centralized"
-        key_type: "rsa-2048"
-        # password: "{{ password }}"
-        
-        subject:
-          cn.1: "my cn ansible"
-        sans:
-          dnsname.1: "my dns ansible"
-        labels: 
-          label1: "test"
-        team: "test"
-        owner: "test"
+  ignore_errors: yes
 
 
 
-  - name: Test centralize enrollment with unexistant label
-    evertrust.horizon.horizon_enroll:
+# Should pass without the label.
+- name: Test centralize enrollment with unexistant label
+  evertrust.horizon.horizon_enroll:
+    endpoint: "{{ endpoint }}"
+    x_api_id: "{{ id }}"
+    x_api_key: "{{ key }}"
+    profile: "{{ profile }}"
+    mode: "centralized"
+    key_type: "rsa-2048"
+    password: "{{ password }}"
+      
+    subject:
+      cn.1: "my cn ansible"
+    sans:
+      dnsname.1: "my dns ansible"
+    labels: 
+      unexistantLabel: "test"
+    team: "test"
+    owner: "test"
 
-        endpoint: "{{ endpoint }}"
-        x_api_id: "{{ id }}"
-        x_api_key: "{{ key }}"
-
-        profile: "{{ profile }}"
-        mode: "centralized"
-        key_type: "rsa-2048"
-        password: "{{ password }}"
-        
-        subject:
-          cn.1: "my cn ansible"
-        sans:
-          dnsname.1: "my dns ansible"
-        labels: 
-          unexistantLabel: "test"
-        team: "test"
-        owner: "test"
+  ignore_errors: yes
 
 
-  - name: Test centralize enrollment with unexistant team
-    evertrust.horizon.horizon_enroll:
+- name: Test centralize enrollment with unexistant team
+  evertrust.horizon.horizon_enroll:
 
-        endpoint: "{{ endpoint }}"
-        x_api_id: "{{ id }}"
-        x_api_key: "{{ key }}"
+    endpoint: "{{ endpoint }}"
+    x_api_id: "{{ id }}"
+    x_api_key: "{{ key }}"
+    profile: "{{ profile }}"
+    mode: "centralized"
+    key_type: "rsa-2048"
+    password: "{{ password }}"
+      
+    subject:
+      cn.1: "my cn ansible"
+    sans:
+      dnsname.1: "my dns ansible"
+    labels: 
+      label1: "test"
+    team: "UnexistantTeam"
+    owner: "test"
 
-        profile: "{{ profile }}"
-        mode: "centralized"
-        key_type: "rsa-2048"
-        password: "{{ password }}"
-        
-        subject:
-          cn.1: "my cn ansible"
-        sans:
-          dnsname.1: "my dns ansible"
-        labels: 
-          label1: "test"
-        team: "UnexistantTeam"
-        owner: "test"
+  ignore_errors: yes
