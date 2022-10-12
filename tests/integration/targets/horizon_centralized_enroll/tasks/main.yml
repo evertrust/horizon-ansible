@@ -99,8 +99,8 @@
   evertrust.horizon.horizon_enroll:
 
     endpoint: "https://horizon-demo.evertrust.fr"
-    x_api_id: "${{ secrets.HORIZON_API_ID }}"
-    x_api_key: "${{ secrets.HORIZON_API_KEY }}"
+    x_api_id: "{{ x_api_id }}"
+    x_api_key: "{{ x_api_key }}"
 
     profile: "AnsibleDefaultTLSServerClient"
     mode: "centralized"
