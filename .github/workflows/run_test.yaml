@@ -8,7 +8,7 @@ jobs:
     steps: 
     - name: test github secrets
       run: |
-        echo ${{ secrets.HORIZON_API_ID }}
+        ansible-test integration --extra-vars "x_api_id={{ secrets.HORIZON_API_ID }} x_api_key={{ secrets.HORIZON_API_KEY }}"
 
 
 
