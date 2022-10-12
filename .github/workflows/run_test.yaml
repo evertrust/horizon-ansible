@@ -22,8 +22,9 @@ jobs:
         testing-type: integration
         pre-test-cmd: |
           touch integration_config.yml
-          echo x_api_id: ${{ secrets.HORIZON_API_ID }} > integration_config.yml
-          echo x_api_key: ${{ secrets.HORIZON_API_KEY }} > integration_config.yml
+          echo "x_api_id: ${{ secrets.HORIZON_API_ID }}" > integration_config.yml
+          echo "x_api_key: ${{ secrets.HORIZON_API_KEY }}" > integration_config.yml
+          echo "done"
 
     - name: Perform unit testing with ansible-test
       uses: ansible-community/ansible-test-gh-action@release/v1
