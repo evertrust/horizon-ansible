@@ -4,9 +4,6 @@ on:
 
 jobs:
   tests:
-    runs-on: ubuntu-latest
-    steps: 
-    - name: 
 
     runs-on: ubuntu-latest
     steps:
