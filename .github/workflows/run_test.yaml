@@ -5,11 +5,12 @@ on:
 jobs:
   tests:
     runs-on: ubuntu-latest
+
+    env: 
+      x_api_id: ${{ secrets.HORIZON_API_ID }}
+      x_api_key: ${{ secrets.HORIZON_API_KEY }}
+
     steps:
-    - name: Setup creds
-      env: 
-        x_api_id: ${{ secrets.HORIZON_API_ID }}
-        x_api_key: ${{ secrets.HORIZON_API_KEY }}
 
     - name: Perform integration testing with ansible-test
       uses: ansible-community/ansible-test-gh-action@release/v1
