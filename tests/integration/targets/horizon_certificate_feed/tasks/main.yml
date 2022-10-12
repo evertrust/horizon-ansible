@@ -6,7 +6,7 @@
     x_api_key: "{{ x_api_key }}"
 
     certificate_pem: 
-      src: /home/runner/PEM.pem
+      src: ../PEM.pem
     campaign: "test_campaign"
       
 
@@ -19,7 +19,7 @@
     x_api_key: "{{ x_api_key }}"
       
     certificate_pem: 
-      src: /home/runner/PEM.pem
+      src: ../PEM.pem
     # campaign: "{{ campaign }}"
     
   ignore_errors: yes
