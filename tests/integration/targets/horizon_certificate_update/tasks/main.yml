@@ -1,14 +1,14 @@
 - name: Update a certificate by its content
   evertrust.horizon.horizon_update:
 
-    endpoint: "{{ endpoint }}"
-    x_api_id: "{{ id }}"
-    x_api_key: "{{ key }}"
+    endpoint: "https://horizon-demo.evertrust.fr"
+    x_api_id: "{{ x_api_id }}"
+    x_api_key: "{{ x_api_key }}"
 
     certificate_pem:
-      src: "{{ pem }}"
+      src:./tmp.pem
         
-    labels: "{{ labels }}"
-    metadata: "{{ metadata }}"
-    owner: "{{ owner }}"
-    team: "{{ team }}"
+    # labels: "{{ labels }}"
+    # metadata: "{{ metadata }}"
+    # owner: "{{ owner }}"
+    # team: "{{ team }}"

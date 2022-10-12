@@ -1,39 +1,27 @@
 - name: Feed a certificate by a file
   evertrust.horizon.horizon_feed:
 
-    endpoint: "{{ endpoint }}"
-    x_api_id: "{{ id }}"
-    x_api_key: "{{ key }}"
+    endpoint: "https://horizon-demo.evertrust.fr"
+    x_api_id: "{{ x_api_id }}"
+    x_api_key: "{{ x_api_key }}"
 
     certificate_pem: 
-      src: "{{ pem }}"
-    campaign: "{{ campaign }}"
+      src: ./tmp.pem
+    campaign: "test_campaign"
       
-    ip: "{{ ip }}"
-    hostnames: "{{ hostnames }}"
-    operating_systems: "{{ ope_sys }}"
-    paths: "{{ path }}"
-    usages: "{{ usage }}"
-    tls_ports: "{{ tls }}"
-    rtype: "{{ rtype }}"
+
 
 - name: Feed a certificate without campaign
   evertrust.horizon.horizon_feed:
 
-    endpoint: "{{ endpoint }}"
-    x_api_id: "{{ id }}"
-    x_api_key: "{{ key }}"
+    endpoint: "https://horizon-demo.evertrust.fr"
+    x_api_id: "{{ x_api_id }}"
+    x_api_key: "{{ x_api_key }}"
       
     certificate_pem: 
       src: "{{ pem }}"
     # campaign: "{{ campaign }}"
       
-    ip: "{{ ip }}"
-    hostnames: "{{ hostnames }}"
-    operating_systems: "{{ ope_sys }}"
-    paths: "{{ path }}"
-    usages: "{{ usage }}"
-    tls_ports: "{{ tls }}"
-    rtype: "{{ rtype }}"
+
     
   ignore_errors: yes

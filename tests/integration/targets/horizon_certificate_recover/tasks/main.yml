@@ -1,23 +1,23 @@
 - name: Recover a certificate by its pem file
   evertrust.horizon.horizon_recover:
 
-    endpoint: "{{ endpoint }}"
-    x_api_id: "{{ id }}"
-    x_api_key: "{{ key }}"
+    endpoint: "https://horizon-demo.evertrust.fr"
+    x_api_id: "{{ x_api_id }}"
+    x_api_key: "{{ x_api_key }}"
 
     certificate_pem: 
-      src: "{{ pem }}"
+      src: ./tmp.pem
 
-    password: "{{ password }}"
+    # password: "{{ password }}"
 
 - name: Recover a certificate by its pem file with a wrong password
   evertrust.horizon.horizon_recover:
 
-    endpoint: "{{ endpoint }}"
-    x_api_id: "{{ id }}"
-    x_api_key: "{{ key }}"
+    endpoint: "https://horizon-demo.evertrust.fr"
+    x_api_id: "{{ x_api_id }}"
+    x_api_key: "{{ x_api_key }}"
 
     certificate_pem: 
-      src: "{{ pem }}"
+      src: ./tmp.pem
 
-    password: "wr0ng-passWord"
+    # password: "wr0ng-passWord"

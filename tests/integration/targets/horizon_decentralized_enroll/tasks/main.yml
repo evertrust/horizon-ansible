@@ -1,23 +1,23 @@
 - name: Decentralize enrollment
   evertrust.horizon.horizon_enroll:
 
-      endpoint: "{{ endpoint }}"
-      x_api_id: "{{ id }}"
-      x_api_key: "{{ key }}"
+    endpoint: "https://horizon-demo.evertrust.fr"
+    x_api_id: "{{ x_api_id }}"
+    x_api_key: "{{ x_api_key }}"
 
-      profile: "{{ profile }}"
-      mode: "decentralized"
-      key_type: "rsa-2048"
-      password: "{{ password }}"
+    profile: "{{ profile }}"
+    mode: "decentralized"
+    key_type: "rsa-2048"
+    password: "{{ password }}"
       
-      csr: 
-        src: "{{ csr }}"
-      
-      subject:
-        cn.1: "my cn ansible"
-      sans:
-        dnsname.1: "my dns ansible"
-      labels: 
-        label1: "test"
-      team: "test"
-      owner: "test"
+    csr: 
+      src: "{{ csr }}"
+    
+    subject:
+      cn.1: "my cn ansible"
+    sans:
+      dnsname.1: "my dns ansible"
+    labels: 
+      label1: "test"
+    team: "test"
+    owner: "test
