@@ -6,7 +6,7 @@
     x_api_key: "{{ x_api_key }}"
 
     certificate_pem: 
-      src: ./tmp.pem
+      src: tmp.pem
     campaign: "test_campaign"
       
 
