@@ -7,12 +7,6 @@ jobs:
 
     runs-on: ubuntu-latest
     steps:
-    
-    # - name: Setup creds
-    #   run: |
-    #     touch tests/integration/integration_config.yml
-    #     echo x_api_id: ${{ secrets.HORIZON_API_ID }} > integration_config.yml
-    #     echo x_api_key: ${{ secrets.HORIZON_API_KEY }} > integration_config.yml
 
     - name: Perform integration testing with ansible-test
       uses: ansible-community/ansible-test-gh-action@release/v1
