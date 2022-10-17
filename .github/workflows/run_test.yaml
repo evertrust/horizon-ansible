@@ -17,7 +17,6 @@ jobs:
         pre-test-cmd: >-
           HORIZON_API_ID=${{ secrets.HORIZON_API_ID }}
           HORIZON_API_KEY=${{ secrets.HORIZON_API_KEY }}
-          HORIZON_CI_TEST_CSR=${{ secrets.HORIZON_CI_TEST_CSR }}
           tests/integration/integration_config.yml/template > tests/integration/integration_config.yml
 
     - name: Perform unit testing with ansible-test

@@ -17,7 +17,8 @@
       business_unit: "BU1"
       ansible_host: "localhost"
       
-    csr: "{{ csr }}"
+    csr: 
+      src: "./CITESTCSR.csr"
 
     # team: "test"
     # owner: "test
