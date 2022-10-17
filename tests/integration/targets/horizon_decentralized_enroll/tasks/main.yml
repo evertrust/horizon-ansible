@@ -17,8 +17,23 @@
       business_unit: "BU1"
       ansible_host: "localhost"
       
-    csr: 
-      src: "./CITESTCSR.csr"
+    csr: |
+      -----BEGIN CERTIFICATE REQUEST-----
+      MIICfzCCAWcCAQAwOjELMAkGA1UEBhMCRlIxEjAQBgNVBAoMCUV2ZXJ0cnVzdDEX
+      MBUGA1UEAwwOTVlBTlNJQkxFQ0lDU1IwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAw
+      ggEKAoIBAQDXYHbD54XThxsD01uRZVYKRJpdyvQtd9EGMXXhiEKljQ2cXuFUHT/F
+      MYTr15gF1T6zF0XSKXVYI3Q98WseU2b/obKa3fxDaIDMh5ARJJnFxfaYw6v8m7Wn
+      iJCYlu8jQRmfxcPBRbX0r6GQtwMI9ge38goBGh7kwnG1Shuqxb1XjBwFouSZ+yL2
+      kFonhFYsFCDcRaUIWJfGSgpAzdK66w2SnKBYGjFn/LOh/tybY0QE/7sMSKtYOvUj
+      YVNyxLPCWFLNkl1UV7I2c7eWuCDDwvUGI1sbpydFAewEn805zWapZRDHfFX/06YW
+      9BzaxZmO1Zs4tGj/GZOXG21NM9aT0FDdAgMBAAGgADANBgkqhkiG9w0BAQsFAAOC
+      AQEABXD15Bb/jq0+/3zZl63i2RaLob4LVNk1/yII0HPgr4OYCMPcILpJPb9/GzeH
+      3CCzGuFuDr8kBHumyA24YbdtNQ46iM2HUmw4JaFlzTYmo0zMsa5MbQhmKfym0k9v
+      XcO4CHnP9TBCh/yWSlagqSUrQVN0mxHQrzVUGsM5KMjW83xnQhuvGDZ8Ke9Vjvyv
+      KXsklafhHYh4DCGAlfElS0Ye/TP+L5m0jS7IigrsrtqDeK8I+MBnQpyHUAZUhENp
+      att/xqOGwLPrhZDgSQVtGnVFW2848ZCB4MjkvQFmF+rnqKP8DEDkjDujEPC27f/7
+      UOZa8OXHqLGN6HsCwd7gcJYwAA==
+      -----END CERTIFICATE REQUEST-----
 
     # team: "test"
     # owner: "test
