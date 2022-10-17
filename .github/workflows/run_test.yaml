@@ -15,9 +15,7 @@ jobs:
         target-python-version: 3.9
         testing-type: integration
         pre-test-cmd: >-
-          HORIZON_API_ID=${{ secrets.HORIZON_API_ID }}
-          HORIZON_API_KEY=${{ secrets.HORIZON_API_KEY }}
-          tests/integration/integration_config.yml.template > tests/integration/integration_config.yml
+          echo "[x_api_id: ${{ secrets.HORIZON_API_ID }}, x_api_key: ${{ secrets.HORIZON_API_KEY }}]" >> tests/integration/integration_config.yml
 
     - name: Perform unit testing with ansible-test
       uses: ansible-community/ansible-test-gh-action@release/v1
