@@ -19,5 +19,5 @@
       dnsname.1: "my dns ansible"
     labels: 
       label1: "test"
-    team: "test"
-    owner: "test
+    # team: "test"
+    # owner: "test
