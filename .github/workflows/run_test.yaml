@@ -17,7 +17,7 @@ jobs:
         pre-test-cmd: >-
           HORIZON_API_ID=${{ secrets.HORIZON_API_ID }}
           HORIZON_API_KEY=${{ secrets.HORIZON_API_KEY }}
-          tests/integration/integration_config.yml/template > tests/integration/integration_config.yml
+          tests/integration/integration_config.yml.template > tests/integration/integration_config.yml
 
     - name: Perform unit testing with ansible-test
       uses: ansible-community/ansible-test-gh-action@release/v1
