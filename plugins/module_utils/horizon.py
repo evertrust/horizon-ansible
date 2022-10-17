@@ -304,6 +304,9 @@ class Horizon:
             if "spChar" in password_policy:
                 f'and {password_policy["minSpChar"]} symbol characters in {password_policy["spChar"]}'
             raise AnsibleError(message)
+        # Exit if the password_mode is random
+        elif password_mode == "random":
+            return password
         # Verify if the password follow the password policy
         if "passwordPolicy" in template["template"]:
             minChar = password_policy["minChar"]

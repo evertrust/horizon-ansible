@@ -8,16 +8,5 @@
     certificate_pem: 
       src: "/PEM.pem"
 
-    # password: "{{ password }}"
+    password: "Pass-W0rd"
 
-- name: Recover a certificate by its pem file with a wrong password
-  evertrust.horizon.horizon_recover:
-
-    endpoint: "https://horizon-demo.evertrust.fr"
-    x_api_id: "{{ x_api_id }}"
-    x_api_key: "{{ x_api_key }}"
-
-    certificate_pem: 
-      src: "/PEM.pem"
-
-    # password: "wr0ng-passWord"
