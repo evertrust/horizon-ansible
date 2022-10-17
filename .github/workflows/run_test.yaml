@@ -8,6 +8,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     
+    # - name: Setup creds
+    #   run: |
+    #     touch tests/integration/integration_config.yml
+    #     echo x_api_id: ${{ secrets.HORIZON_API_ID }} > integration_config.yml
+    #     echo x_api_key: ${{ secrets.HORIZON_API_KEY }} > integration_config.yml
+
     - name: Perform integration testing with ansible-test
       uses: ansible-community/ansible-test-gh-action@release/v1
       with:
@@ -15,8 +21,10 @@ jobs:
         target-python-version: 3.9
         testing-type: integration
         pre-test-cmd: >-
-          echo "[x_api_id: ${{ secrets.HORIZON_API_ID }}, x_api_key: ${{ secrets.HORIZON_API_KEY }}]" >> tests/integration/integration_config.yml
-          echo "[csr: ${{ secrets.HORIZON_CI_TEST_CSR }}]" >> tests/integration/integration_config.yml
+          HORIZON_API_ID=${{ secrets.HORIZON_API_ID }}
+          HORIZON_API_KEY=${{ secrets.HORIZON_API_KEY }}
+          HORIZON_CI_TEST_CSR=${{ secrets.HORIZON_CI_TEST_CSR }}
+          tests/integration/integration_config.yml/template > tests/integration/integration_config.yml
 
     - name: Perform unit testing with ansible-test
       uses: ansible-community/ansible-test-gh-action@release/v1
