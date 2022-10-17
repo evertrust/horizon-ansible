@@ -5,19 +5,20 @@
     x_api_id: "{{ x_api_id }}"
     x_api_key: "{{ x_api_key }}"
 
-    profile: "{{ profile }}"
-    mode: "decentralized"
+    profile: "AnsibleDefaultTLSServerClient"
+    mode: "centralized"
     key_type: "rsa-2048"
-    password: "{{ password }}"
+      
+    subject:
+      cn.1: "IntegrationTestCI"
+    sans:
+      dnsname.1: "AnsibleTest"
+    labels: 
+      business_unit: "BU1"
+      ansible_host: "localhost"
       
     csr: 
       src: "../CITESTCSR.csr"
-    
-    subject:
-      cn.1: "my cn ansible"
-    sans:
-      dnsname.1: "my dns ansible"
-    labels: 
-      label1: "test"
+
     # team: "test"
     # owner: "test
