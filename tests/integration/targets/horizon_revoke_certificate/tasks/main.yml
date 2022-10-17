@@ -6,7 +6,7 @@
     x_api_key: "{{ key }}"
 
     certificate_pem: 
-      src: "{{ pem }}"
+      src: "/PEM.pem"
 
     revocation_reason: "{{ revocation_reason }}"
         
@@ -18,7 +18,7 @@
     x_api_key: "{{ key }}"
 
     certificate_pem: 
-      src: "{{ pem }}"
+      src: "/PEM.pem"
 
     revocation_reason: "{{ revocation_reason }}"
 

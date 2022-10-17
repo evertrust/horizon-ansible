@@ -11,7 +11,7 @@
     password: "{{ password }}"
       
     csr: 
-      src: "{{ csr }}"
+      src: "../CITESTCSR.csr"
     
     subject:
       cn.1: "my cn ansible"

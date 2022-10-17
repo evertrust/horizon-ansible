@@ -6,7 +6,7 @@
     x_api_key: "{{ x_api_key }}"
 
     certificate_pem: 
-      src: ./tmp.pem
+      src: "/PEM.pem"
 
     # password: "{{ password }}"
 
@@ -18,6 +18,6 @@
     x_api_key: "{{ x_api_key }}"
 
     certificate_pem: 
-      src: ./tmp.pem
+      src: "/PEM.pem"
 
     # password: "wr0ng-passWord"
