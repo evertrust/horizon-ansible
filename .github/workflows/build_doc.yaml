@@ -24,6 +24,9 @@ jobs:
     
     - name: install antsibull
       run: python3 -m pip install antsibull
+
+    - name: test
+      run: chmod 1777 docs/
     
     - name: build ansible doc with antsibull-doc
       run: antsibull-docs collection --use-current --squash-hierarchy --dest-dir=docs/ evertrust.horizon
