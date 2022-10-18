@@ -22,14 +22,11 @@ jobs:
     - name: install antsibull
       run: python3 -m pip install antsibull
 
-    - name: test linux commands
-      run: |
-        cd horizon-ansible
-        ls -a
-    
     - name: build ansible doc with antsibull-doc
       run: antsibull-docs collection --use-current --squash-hierarchy --dest-dir=horizon-ansible/docs/ evertrust.horizon
     
     - name: build with sphinx
-      run: sphinx-build horizon-ansible/docs/ horizon-ansible/docs/html
+      run: |
+        cd horizon-ansible
+        sphinx-build docs/ docs/html
       
