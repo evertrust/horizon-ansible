@@ -33,7 +33,7 @@ jobs:
 
     - name: publish on github
       uses: stefanzweifel/git-auto-commit-action@v4
-        with: 
-          commit_message: Publish Documentation
-          branch: Adrien-updates
-          repository: ./horizon-ansible
+      with: 
+        commit_message: Publish Documentation
+        branch: Adrien-updates
+        repository: ./horizon-ansible
