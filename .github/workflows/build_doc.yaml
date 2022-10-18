@@ -28,7 +28,7 @@ jobs:
     - name: test
       run: |
         mkdir docs
-        chmod 1777 docs
+        chmod 1600 docs
     
     - name: build ansible doc with antsibull-doc
       run: antsibull-docs collection --use-current --squash-hierarchy --dest-dir=docs/ evertrust.horizon
