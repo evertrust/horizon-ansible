@@ -2,8 +2,6 @@ name: Build documentation with antsibull
 on: 
   workflow_dispatch:
   push:
-    branches:
-      - Adrien-updates
     tags:
       - '*'
 
