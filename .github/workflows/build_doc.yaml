@@ -33,7 +33,7 @@ jobs:
         cd horizon-ansible
         sphinx-build docs/ docs/html
 
-    - name: pblish on github
+    - name: publish on github
       - uses: stefanzweifel/git-auto-commit-action@v4
         with: 
           commit_message: Publish Documentation
