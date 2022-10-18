@@ -29,9 +29,7 @@ jobs:
       run: pip install sphinx-ansible-theme
 
     - name: build with sphinx
-      run: |
-        cd horizon-ansible
-        sphinx-build docs/ docs/html
+      run: cd horizon-ansible && sphinx-build docs/ docs/html
 
     - name: publish on github
       - uses: stefanzweifel/git-auto-commit-action@v4
