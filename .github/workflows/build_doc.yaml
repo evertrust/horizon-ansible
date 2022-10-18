@@ -1,0 +1,24 @@
+name: Build documentation with antsibull
+on: 
+  push:
+    tags:
+      - '*'
+
+jobs:
+  build: 
+    name: 'Build ansible doc for horizon'
+    runs-on: ubuntu-latest
+
+    steps:
+
+    - name: Check out Horizon-ansible
+      uses: actions/checkout@v3
+      with:
+        path: horizon-ansible
+    
+    - name: build ansible doc with antsibull-doc
+      run: antsibull-doc collection --use-current --squash-hierarchy --dest-dir:docs/ evertrust.horizon
+    
+    - name: build with sphinx
+      run: sphinx-build docs/ docs/html
+      

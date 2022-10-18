@@ -116,7 +116,10 @@ EXAMPLES = '''
     x_api_id: "<horizon-id>"
     x_api_key: "<horizon-password>"
     mode: "decentralized"
-    csr: "CSR content"
+    csr: |
+      -----BEGIN CERTIFICATE REQUEST-----
+      // Content
+      -----END CERTIFICATE REQUEST-----
     password: "examplePassword"
     key_type: "rsa-2048"
     profile: "exampleProfile"
@@ -132,12 +135,14 @@ EXAMPLES = '''
       snow_id: "value1"
       exp_tech: "value2"
 
-- name: Enrolling a certificate in a decentralized way without CSR
+- name: Enrolling a certificate in a decentralized with csr path
   evertrust.horizon.horizon_enroll:
     endpoint: "https://<horizon-endpoint>"
     x_api_id: "<horizon-id>"
     x_api_key: "<horizon-password>"
     mode: "decentralized"
+    csr: 
+      src: "/the/path/to/my/CSR.csr"
     password: "examplePassword"
     key_type: "rsa-2048"
     profile: "exampleProfile"

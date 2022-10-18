@@ -13,7 +13,7 @@
 - name: Revoke an already revoked certificate by its file
   evertrust.horizon.horizon_revoke:
 
-    endpoint: "{{ endpoint }}"
+    endpoint: "https://horizon-demo.evertrust.fr"
     x_api_id: "{{ id }}"
     x_api_key: "{{ key }}"
 
