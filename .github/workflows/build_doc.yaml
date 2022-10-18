@@ -19,14 +19,15 @@ jobs:
       with:
         path: horizon-ansible
     
-    - name: install antsibull and ansible
-      run: |
-        python3 -m pip install ansible
-        python3 -m pip install antsibull
+    - name: install antsibull
+      run: python3 -m pip install antsibull
 
     - name: build ansible doc with antsibull-doc
       run: antsibull-docs collection --use-current --squash-hierarchy --dest-dir=horizon-ansible/docs/ evertrust.horizon
     
+    - name: add sphinx theme
+      run: pip install sphinx-ansible-theme
+
     - name: build with sphinx
       run: |
         cd horizon-ansible
