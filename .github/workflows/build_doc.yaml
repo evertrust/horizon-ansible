@@ -18,6 +18,9 @@ jobs:
       uses: actions/checkout@v3
       with:
         path: horizon-ansible
+
+    - name: install ansible
+      run: python3 -m pip install --user ansible
     
     - name: install antsibull
       run: python3 -m pip install antsibull
