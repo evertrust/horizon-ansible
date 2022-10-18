@@ -24,7 +24,7 @@ jobs:
 
     - name: test linux commands
       run: |
-        pwd
+        cd horizon-ansible
         ls -a
     
     - name: build ansible doc with antsibull-doc
