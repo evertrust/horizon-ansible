@@ -1,5 +1,6 @@
 name: Build documentation with antsibull
 on: 
+  workflow_dispatch:
   push:
     tags:
       - '*'
