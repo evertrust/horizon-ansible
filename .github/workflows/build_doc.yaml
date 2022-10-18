@@ -26,7 +26,7 @@ jobs:
       run: python3 -m pip install antsibull
     
     - name: build ansible doc with antsibull-doc
-      run: antsibull-doc collection --use-current --squash-hierarchy --dest-dir:docs/ evertrust.horizon
+      run: antsibull-docs collection --use-current --squash-hierarchy --dest-dir:docs/ evertrust.horizon
     
     - name: build with sphinx
       run: sphinx-build docs/ docs/html
