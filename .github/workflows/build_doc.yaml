@@ -31,5 +31,5 @@ jobs:
       run: antsibull-docs collection --use-current --squash-hierarchy --dest-dir=horizon-ansible/docs/ evertrust.horizon
     
     - name: build with sphinx
-      run: sphinx-build docs/ docs/html
+      run: sphinx-build horizon-ansible/docs/ horizon-ansible/docs/html
       
