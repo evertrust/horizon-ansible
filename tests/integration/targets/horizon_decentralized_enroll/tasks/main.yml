@@ -1,11 +1,11 @@
 - name: Decentralize enrollment
   evertrust.horizon.horizon_enroll:
 
-    endpoint: "https://horizon-demo.evertrust.fr"
+    endpoint: "{{ endpoint }}"
     x_api_id: "{{ x_api_id }}"
     x_api_key: "{{ x_api_key }}"
 
-    profile: "AnsibleDefaultTLSServerClient"
+    profile: "Ansible"
     mode: "centralized"
     key_type: "rsa-2048"
       
@@ -14,8 +14,8 @@
     sans:
       dnsname.1: "AnsibleTest"
     labels: 
-      business_unit: "BU1"
-      ansible_host: "localhost"
+      label-1: "test"
+      label-2: "ansible"
       
     csr: |
       -----BEGIN CERTIFICATE REQUEST-----
@@ -35,5 +35,3 @@
       UOZa8OXHqLGN6HsCwd7gcJYwAA==
       -----END CERTIFICATE REQUEST-----
 
-    # team: "test"
-    # owner: "test

@@ -1,7 +1,7 @@
 - name: Revoke a certificate by its file
   evertrust.horizon.horizon_revoke:
 
-    endpoint: "https://horizon-demo.evertrust.fr"
+    endpoint: "{{ endpoint }}"
     x_api_id: "{{ x_api_id }}"
     x_api_key: "{{ x_api_key }}"
 
@@ -13,7 +13,7 @@
 - name: Revoke an already revoked certificate by its file
   evertrust.horizon.horizon_revoke:
 
-    endpoint: "https://horizon-demo.evertrust.fr"
+    endpoint: "{{ endpoint }}"
     x_api_id: "{{ id }}"
     x_api_key: "{{ key }}"
 

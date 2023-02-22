@@ -1,7 +1,7 @@
 - name: Recover a certificate by its pem file
   evertrust.horizon.horizon_recover:
 
-    endpoint: "https://horizon-demo.evertrust.fr"
+    endpoint: "{{ endpoint }}"
     x_api_id: "{{ x_api_id }}"
     x_api_key: "{{ x_api_key }}"
 

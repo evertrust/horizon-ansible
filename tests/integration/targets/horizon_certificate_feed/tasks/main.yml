@@ -1,20 +1,20 @@
 - name: Feed a certificate by a file
   evertrust.horizon.horizon_feed:
 
-    endpoint: "https://horizon-demo.evertrust.fr"
+    endpoint: "{{ endpoint }}"
     x_api_id: "{{ x_api_id }}"
     x_api_key: "{{ x_api_key }}"
 
     certificate_pem: 
       src: "/PEM.pem"
-    campaign: "test_campaign"
+    campaign: "Ansible"
       
 
 
 - name: Feed a certificate without campaign
   evertrust.horizon.horizon_feed:
 
-    endpoint: "https://horizon-demo.evertrust.fr"
+    endpoint: "{{ endpoint }}"
     x_api_id: "{{ x_api_id }}"
     x_api_key: "{{ x_api_key }}"
       
