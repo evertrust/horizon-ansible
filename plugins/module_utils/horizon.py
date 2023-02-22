@@ -81,8 +81,12 @@ class Horizon:
         if mode == "decentralized":
             if csr is None:
                 raise AnsibleError("You must specify a CSR when using decentralized enrollment")
-        if key_type not in template["template"]["keyTypes"]:
-            raise AnsibleError(f'key_type not in list')
+        if "keyTypes" in template["template"]:
+            if key_type not in template["template"]["keyTypes"]:
+                raise AnsibleError(f'key_type not in list')
+        else:
+            if key_type != template["template"]["capabilities"]["defaultKeyType"]:
+                raise AnsibleError(f'key_type is neither the default keyType nor in the list')
 
         json = {
             "workflow": "enroll",
