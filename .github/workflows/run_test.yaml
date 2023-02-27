@@ -1,0 +1,25 @@
+name: Run test
+on: 
+  push:
+
+jobs:
+  tests:
+
+    runs-on: ubuntu-latest
+    steps:
+
+    - name: Perform integration testing with ansible-test
+      uses: ansible-community/ansible-test-gh-action@release/v1
+      with:
+        ansible-core-version: stable-2.14
+        target-python-version: 3.9
+        testing-type: integration
+        pre-test-cmd: >-
+          echo "[endpoint: ${{ secrets.HORIZON_ENDPOINT }}, x_api_id: ${{ secrets.HORIZON_API_ID }}, x_api_key: ${{ secrets.HORIZON_API_KEY }}]" >> tests/integration/integration_config.yml
+
+    - name: Perform unit testing with ansible-test
+      uses: ansible-community/ansible-test-gh-action@release/v1
+      with:
+        ansible-core-version: stable-2.14
+        target-python-version: 3.9
+        testing-type: units

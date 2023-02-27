@@ -4,13 +4,11 @@
 # Standard base includes and define this as a metaclass of type
 from __future__ import (absolute_import, division, print_function)
 
-from abc import ABC
-
-from ansible_collections.evertrust.horizon.plugins.module_utils.horizon import Horizon
-
-from ansible.plugins.action import ActionBase
-
 __metaclass__ = type
+
+from abc import ABC
+from ansible_collections.evertrust.horizon.plugins.module_utils.horizon import Horizon
+from ansible.plugins.action import ActionBase
 
 
 class HorizonAction(ActionBase, ABC):

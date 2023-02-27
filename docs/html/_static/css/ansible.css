@@ -188,7 +188,6 @@ th {
 }
 table {
     overflow-x: auto;
-    display: block;
     max-width: 100%;
 }
 .documentation-table td,
@@ -484,3 +483,5 @@ tr .ansibleOptionLink {
 .rst-content div[class^="highlight"] pre {
     white-space: pre-wrap;
 }
+
+.rst-content dl dt { margin-bottom: 0; }

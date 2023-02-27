@@ -3,6 +3,7 @@
 
 # Standard base includes and define this as a metaclass of type
 from __future__ import (absolute_import, division, print_function)
+from re import M
 
 __metaclass__ = type
 
@@ -25,13 +26,17 @@ class ActionModule(HorizonAction):
             content = self._get_content()
             response = client.recover(**content)
             chain = client.chain(response["certificate"]["certificate"])
-            return {
+            my_dict = {
                 "chain": chain,
                 "certificate": response["certificate"],
-                "p12": response["pkcs12"]["value"],
-                "p12_password": response["password"]["value"],
-                "key": HorizonCrypto.get_key_from_p12(response["pkcs12"]["value"], response["password"]["value"])
+                "p12_password": response["password"]["value"]
             }
+
+            if "pkcs12" in response:
+                my_dict["p12"] = response["pkcs12"]["value"]
+                my_dict["key"] = HorizonCrypto.get_key_from_p12(response["pkcs12"]["value"], response["password"]["value"])
+
+            return my_dict
 
         except AnsibleAction as e:
             result.update(e.result)

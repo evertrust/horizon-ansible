@@ -1,0 +1,37 @@
+name: Build documentation with antsibull
+on: 
+  workflow_dispatch:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  build: 
+    name: 'Build ansible doc for horizon'
+    runs-on: ubuntu-latest
+
+    steps:
+
+    - name: Check out Horizon-ansible
+      uses: actions/checkout@v3
+      with:
+        path: horizon-ansible
+    
+    - name: install antsibull
+      run: python3 -m pip install antsibull
+
+    - name: build ansible doc with antsibull-doc
+      run: antsibull-docs collection --use-current --squash-hierarchy --dest-dir=horizon-ansible/docs/ evertrust.horizon
+    
+    - name: add sphinx theme
+      run: pip install sphinx-ansible-theme
+
+    - name: build with sphinx
+      run: cd horizon-ansible && sphinx-build docs/ docs/html
+
+    - name: publish on github
+      uses: stefanzweifel/git-auto-commit-action@v4
+      with: 
+        commit_message: Publish Documentation
+        branch: Adrien-updates
+        repository: ./horizon-ansible

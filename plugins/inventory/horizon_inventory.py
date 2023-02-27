@@ -3,6 +3,8 @@
 
 from __future__ import (absolute_import, division, print_function)
 
+__metaclass__ = type
+
 from ansible.errors import AnsibleParserError
 from ansible.plugins.inventory import BaseInventoryPlugin, Constructable
 from ansible_collections.evertrust.horizon.plugins.module_utils.horizon import Horizon
@@ -17,7 +19,7 @@ short_description: Horizon inventory plugin
 description:
     - Generate hosts inventory from Horizon using an HCQL query.
     - Use a YAML configuration file that ends with C(horizon_inventory.(yml|yaml)).
-extends_documentation_fragment: 
+extends_documentation_fragment:
     - evertrust.horizon.auth_options
     - evertrust.horizon.fields.options
 options:
@@ -167,7 +169,6 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
 
     def _get_client(self):
         return Horizon(**self._get_auth())
-
 
     def get_hostnames(self, certificate, hostnames):
         """

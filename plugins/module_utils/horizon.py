@@ -12,6 +12,7 @@ import urllib.parse
 import requests
 from ansible.errors import AnsibleError
 from ansible_collections.evertrust.horizon.plugins.module_utils.horizon_errors import HorizonError
+from ansible.utils.display import Display
 
 
 class Horizon:
@@ -37,7 +38,7 @@ class Horizon:
         self.headers = None
         self.cert = None
         self.bundle = ca_bundle
-        # commplete the anthentication system
+        # Complete the anthentication system
         if client_cert is not None and client_key is not None:
             self.cert = (client_cert, client_key)
 
@@ -80,8 +81,12 @@ class Horizon:
         if mode == "decentralized":
             if csr is None:
                 raise AnsibleError("You must specify a CSR when using decentralized enrollment")
-        if key_type not in template["template"]["keyTypes"]:
-            raise AnsibleError(f'key_type not in list')
+        if "keyTypes" in template["template"]:
+            if key_type not in template["template"]["keyTypes"]:
+                raise AnsibleError(f'key_type not in list')
+        else:
+            if key_type != template["template"]["capabilities"]["defaultKeyType"]:
+                raise AnsibleError(f'key_type is neither the default keyType nor in the list')
 
         json = {
             "workflow": "enroll",
@@ -98,6 +103,7 @@ class Horizon:
         }
 
         if password is not None:
+            json["password"] = {}
             json["password"]["value"] = password
             if owner is not None:
                 json["template"]["owner"] = {"value": owner}
@@ -135,9 +141,11 @@ class Horizon:
         :type revocation_reason: str
         :rtype: dict
         """
+        # Duplication of value is to support older API versions
         json = {
             "workflow": "revoke",
             "certificatePem": self.__load_file_or_string(certificate_pem),
+            "revocationReason": revocation_reason,
             "template": {
                 "revocationReason": revocation_reason
             }
@@ -163,9 +171,9 @@ class Horizon:
         json = {
             "workflow": "update",
             "certificatePem": self.__load_file_or_string(certificate_pem),
-            "labels": self.__set_labels(labels),
             "template": {
-                "metadata": self.__set_metadata(metadata)
+                "metadata": self.__set_metadata(metadata),
+                "labels": self.__set_labels(labels)
             }
         }
 
@@ -300,6 +308,9 @@ class Horizon:
             if "spChar" in password_policy:
                 f'and {password_policy["minSpChar"]} symbol characters in {password_policy["spChar"]}'
             raise AnsibleError(message)
+        # Exit if the password_mode is random
+        elif password_mode == "random":
+            return password
         # Verify if the password follow the password policy
         if "passwordPolicy" in template["template"]:
             minChar = password_policy["minChar"]
@@ -377,6 +388,9 @@ class Horizon:
             content = response.json()
         else:
             content = response.content.decode()
+
+        # Check args returned by the API
+        self.__get_warnings(kwargs, content=content)
 
         if response.ok:
             return content
@@ -569,3 +583,24 @@ class Horizon:
             else:
                 raise AnsibleError('You must specify an src attribute when passing a dict')
         return content
+
+    @staticmethod
+    def __get_warnings(args, content):
+        """
+        Check if args value are returned by the API.
+        Return True if there is at least one warning. Else return False
+        :type args: dict
+        :type content:
+        """
+        exception_list = ['csr', 'keyTypes', 'labels', 'mode', 'password', 'profile', 'sans', 'subject', 'revocationReason']
+        warning = False
+
+        if 'json' in args:
+            if 'template' in args['json'] and 'certificate' in content:
+                for arg in args['json']['template']:
+                    if arg not in content['certificate'] and arg not in exception_list:
+                        #TODO: Write a better message for the warning.
+                        Display().warning('The value "%s" has not been returned by the API' % (arg))
+                        warning = True
+
+        return warning

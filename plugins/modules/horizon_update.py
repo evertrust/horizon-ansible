@@ -10,7 +10,7 @@ __metaclass__ = type
 # TODO: infer profile from certificate lookup
 
 # language=yaml
-DOCUMENTATION = r'''
+DOCUMENTATION = '''
 module: horizon_update
 author: Evertrust R&D (@EverTrust)
 short_description: Horizon update plugin
@@ -19,27 +19,24 @@ notes: Updating a certificate requires permissions on the related profile.
 extends_documentation_fragment: evertrust.horizon.auth_options
 options:
   profile:
-    description:
-      - Horizon certificate profile
+    description: Horizon certificate profile.
     required: true
     type: str
   certificate_pem:
-    description:
-      - A certificate string in the PEM format, or the path to the certificate PEM file.
+    description: A certificate string in the PEM format, or the path to the certificate PEM file.
     required: false
     type: str
     suboptions:
       src:
-        description: The path to a certificate PEM file
+        description: The path to a certificate PEM file.
         required: false
         type: path
   labels:
-    description:
-      - labels of the certificate
+    description: labels of the certificate.
     required: false
     type: dict
   owner:
-    description: Certificate's owner
+    description: Certificate's owner.
     required: false
     type: str
   team:

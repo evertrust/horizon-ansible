@@ -1,0 +1,88 @@
+- name: Test centralize enrollment without problems
+  evertrust.horizon.horizon_enroll:
+
+    endpoint: "{{ endpoint }}"
+    x_api_id: "{{ x_api_id }}"
+    x_api_key: "{{ x_api_key }}"
+
+    profile: "Ansible"
+    mode: "centralized"
+    key_type: "rsa-2048"
+      
+    subject:
+      cn.1: "IntegrationTestCI"
+    sans:
+      dnsname.1: "AnsibleTest"
+    labels: 
+      label-1: "test"
+      label-2: "ansible"
+  
+  register: data
+
+- copy: content="{{ data.certificate.certificate }}" dest="/PEM.pem"
+
+- name: Test centralize enrollment with unidentified profile
+  evertrust.horizon.horizon_enroll:
+
+    endpoint: "{{ endpoint }}"
+    x_api_id: "{{ x_api_id }}"
+    x_api_key: "{{ x_api_key }}"
+
+    profile: "InexistantProfile"
+    mode: "centralized"
+    key_type: "rsa-2048"
+        
+    subject:
+      cn.1: "TestWithoutProfile"
+    sans:
+      dnsname.1: "TestWithoutProfile"
+    labels: 
+      label-1: "test"
+      label-2: "ansible"
+
+  ignore_errors: yes
+
+
+- name: Test centralize enrollment with wrong key_type
+  evertrust.horizon.horizon_enroll:
+
+    endpoint: "{{ endpoint }}"
+    x_api_id: "{{ x_api_id }}"
+    x_api_key: "{{ x_api_key }}"
+
+    profile: "Ansible"
+    mode: "centralized"
+    key_type: "WrongKeyType-1234"
+        
+    subject:
+      cn.1: "TestWithWrongKeyType"
+    sans:
+      dnsname.1: "TestWithWrongKeyType"
+    labels: 
+      label-1: "test"
+      label-2: "ansible"
+
+  ignore_errors: yes
+
+
+- name: Test centralize enrollment with unexistant label
+  evertrust.horizon.horizon_enroll:
+
+    endpoint: "{{ endpoint }}"
+    x_api_id: "{{ x_api_id }}"
+    x_api_key: "{{ x_api_key }}"
+
+    profile: "Ansible"
+    mode: "centralized"
+    key_type: "rsa-2048"
+      
+    subject:
+      cn.1: "TestCIWithUnexistantLabel"
+    sans:
+      dnsname.1: "TestCIWithUnexistantLabel"
+    labels: 
+      unexistantLabel: "test"
+      label-1: "test"
+      label-2: "ansible"
+
+  ignore_errors: yes
