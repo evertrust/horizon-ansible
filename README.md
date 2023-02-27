@@ -10,6 +10,7 @@ This collection requires Python 3.6 or greater. It offers compatibility with the
 
 | Collection version | Horizon version |
 |--------------------|-----------------|
+| 1.2.0              | 2.2.0+          |
 | 1.1.0              | 2.2.0+          |
 | 1.0.1              | 2.0.0+          |
 
