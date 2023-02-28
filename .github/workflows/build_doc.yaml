@@ -1,4 +1,3 @@
-name: Build documentation with antsibull
 on: 
   workflow_dispatch:
   push:
@@ -6,37 +5,57 @@ on:
       - '*'
 
 jobs:
+  # Build job
   build: 
-    name: 'Build ansible doc for horizon'
     runs-on: ubuntu-latest
-
     steps:
-
-    - name: Check out Horizon-ansible
-      uses: actions/checkout@v3
+    - uses: actions/checkout@v3
+      
+    - name: Install Python
+      uses: actions/setup-python@v4
       with:
-        path: horizon-ansible
+        python-version: '3.9'
+        cache: 'pip' # caching pip dependencies
+        
+    - name: Install dependencies
+      run: pip install ansible antsibull-docs sphinx sphinx-ansible-theme
     
-    - name: install ansible
-      run: sudo apt install ansible
+    - name: Init collection
+      run: ansible-galaxy collection install .
+
+    - name: Build ansible docs with antsibull-doc
+      run: antsibull-docs collection --use-current --squash-hierarchy --dest-dir=docs/ evertrust.horizon
+
+    - name: Build with Sphinx
+      run: sphinx-build docs/ docs/html
     
-    - run: ansible-galaxy collection init evertrust.horizon
+    - name: Configure Pages
+      uses: actions/configure-pages@v3
+      
+    - name: Upload artifact
+      uses: actions/upload-pages-artifact@v1
+      with:
+        # Upload entire repository
+        path: ./docs/html
 
-    - name: install antsibull-docs
-      run: python3 -m pip install antsibull-docs
+  # Deployment job
+  deploy:
+     # Add a dependency to the build job
+    needs: build
 
-    - name: build ansible doc with antsibull-doc
-      run: antsibull-docs collection --use-current --squash-hierarchy --dest-dir=horizon-ansible/docs/ evertrust.horizon
-    
-    - name: add sphinx theme
-      run: pip install sphinx-ansible-theme
+    # Grant GITHUB_TOKEN the permissions required to make a Pages deployment
+    permissions:
+      pages: write      # to deploy to Pages
+      id-token: write   # to verify the deployment originates from an appropriate source
 
-    - name: build with sphinx
-      run: cd horizon-ansible && sphinx-build docs/ docs/html
+    # Deploy to the github-pages environment
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
 
-    - name: publish on github
-      uses: stefanzweifel/git-auto-commit-action@v4
-      with: 
-        commit_message: Publish Documentation
-        branch: master
-        repository: ./horizon-ansible
+    # Specify runner + deployment step
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v1
