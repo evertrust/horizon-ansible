@@ -21,10 +21,10 @@ jobs:
       run: python3 -m pip install antsibull-docs
     
     - run: pwd
-    - run: ls
+    - run: ls horizon-ansible
     
     - name: build ansible module
-      run: ln -s /home/runner/work/horizon-ansible/horizon-ansible/horizon-ansible/ .ansible/collections/ansible_collections/evertrust/horizon
+      run: ln -s /home/runner/work/horizon-ansible/horizon-ansible/ .ansible/collections/ansible_collections/evertrust/horizon
 
     - name: build ansible doc with antsibull-doc
       run: antsibull-docs collection --use-current --squash-hierarchy --dest-dir=horizon-ansible/docs/ evertrust.horizon
