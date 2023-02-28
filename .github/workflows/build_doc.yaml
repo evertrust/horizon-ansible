@@ -2,8 +2,8 @@ name: Build documentation with antsibull
 on: 
   workflow_dispatch:
   push:
-    tags:
-      - '*'
+    # tags:
+    #   - '*'
 
 jobs:
   build: 
@@ -17,8 +17,8 @@ jobs:
       with:
         path: horizon-ansible
     
-    - name: install antsibull
-      run: python3 -m pip install antsibull
+    - name: install antsibull-docs
+      run: python3 -m pip install antsibull-docs
 
     - name: build ansible doc with antsibull-doc
       run: antsibull-docs collection --use-current --squash-hierarchy --dest-dir=horizon-ansible/docs/ evertrust.horizon
