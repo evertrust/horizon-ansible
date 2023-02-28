@@ -2,8 +2,8 @@ name: Build documentation with antsibull
 on: 
   workflow_dispatch:
   push:
-    # tags:
-    #   - '*'
+    tags:
+      - '*'
 
 jobs:
   build: 
@@ -38,5 +38,4 @@ jobs:
       uses: stefanzweifel/git-auto-commit-action@v4
       with: 
         commit_message: Publish Documentation
-        branch: bug-fixes
         repository: ./horizon-ansible
