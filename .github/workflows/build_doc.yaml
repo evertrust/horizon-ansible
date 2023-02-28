@@ -22,16 +22,16 @@ jobs:
         cache: 'pip' # caching pip dependencies
         
     - name: Install dependencies
-      run: python3 -m pip install ansible antsibull-docs sphinx-ansible-theme
+      run: pip install ansible antsibull-docs sphinx sphinx-ansible-theme
     
     - name: Init collection
       run: ansible-galaxy collection init evertrust.horizon
 
     - name: Build ansible docs with antsibull-doc
-      run: antsibull-docs collection --use-current --squash-hierarchy --dest-dir=horizon-ansible/docs/ evertrust.horizon
+      run: antsibull-docs collection --use-current --squash-hierarchy --dest-dir=docs/ evertrust.horizon
 
     - name: Build with sphinx
-      run: cd horizon-ansible && sphinx-build docs/ docs/html
+      run: sphinx-build docs/ docs/html
     
     - name: setup Pages
       uses: actions/configure-pages@v3
@@ -40,7 +40,7 @@ jobs:
       uses: actions/upload-pages-artifact@v1
       with:
         # Upload entire repository
-        path: ./horizon-ansible/docs/html
+        path: ./docs/html
 
   # Deployment job
   deploy:
