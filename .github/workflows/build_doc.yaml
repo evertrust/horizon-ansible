@@ -8,7 +8,6 @@ on:
 jobs:
   # Build job
   build: 
-    name: 'Build ansible doc for horizon'
     runs-on: ubuntu-latest
     steps:
     - name: Check out Horizon-ansible
@@ -16,21 +15,22 @@ jobs:
       with:
         path: horizon-ansible
     
-    - name: install ansible
-      run: sudo apt install ansible
+    - name: Install Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+        cache: 'pip' # caching pip dependencies
+        
+    - name: Install dependencies
+      run: python3 -m pip install ansible antsibull-docs sphinx-ansible-theme
     
-    - run: ansible-galaxy collection init evertrust.horizon
+    - name: Init collection
+      run: ansible-galaxy collection init evertrust.horizon
 
-    - name: install antsibull-docs
-      run: python3 -m pip install antsibull-docs
-
-    - name: build ansible doc with antsibull-doc
+    - name: Build ansible docs with antsibull-doc
       run: antsibull-docs collection --use-current --squash-hierarchy --dest-dir=horizon-ansible/docs/ evertrust.horizon
-    
-    - name: add sphinx theme
-      run: pip install sphinx-ansible-theme
 
-    - name: build with sphinx
+    - name: Build with sphinx
       run: cd horizon-ansible && sphinx-build docs/ docs/html
     
     - name: setup Pages
