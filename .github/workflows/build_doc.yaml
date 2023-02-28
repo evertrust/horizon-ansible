@@ -12,9 +12,7 @@ jobs:
     steps:
     - name: Check out Horizon-ansible
       uses: actions/checkout@v3
-      with:
-        path: horizon-ansible
-    
+      
     - name: Install Python
       uses: actions/setup-python@v4
       with:
@@ -25,7 +23,7 @@ jobs:
       run: pip install ansible antsibull-docs sphinx sphinx-ansible-theme
     
     - name: Init collection
-      run: ansible-galaxy collection init evertrust.horizon
+      run: ansible-galaxy collection install evertrust.horizon -p .
 
     - name: Build ansible docs with antsibull-doc
       run: antsibull-docs collection --use-current --squash-hierarchy --dest-dir=docs/ evertrust.horizon
@@ -33,7 +31,7 @@ jobs:
     - name: Build with sphinx
       run: sphinx-build docs/ docs/html
     
-    - name: setup Pages
+    - name: Configure Pages
       uses: actions/configure-pages@v3
       
     - name: Upload artifact
