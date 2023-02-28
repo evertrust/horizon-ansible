@@ -10,8 +10,7 @@ jobs:
   build: 
     runs-on: ubuntu-latest
     steps:
-    - name: Check out Horizon-ansible
-      uses: actions/checkout@v3
+    - uses: actions/checkout@v3
       
     - name: Install Python
       uses: actions/setup-python@v4
@@ -23,12 +22,12 @@ jobs:
       run: pip install ansible antsibull-docs sphinx sphinx-ansible-theme
     
     - name: Init collection
-      run: ansible-galaxy collection install evertrust.horizon -p .
+      run: ansible-galaxy collection install .
 
     - name: Build ansible docs with antsibull-doc
       run: antsibull-docs collection --use-current --squash-hierarchy --dest-dir=docs/ evertrust.horizon
 
-    - name: Build with sphinx
+    - name: Build with Sphinx
       run: sphinx-build docs/ docs/html
     
     - name: Configure Pages
