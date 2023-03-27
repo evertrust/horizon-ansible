@@ -34,6 +34,9 @@ class Horizon:
         :type ca_bundle: str
         """
         # Initialize values to avoid errors later
+        if endpoint[-1] == '/':
+            endpoint = endpoint[:-1]
+
         self.endpoint = endpoint
         self.headers = None
         self.cert = None
