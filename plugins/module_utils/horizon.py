@@ -81,26 +81,37 @@ class Horizon:
         if mode == "decentralized":
             if csr is None:
                 raise AnsibleError("You must specify a CSR when using decentralized enrollment")
+        
+        # On horizon2.4 keyTypes has been replaced by keyType.
+        # I'm using this parameters to check which version of horizon we are using and send the right template to it.
         if "keyTypes" in template["template"]:
-            if key_type not in template["template"]["keyTypes"]:
-                raise AnsibleError(f'key_type not in list')
-        else:
-            if key_type != template["template"]["capabilities"]["defaultKeyType"]:
-                raise AnsibleError(f'key_type is neither the default keyType nor in the list')
-
-        json = {
-            "workflow": "enroll",
-            "module": "webra",
-            "profile": profile,
-            "template": {
-                "keyTypes": [key_type],
-                "sans": self.__set_sans(sans),
-                "subject": self.__set_subject(subject, template),
-                "csr": csr,
-                "labels": self.__set_labels(labels),
-                "metadata": self.__set_metadata(metadata)
-            },
-        }
+            json = {
+                "workflow": "enroll",
+                "module": "webra",
+                "profile": profile,
+                "template": {
+                    "keyTypes": [key_type],
+                    "sans": self.__set_sans(sans),
+                    "subject": self.__set_subject(subject, template),
+                    "csr": csr,
+                    "labels": self.__set_labels(labels),
+                    "metadata": self.__set_metadata(metadata)
+                },
+            }
+        else :
+            json = {
+                "workflow": "enroll",
+                "module": "webra",
+                "profile": profile,
+                "template": {
+                    "keyType": key_type,
+                    "sans": self.__set_sans_post_2_4(sans),
+                    "subject": self.__set_subject(subject, template),
+                    "csr": csr,
+                    "labels": self.__set_labels(labels),
+                    "metadata": self.__set_metadata(metadata)
+                },
+            }
 
         if password is not None:
             json["password"] = {}
@@ -129,6 +140,22 @@ class Horizon:
             "password": {
                 "value": password,
             },
+            "certificatePem": self.__load_file_or_string(certificate_pem)
+        }
+
+        return self.post(self.REQUEST_SUBMIT_URL, json)
+
+    def renew(self, certificate_pem, certificate_id):
+        """
+        Renew a certificate
+        :type certificate_pem: Union[str,dict]
+        :type certificate_id: str
+        :rtype: dict
+        """
+        json = {
+            "module": "webra",
+            "workflow": "renew",
+            "certificateId": certificate_id,
             "certificatePem": self.__load_file_or_string(certificate_pem)
         }
 
@@ -447,6 +474,21 @@ class Horizon:
             my_sans.append({"element": element, "value": sans[element]})
 
         return my_sans
+    
+    @staticmethod
+    def __set_sans_post_2_4(sans):
+        """
+        Format SANs returned by the API
+        :param sans: a dict containing the subject alternates names of the certificate
+        :return the subject alternate names with a format readable by the API
+        """
+        my_sans = []
+
+        for element in sans:
+            if sans[element] == "" or sans[element] is None:
+                raise AnsibleError(f'the san value for {element} is not allowed')
+            
+            my_sans.append({"type": element, "value": sans[element]})
 
     @staticmethod
     def __set_metadata(metadata):
