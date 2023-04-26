@@ -37,7 +37,7 @@ Some modules require external Python dependencies (mainly the `cryptography` mod
 
 ## Documentation
 
-The full documentation for this collection can be found at [evertrust.github.io/horizon-ansible/html](https://evertrust.github.io/horizon-ansible).
+The full documentation for this collection can be found at [evertrust.github.io/horizon-ansible](https://evertrust.github.io/horizon-ansible).
 
 ## Licensing
 
