@@ -488,12 +488,25 @@ class Horizon:
         my_sans = []
 
         for element in sans:
+            done = False
             if sans[element] == "" or sans[element] is None:
                 raise AnsibleError(f'the san value for {element} is not allowed')
             
-            value = []
-            value.append(sans[element])
-            my_sans.append({"type": element.upper(), "value": value})
+            elements = element.split('.')
+            element_name = elements[0]
+            if len(elements) > 1:
+                Display().warning(f"Using sans as `{element_name}.x: value` is deprecated, we advise you to write `{element_name}: [value1, value2]`.")
+
+            for san in my_sans:
+                if element_name.upper() == san["type"]:
+                    san["value"].append(sans[element])
+                    done = True
+                continue
+
+            if not done:
+                value = []
+                value.append(sans[element])
+                my_sans.append({"type": element_name.upper(), "value": value})
 
         return my_sans
 
