@@ -36,7 +36,7 @@ class Horizon:
         # Initialize values to avoid errors later
         if endpoint[-1] == '/':
             endpoint = endpoint[:-1]
-
+            
         self.endpoint = endpoint
         self.headers = None
         self.cert = None
@@ -119,10 +119,10 @@ class Horizon:
         if password is not None:
             json["password"] = {}
             json["password"]["value"] = password
-            if owner is not None:
-                json["template"]["owner"] = {"value": owner}
-            if team is not None:
-                json["template"]["team"] = {"value": team}
+        if owner is not None:
+            json["template"]["owner"] = {"value": owner}
+        if team is not None:
+            json["template"]["team"] = {"value": team}
 
         return self.post(self.REQUEST_SUBMIT_URL, json)
 
@@ -491,7 +491,11 @@ class Horizon:
             if sans[element] == "" or sans[element] is None:
                 raise AnsibleError(f'the san value for {element} is not allowed')
             
-            my_sans.append({"type": element, "value": sans[element]})
+            value = []
+            value.append(sans[element])
+            my_sans.append({"type": element.upper(), "value": value})
+
+        return my_sans
 
     @staticmethod
     def __set_metadata(metadata):
