@@ -23,7 +23,20 @@ class ActionModule(HorizonAction):
         try: 
             client = self._get_client()
             content = self._get_content()
-            result = client.renew(**content)
+            response = client.renew(**content)
+
+            result = {}
+
+            if "certificate" in response:
+                result["certificate"] = response["certificate"]
+                result["chain"] = client.chain(result["certificate"]["certificate"])
+
+            if "pkcs12" in response.keys():
+                result["p12"] = response["pkcs12"]["value"]
+                result["p12_password"] = response["password"]["value"]
+                result["key"] = HorizonCrypto.get_key_from_p12(response["pkcs12"]["value"],
+                                                               response["password"]["value"])
+
         except AnsibleAction as e:
             result.update(e.result)
 
