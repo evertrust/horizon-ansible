@@ -18,7 +18,7 @@
 # -- Project information -----------------------------------------------------
 
 project = 'Horizon Ansible'
-copyright = '2021, Evertrust'
+copyright = '2023, Evertrust'
 author = 'Evertrust'
 
 # -- General configuration ---------------------------------------------------
@@ -56,4 +56,4 @@ html_theme = 'sphinx_ansible_theme'
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
 
-html_baseurl = 'https://google.com'
+html_baseurl = 'https://evertrust.github.io/horizon-ansible'
