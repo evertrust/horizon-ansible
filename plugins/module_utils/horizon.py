@@ -332,11 +332,12 @@ class Horizon:
         # Check if the password is needed and given
         if password_mode == "manual" and password is None:
             message = f'A password is required. '
-            message += f'The password has to contains between {password_policy["minChar"]} and {password_policy["maxChar"]} characters, '
-            message += f'it has to contains at least : {password_policy["minLoChar"]} lowercase letter, {password_policy["minUpChar"]} uppercase letter, '
-            message += f'{password_policy["minDiChar"]} number '
-            if "spChar" in password_policy:
-                f'and {password_policy["minSpChar"]} symbol characters in {password_policy["spChar"]}'
+            if password_policy != -1:
+                message += f'The password has to contains between {password_policy["minChar"]} and {password_policy["maxChar"]} characters, '
+                message += f'it has to contains at least : {password_policy["minLoChar"]} lowercase letter, {password_policy["minUpChar"]} uppercase letter, '
+                message += f'{password_policy["minDiChar"]} number '
+                if "spChar" in password_policy:
+                    f'and {password_policy["minSpChar"]} symbol characters in {password_policy["spChar"]}'
             raise AnsibleError(message)
         # Exit if the password_mode is random
         elif password_mode == "random":
@@ -505,7 +506,10 @@ class Horizon:
 
             if not done:
                 value = []
-                value.append(sans[element])
+                if isinstance(sans[element], list):
+                    value = sans[element]
+                else :
+                    value.append(sans[element])
                 my_sans.append({"type": element_name.upper(), "value": value})
 
         return my_sans
