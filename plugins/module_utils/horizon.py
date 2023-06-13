@@ -154,7 +154,7 @@ class Horizon:
 
         return self.post(self.REQUEST_SUBMIT_URL, json)
 
-    def renew(self, certificate_pem, certificate_id):
+    def renew(self, certificate_pem, certificate_id, password=None):
         """
         Renew a certificate
         :type certificate_pem: Union[str,dict]
@@ -167,6 +167,9 @@ class Horizon:
             "certificateId": certificate_id,
             "certificatePem": self.__load_file_or_string(certificate_pem)
         }
+        if password is not None:
+            json["password"] = {}
+            json["password"]["value"] = password
 
         return self.post(self.REQUEST_SUBMIT_URL, json)
 
@@ -654,8 +657,12 @@ class Horizon:
         """
         if isinstance(content, dict):
             if "src" in content:
-                with open(content["src"], 'r') as file:
-                    pulled_content = file.read()
+                try:
+                    with open(content["src"], 'r') as file:
+                        pulled_content = file.read()
+                except Exception as e:
+                    raise AnsibleError(e)
+                
                 return pulled_content
             else:
                 raise AnsibleError('You must specify an src attribute when passing a dict')
