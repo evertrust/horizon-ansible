@@ -6,16 +6,17 @@ from __future__ import (absolute_import, division, print_function)
 
 __metaclass__ = type
 
-from ansible.errors import AnsibleAction
+from ansible.errors import AnsibleError
 from ansible_collections.evertrust.horizon.plugins.module_utils.horizon_action import HorizonAction
 from ansible_collections.evertrust.horizon.plugins.module_utils.horizon_crypto import HorizonCrypto
+from ansible_collections.evertrust.horizon.plugins.module_utils.horizon_errors import HorizonError
 
 
 class ActionModule(HorizonAction):
     TRANSFERS_FILES = True
 
     def _args(self):
-        return ['certificate_id', 'certificate_pem']
+        return ['certificate_id', 'certificate_pem', 'password']
     
     def run(self, tmp=None, task_vars=None):
         result = super(ActionModule, self).run(tmp, task_vars)
@@ -37,7 +38,7 @@ class ActionModule(HorizonAction):
                 result["key"] = HorizonCrypto.get_key_from_p12(response["pkcs12"]["value"],
                                                                response["password"]["value"])
 
-        except AnsibleAction as e:
-            result.update(e.result)
+        except HorizonError as e:
+            raise AnsibleError(e.full_message)
 
         return result

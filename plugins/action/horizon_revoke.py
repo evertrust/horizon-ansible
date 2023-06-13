@@ -6,6 +6,7 @@ from __future__ import (absolute_import, division, print_function)
 
 __metaclass__ = type
 
+from ansible.errors import AnsibleError
 from ansible_collections.evertrust.horizon.plugins.module_utils.horizon_action import HorizonAction
 from ansible_collections.evertrust.horizon.plugins.module_utils.horizon_errors import HorizonError
 
@@ -24,10 +25,11 @@ class ActionModule(HorizonAction):
             content = self._get_content()
             skip_already_revoked = bool(content.pop("skip_already_revoked"))
             result = client.revoke(**content)
+
         except HorizonError as e:
             if e.code == 'WEBRA-REVOKE-005' and skip_already_revoked:
                 pass
             else:
-                raise e
+                raise AnsibleError(e.full_message)
 
         return result
