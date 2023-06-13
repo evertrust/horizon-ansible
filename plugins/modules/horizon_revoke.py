@@ -11,7 +11,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 module: horizon_revoke
 author: Evertrust R&D (@EverTrust)
-short_description: Horizon revoke plugin.
+short_description: Horizon revoke plugin
 description: Performs an revocation against the Horizon API.
 notes: Revoking a certificate requires permissions on the related profile.
 extends_documentation_fragment: evertrust.horizon.auth_options

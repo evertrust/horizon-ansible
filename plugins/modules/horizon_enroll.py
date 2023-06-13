@@ -96,6 +96,12 @@ options:
     description: Certificate's team.
     required: false
     type: str
+  contact_email:
+    description: 
+      - Certificate's contact email.
+      - Default value will be the requester contact email adress.
+    required: false
+    type: str
 '''
 
 # language=yaml
@@ -112,7 +118,7 @@ EXAMPLES = '''
     subject:
       cn.1: "exampleCN"
     sans:
-      dnsname.1: "exampleDnsname"
+      dnsname: "exampleDnsname"
     labels:
       snow_id: "value1"
       exp_tech: "value2"
@@ -159,7 +165,7 @@ EXAMPLES = '''
         - "exampleFirstOU"
         - "exampleSecondOU"
     sans:
-      dnsname.1: "exampleDnsName"
+      dnsname: "exampleDnsName"
     labels:
       label1: "value1"
       label2: "value2"
