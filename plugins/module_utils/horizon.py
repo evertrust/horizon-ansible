@@ -52,7 +52,7 @@ class Horizon:
             raise AnsibleError('You have to inform authentication parameters')
 
     def enroll(self, profile, mode=None, csr=None, password=None, key_type=None, labels=None, metadata=None,
-               sans=None, subject=None, owner=None, team=None):
+               sans=None, subject=None, owner=None, team=None, contact_email=None):
         """
         Enroll a certificate
         :type profile: str
@@ -101,6 +101,8 @@ class Horizon:
                     "metadata": self.__set_metadata(metadata)
                 },
             }
+            if contact_email is not None:
+                json["template"]["metadata"].append({"metadata": "contact_email", "value": contact_email})
         else :
             json = {
                 "workflow": "enroll",
@@ -111,10 +113,12 @@ class Horizon:
                     "sans": self.__set_sans_post_2_4(sans),
                     "subject": self.__set_subject(subject, template),
                     "csr": csr,
-                    "labels": self.__set_labels(labels),
-                    "metadata": self.__set_metadata(metadata)
+                    "labels": self.__set_labels(labels)
                 },
             }
+            if "contact_email" in metadata:
+                json["template"]["contactEmail"] = {"value": metadata["contact_email"]}
+            
 
         if password is not None:
             json["password"] = {}
@@ -123,6 +127,8 @@ class Horizon:
             json["template"]["owner"] = {"value": owner}
         if team is not None:
             json["template"]["team"] = {"value": team}
+        if contact_email is not None:
+            json["template"]["contactEmail"] = {"value": contact_email}
 
         return self.post(self.REQUEST_SUBMIT_URL, json)
 
@@ -183,7 +189,7 @@ class Horizon:
 
         return self.post(self.REQUEST_SUBMIT_URL, json)
 
-    def update(self, certificate_pem, labels=None, metadata=None, owner=None, team=None):
+    def update(self, certificate_pem, labels=None, metadata=None, owner=None, team=None, contact_email=None):
         """
         Update a certificate
         :param metadata:
@@ -211,6 +217,10 @@ class Horizon:
             json["template"]["owner"] = {"value": owner}
         if team is not None:
             json["template"]["team"] = {"value": team}
+        if "contact_email" in metadata:
+            json["template"]["contactEmail"] = {"value": metadata["contact_email"]}
+        elif contact_email is not None:
+            json["template"]["contactEmail"] = {"value": contact_email}
 
         return self.post(self.REQUEST_SUBMIT_URL, json)
 
@@ -517,9 +527,9 @@ class Horizon:
     @staticmethod
     def __set_metadata(metadata):
         """
-        Format SANs returned by the API
-        :param sans: a dict containing the subject alternates names of the certificate
-        :return the subject alternate names with a format readable by the API
+        Format metadata returned by the API
+        :param metadata: a dict containing the metadatas of the certificate
+        :return the metadatas with a format readable by the API
         """
         serialized_metadata = []
 
@@ -527,6 +537,7 @@ class Horizon:
             serialized_metadata.append({"metadata": element, "value": metadata[element]})
 
         return serialized_metadata
+
 
     @staticmethod
     def __set_subject(subject, template):

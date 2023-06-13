@@ -14,7 +14,7 @@ class ActionModule(HorizonAction):
     TRANSFERS_FILES = True
 
     def _args(self):
-        return ["labels", "certificate_pem", "metadata", "owner", "team"]
+        return ["labels", "certificate_pem", "metadata", "owner", "team", "contact_email"]
 
     def run(self, tmp=None, task_vars=None):
         result = super(ActionModule, self).run(tmp, task_vars)
@@ -22,7 +22,11 @@ class ActionModule(HorizonAction):
         try:
             client = self._get_client()
             content = self._get_content()
-            result = client.update(**content)
+            response = client.update(**content)
+
+            result = {}
+            result["certificate"] = response["certificate"]
+
         except AnsibleAction as e:
             result.update(e.result)
 
