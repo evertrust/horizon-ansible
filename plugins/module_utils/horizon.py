@@ -256,8 +256,7 @@ class Horizon:
 
         return results
 
-    def feed(self, campaign, certificate_pem, ip, hostnames=None, operating_systems=None, paths=None, usages=None,
-             tls_ports=None):
+    def feed(self, campaign=None, certificate_pem=None, ip=None, hostnames=None, operating_systems=None, paths=None, usages=None):
         """
         Feed a certificate to Horizon
         :type campaign: str
@@ -267,9 +266,21 @@ class Horizon:
         :type operating_systems: list
         :type paths: list
         :type usages: list
-        :type tls_ports: list
         :rtype: NoneType
         """
+        if campaign == None:
+            raise AnsibleError("Missing discovery campaign")
+        if certificate_pem == None:
+            raise AnsibleError("Missing certificate")
+        if not isinstance(hostnames, list) and hostnames != None:
+            hostnames = [hostnames]
+        if not isinstance(operating_systems, list) and operating_systems != None:
+            operating_systems = [operating_systems]
+        if not isinstance(paths, list) and paths != None:
+            paths = [paths]
+        if not isinstance(usages, list) and usages != None:
+            usages = [usages]
+
         json = {
             "campaign": campaign,
             "certificate": self.__load_file_or_string(certificate_pem),
@@ -278,8 +289,7 @@ class Horizon:
                 "hostnames": hostnames,
                 "operatingSystems": operating_systems,
                 "paths": paths,
-                "usages": usages,
-                "tlsPorts": tls_ports
+                "usages": usages
             }
         }
 
