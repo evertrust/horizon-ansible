@@ -1,7 +1,7 @@
 - name: Decentralize enrollment
   evertrust.horizon.horizon_enroll:
 
-    endpoint: "{{ endpoint }}"
+    endpoint: "{{ endpoint }}"
     x_api_id: "{{ x_api_id }}"
     x_api_key: "{{ x_api_key }}"
 
@@ -35,3 +35,29 @@
       UOZa8OXHqLGN6HsCwd7gcJYwAA==
       -----END CERTIFICATE REQUEST-----
 
+
+- name: Decentralize enrollment
+  evertrust.horizon.horizon_enroll:
+
+    endpoint: "{{ endpoint }}"
+    x_api_id: "{{ x_api_id }}"
+    x_api_key: "{{ x_api_key }}"
+
+    profile: "Ansible"
+    mode: "centralized"
+    key_type: "rsa-2048"
+      
+    subject:
+      cn.1: "IntegrationTestCI"
+    sans:
+      dnsname.1: "AnsibleTest"
+    labels: 
+      label-1: "test"
+      label-2: "ansible"
+      
+    csr: |
+      -----BEGIN CERTIFICATE REQUEST-----
+      wrongCSR
+      -----END CERTIFICATE REQUEST-----
+
+  ignore_errors: yes

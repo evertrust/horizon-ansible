@@ -1,7 +1,7 @@
 - name: Test centralize enrollment without problems
   evertrust.horizon.horizon_enroll:
 
-    endpoint: "{{ endpoint }}"
+    endpoint: "{{ endpoint }}"
     x_api_id: "{{ x_api_id }}"
     x_api_key: "{{ x_api_key }}"
 
@@ -11,11 +11,18 @@
       
     subject:
       cn.1: "IntegrationTestCI"
+      o.1: "Evertrust"
+      ou.1: "R&D"
     sans:
-      dnsname.1: "AnsibleTest"
+      dnsname: 
+        - "AnsibleTest"
+        - "dns2"
+      rfc822name: "adu@evertrust.fr"
     labels: 
       label-1: "test"
       label-2: "ansible"
+
+    team: "TeamA"
   
   register: data
 
@@ -24,7 +31,7 @@
 - name: Test centralize enrollment with unidentified profile
   evertrust.horizon.horizon_enroll:
 
-    endpoint: "{{ endpoint }}"
+    endpoint: "{{ endpoint }}"
     x_api_id: "{{ x_api_id }}"
     x_api_key: "{{ x_api_key }}"
 
@@ -35,7 +42,7 @@
     subject:
       cn.1: "TestWithoutProfile"
     sans:
-      dnsname.1: "TestWithoutProfile"
+      dnsname: "TestWithoutProfile"
     labels: 
       label-1: "test"
       label-2: "ansible"
@@ -46,7 +53,7 @@
 - name: Test centralize enrollment with wrong key_type
   evertrust.horizon.horizon_enroll:
 
-    endpoint: "{{ endpoint }}"
+    endpoint: "{{ endpoint }}"
     x_api_id: "{{ x_api_id }}"
     x_api_key: "{{ x_api_key }}"
 
@@ -57,7 +64,7 @@
     subject:
       cn.1: "TestWithWrongKeyType"
     sans:
-      dnsname.1: "TestWithWrongKeyType"
+      dnsname: "TestWithWrongKeyType"
     labels: 
       label-1: "test"
       label-2: "ansible"
@@ -68,7 +75,7 @@
 - name: Test centralize enrollment with unexistant label
   evertrust.horizon.horizon_enroll:
 
-    endpoint: "{{ endpoint }}"
+    endpoint: "{{ endpoint }}"
     x_api_id: "{{ x_api_id }}"
     x_api_key: "{{ x_api_key }}"
 
@@ -79,7 +86,7 @@
     subject:
       cn.1: "TestCIWithUnexistantLabel"
     sans:
-      dnsname.1: "TestCIWithUnexistantLabel"
+      dnsname: "TestCIWithUnexistantLabel"
     labels: 
       unexistantLabel: "test"
       label-1: "test"

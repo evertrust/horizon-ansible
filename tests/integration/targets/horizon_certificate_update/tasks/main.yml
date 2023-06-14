@@ -1,14 +1,50 @@
 - name: Update a certificate by its content
   evertrust.horizon.horizon_update:
 
-    endpoint: "{{ endpoint }}"
+    endpoint: "{{endpoint }}"
     x_api_id: "{{ x_api_id }}"
     x_api_key: "{{ x_api_key }}"
 
     certificate_pem:
       src: "/PEM.pem"
         
-    # labels: "{{ labels }}"
-    # metadata: "{{ metadata }}"
-    # owner: "{{ owner }}"
-    # team: "{{ team }}"
+    labels: 
+      label-1: "retest"
+
+    team: "TeamB"
+
+
+- name: Update with unknown team
+  evertrust.horizon.horizon_update:
+
+    endpoint: "{{endpoint }}"
+    x_api_id: "{{ x_api_id }}"
+    x_api_key: "{{ x_api_key }}"
+
+    certificate_pem:
+      src: "/PEM.pem"
+        
+    labels: 
+      label-1: "retest"
+
+    team: "UnknownTeam"
+
+  ignore_errors: yes
+
+
+- name: Update with unexistant label
+  evertrust.horizon.horizon_update:
+
+    endpoint: "{{endpoint }}"
+    x_api_id: "{{ x_api_id }}"
+    x_api_key: "{{ x_api_key }}"
+
+    certificate_pem:
+      src: "/PEM.pem"
+        
+    labels: 
+      unexistantLabel: "retest"
+
+    team: "TeamB"
+
+  ignore_errors: yes
