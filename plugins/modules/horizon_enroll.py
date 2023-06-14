@@ -143,7 +143,7 @@ EXAMPLES = '''
       snow_id: "value1"
       exp_tech: "value2"
 
-- name: Enrolling a certificate in a decentralized with csr path
+- name: Enrolling a certificate in a decentralized way with csr path
   evertrust.horizon.horizon_enroll:
     endpoint: "https://<horizon-endpoint>"
     x_api_id: "<horizon-id>"
