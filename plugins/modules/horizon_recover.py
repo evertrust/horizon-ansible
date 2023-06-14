@@ -18,13 +18,6 @@ notes:
   - Be sure to use the "Recover API" permission instead of "Recover".
 extends_documentation_fragment: evertrust.horizon.auth_options
 options:
-  password:
-    description:
-      - Security password for the certificate.
-      - Password policies will be applied to check validity.
-      - Only required if the password generation mode is manual.
-    required: false
-    type: str
   certificate_pem:
     description: A certificate string in the PEM format, or the path to the certificate PEM file.
     required: false
@@ -34,26 +27,33 @@ options:
         description: The path to a certificate PEM file
         required: false
         type: path
+  password:
+    description:
+      - Security password for the certificate.
+      - Password policies will be applied to check validity.
+      - Only required if the password generation mode is manual.
+    required: false
+    type: str
 '''
 
 # language=yaml
 EXAMPLES = '''
 - name: Recover a certificate by its content
-    evertrust.horizon.horizon_recover:
-      endpoint: "https://<horizon-endpoint>"
-      x_api_id: "<horizon-id>"
-      x_api_key: "<horizon-password>"
-      certificate_pem: "-----BEGIN CERTIFICATE----- ... -----END CERTIFICATE-----"
-      password: "examplePassword"
+  evertrust.horizon.horizon_recover:
+    endpoint: "https://<horizon-endpoint>"
+    x_api_id: "<horizon-id>"
+    x_api_key: "<horizon-password>"
+    certificate_pem: "-----BEGIN CERTIFICATE----- ... -----END CERTIFICATE-----"
+    password: "examplePassword"
 
 - name: Recover a certificate by a file
-    evertrust.horizon.horizon_recover:
-      endpoint: "https://<horizon-endpoint>"
-      x_api_id: "<horizon-id>"
-      x_api_key: "<horizon-password>"
-      certificate_pem:
-        src: pem/file/path
-      password: "examplePassword"
+  evertrust.horizon.horizon_recover:
+    endpoint: "https://<horizon-endpoint>"
+    x_api_id: "<horizon-id>"
+    x_api_key: "<horizon-password>"
+    certificate_pem:
+      src: pem/file/path
+    password: "examplePassword"
 '''
 
 # language=yaml
