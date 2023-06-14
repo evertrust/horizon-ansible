@@ -9,8 +9,7 @@ from ansible_collections.evertrust.horizon.plugins.module_utils.horizon import H
 from ansible_collections.evertrust.horizon.plugins.module_utils.horizon_errors import HorizonError
 
 # language=yaml
-DOCUMENTATION = r'''
----
+DOCUMENTATION = '''
 name: horizon_inventory
 author: Evertrust R&D (@EverTrust)
 plugin_type: inventory
@@ -43,8 +42,11 @@ endpoint: "https://<horizon-endpoint>"
 x_api_id: "<horizon-id>"
 x_api_key: "<horizon-password>"
 
-query: "null"
-# fields:
+query: "status is valid"
+fields: 
+  - labels
+  - module
+  - subjectAlternateNames
 
 # Possible values: san.ip, san.dns, discoveryData.ip, discoveryData.Hostname, label.<key>
 # To use your host IPs as inventory hostnames, the correct syntax would be label.ansible_host

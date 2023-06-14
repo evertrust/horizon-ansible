@@ -46,16 +46,11 @@ options:
     description: Key type
     required: true
     choices:
-      - rsa-256
-      - rsa-512
-      - rsa-1024
       - rsa-2048
       - rsa-3072
       - rsa-4096
-      - rsa-8192
       - ec-secp256r1
       - ec-secp384r1
-      - ec-secp521r1
     type: str
   mode:
     description:
