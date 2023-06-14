@@ -34,22 +34,9 @@ options:
   metadata:
     description: 
       - Metadata of the certificate.
+      - "The allowed values are : [gs_order_id, renewed_certificate_id, metapki_id, pki_connector, digicert_id, entrust_id, scep_transid, fcms_id, previous_certificate_id, gsatlas_id, certeurope_id, digicert_order_id, automation_policy]."
     required: false
     type: dict
-    suboptions:
-      - gs_order_id
-      - renewed_certificate_id
-      - metapki_id
-      - pki_connector
-      - digicert_id
-      - entrust_id
-      - scep_transid
-      - fcms_id
-      - previous_certificate_id
-      - gsatlas_id
-      - certeurope_id
-      - digicert_order_id
-      - automation_policy
   owner:
     description: Certificate's owner.
     required: false
