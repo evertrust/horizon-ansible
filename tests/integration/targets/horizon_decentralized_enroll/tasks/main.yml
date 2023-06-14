@@ -10,9 +10,9 @@
     key_type: "rsa-2048"
       
     subject:
-      cn.1: "IntegrationTestCI"
+      cn.1: "IntegrationTestCIDecentralized"
     sans:
-      dnsname.1: "AnsibleTest"
+      dnsname: "AnsibleTest"
     labels: 
       label-1: "test"
       label-2: "ansible"
@@ -35,8 +35,27 @@
       UOZa8OXHqLGN6HsCwd7gcJYwAA==
       -----END CERTIFICATE REQUEST-----
 
+- name: Decentralize enrollment without csr
+  evertrust.horizon.horizon_enroll:
 
-- name: Decentralize enrollment
+    endpoint: "{{ endpoint }}"
+    x_api_id: "{{ x_api_id }}"
+    x_api_key: "{{ x_api_key }}"
+
+    profile: "Ansible"
+    mode: "centralized"
+    key_type: "rsa-2048"
+
+    subject:
+      cn.1: "IntegrationTestCIDecentralizedNoCSR"
+    sans:
+      dnsname: "AnsibleTest"
+    labels: 
+      label-1: "test"
+      label-2: "ansible"
+
+
+- name: Decentralize enrollment with wrong csr
   evertrust.horizon.horizon_enroll:
 
     endpoint: "{{ endpoint }}"
