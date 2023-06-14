@@ -71,7 +71,7 @@ options:
   sans:
     description: 
       - Certificate's subject alternative names (SANs) of the certificate.
-      - Authorized values are : [dnsname, rfc822name, ipaddress, othername_upn, othername_guid, uri]
+      - "Authorized values are : [dnsname, rfc822name, ipaddress, othername_upn, othername_guid, uri]."
     required: false
     type: dict
   labels:
