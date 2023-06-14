@@ -620,8 +620,6 @@ class Horizon:
         result = {}
 
         for field in fields:
-            result[field] = response[field]
-
             if field == "metadata":
                 metadata = {}
                 for data in response[field]:
@@ -642,9 +640,14 @@ class Horizon:
 
             elif field == "labels":
                 labels = {}
-                for label in response[field]:
-                    labels[label['key']] = label['value']
-                result[field] = labels
+                if "labels" in response:
+                    for label in response[field]:
+                        labels[label['key']] = label['value']
+                    result[field] = labels
+            
+            elif field in response:
+                    result[field] = response[field]
+
 
         return result
 
