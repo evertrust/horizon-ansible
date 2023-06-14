@@ -23,7 +23,7 @@ class Horizon:
     DISCOVERY_FEED_URL = "/api/v1/discovery/feed"
     RFC5280_TC_URL = "/api/v1/rfc5280/tc/"
 
-    def __init__(self, endpoint, x_api_id=None, x_api_key=None, client_cert=None, client_key=None, ca_bundle=None):
+    def __init__(self, endpoint=None, x_api_id=None, x_api_key=None, client_cert=None, client_key=None, ca_bundle=None):
         """
         Initialize client with endpoint and authentication parameters
         :type endpoint: str
@@ -33,6 +33,9 @@ class Horizon:
         :type client_key: str
         :type ca_bundle: str
         """
+        if endpoint == None:
+            raise AnsibleError("Endpoint parameter is mandatory")
+        
         # Initialize values to avoid errors later
         if endpoint[-1] == '/':
             endpoint = endpoint[:-1]
@@ -49,7 +52,7 @@ class Horizon:
             self.headers = {"x-api-id": str(x_api_id), "x-api-key": str(x_api_key)}
 
         else:
-            raise AnsibleError('You have to inform authentication parameters')
+            raise AnsibleError("Please inform authentication parameters : 'x_api_id' and 'x_api_key' or 'client_cert' and 'client_key'.")
 
     def enroll(self, profile, mode=None, csr=None, password=None, key_type=None, labels=None, metadata=None,
                sans=None, subject=None, owner=None, team=None, contact_email=None):
