@@ -69,15 +69,10 @@ options:
     required: true
     type: dict
   sans:
-    description: Certificate's subject alternative names (SANs) of the certificate.
+    description: 
+      - Certificate's subject alternative names (SANs) of the certificate.
+      - Authorized values are : [dnsname, rfc822name, ipaddress, othername_upn, othername_guid, uri]
     required: false
-    choices: 
-      - dnsname
-      - rfc822name
-      - ipaddress
-      - othername_upn
-      - othername_guid
-      - uri
     type: dict
   labels:
     description: Certificate's labels.
