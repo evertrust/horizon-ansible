@@ -24,7 +24,10 @@ class ActionModule(HorizonAction):
             client = self._get_client()
             content = self._get_content()
             skip_already_revoked = bool(content.pop("skip_already_revoked"))
-            result = client.revoke(**content)
+            response = client.revoke(**content)
+
+            result = {}
+            result["certificate"] = response["certificate"]
 
         except HorizonError as e:
             if e.code == 'WEBRA-REVOKE-005' and skip_already_revoked:

@@ -293,7 +293,7 @@ certificate:
       returned: If present and specifically requested
       contains:
         key:
-          description:The extension's type.
+          description: The extension's type.
           type: string
           returned: Always
         value:
