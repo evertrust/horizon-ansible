@@ -33,7 +33,6 @@ class ActionModule(HorizonAction):
                 csr = HorizonCrypto.generate_pckcs10(subject=content['subject'], private_key=private_key)
                 content['csr'] = csr
 
-            result = {}
             response = client.enroll(**content)
 
             if "certificate" in response:

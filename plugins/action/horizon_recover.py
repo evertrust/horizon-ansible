@@ -26,15 +26,14 @@ class ActionModule(HorizonAction):
             client = self._get_client()
             content = self._get_content()
             response = client.recover(**content)
-            chain = client.chain(response["certificate"]["certificate"])
-            result = {
-                "chain": chain,
-                "certificate": response["certificate"],
-                "p12_password": response["password"]["value"]
-            }
+            
+            if "certificate" in response:
+                result["certificate"] = response["certificate"]
+                result["chain"] = client.chain(response["certificate"]["certificate"])
 
             if "pkcs12" in response:
                 result["p12"] = response["pkcs12"]["value"]
+                result["p12_password"] = response["password"]["value"]
                 result["key"] = HorizonCrypto.get_key_from_p12(response["pkcs12"]["value"], response["password"]["value"])
 
 

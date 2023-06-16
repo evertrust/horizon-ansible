@@ -26,8 +26,9 @@ class ActionModule(HorizonAction):
             content = self._get_content()
             response = client.update(**content)
 
-            result = {}
-            result["certificate"] = response["certificate"]
+            if "certificate" in response:
+                result["certificate"] = response["certificate"]
+                result["chain"] = client.chain(result["certificate"]["certificate"])
 
         except HorizonError as e:
             raise AnsibleError(e.full_message)

@@ -22,7 +22,9 @@ class ActionModule(HorizonAction):
         try:
             client = self._get_client()
             content = self._get_content()
-            result['response'] = client.feed(**content)
+            response = client.feed(**content)
+
+            result['response'] = response
 
         except AnsibleAction as e:
             result.update(e.result)

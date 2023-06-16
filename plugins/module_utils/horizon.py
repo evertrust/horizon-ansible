@@ -272,6 +272,8 @@ class Horizon:
             raise AnsibleError("Missing discovery campaign")
         if certificate_pem == None:
             raise AnsibleError("Missing certificate")
+        if ip == None:
+            raise AnsibleError("Missing certificate's host ip")
         if not isinstance(hostnames, list) and hostnames != None:
             hostnames = [hostnames]
         if not isinstance(operating_systems, list) and operating_systems != None:

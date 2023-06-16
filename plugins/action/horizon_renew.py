@@ -26,8 +26,6 @@ class ActionModule(HorizonAction):
             content = self._get_content()
             response = client.renew(**content)
 
-            result = {}
-
             if "certificate" in response:
                 result["certificate"] = response["certificate"]
                 result["chain"] = client.chain(result["certificate"]["certificate"])
