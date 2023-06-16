@@ -25,13 +25,18 @@ class ActionModule(HorizonAction):
             client = self._get_client()
             content = self._get_content()
             should_generate_csr = content["mode"] == "decentralized" and content['csr'] is None
-            generated_key = None
+
+            if content["subject"] == None:
+                raise AnsibleError("The subject parameter is mandatory.")
 
             # Generate a key pair and CSR if none was provided
             if should_generate_csr:
-                private_key, public_key = HorizonCrypto.generate_key_pair(content['key_type'])
-                csr = HorizonCrypto.generate_pckcs10(subject=content['subject'], private_key=private_key)
-                content['csr'] = csr
+                if content["key_type"] != None:
+                    private_key, public_key = HorizonCrypto.generate_key_pair(content['key_type'])
+                    csr = HorizonCrypto.generate_pckcs10(subject=content['subject'], private_key=private_key)
+                    content['csr'] = csr
+                else:
+                    raise AnsibleError("When using the decentralized mode, either a csr or the key_type is mandatory.")
 
             response = client.enroll(**content)
 

@@ -8,12 +8,16 @@ __metaclass__ = type
 
 import base64
 import secrets
+import re
 
 from cryptography.hazmat.primitives.serialization import pkcs12, BestAvailableEncryption
 from cryptography import x509
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import rsa, ec
 from cryptography.x509.oid import NameOID
+
+from ansible.errors import AnsibleError
+
 
 class HorizonCrypto:
 
@@ -74,6 +78,27 @@ class HorizonCrypto:
             "c": NameOID.COUNTRY_NAME,
             "ou": NameOID.ORGANIZATIONAL_UNIT_NAME
         }
+        
+        if "dn" in subject:
+            dn = subject["dn"].replace(" ", "")
+            temp_subject = {}
+            test = (re.split(r'(?<!\\),', dn))
+            for val in test:
+                ma_val = (re.split(r'(?<!\\)=', val))
+                if len(ma_val) == 2:
+                    dn_element = ma_val[0].lower()
+                    if dn_element in temp_subject or dn_element + '.1' in temp_subject:
+                        if isinstance(temp_subject[dn_element + '.1'], str):
+                            temp_subject[dn_element] = [temp_subject[dn_element + '.1']]
+                            del temp_subject[dn_element + '.1']
+                        temp_subject[dn_element].append(ma_val[1])
+                    else:
+                        temp_subject[dn_element + '.1'] = ma_val[1]
+
+                else:
+                    raise AnsibleError('Error in the dn, some values are not understood.')
+
+            subject = temp_subject
 
         x509_subject = []
         for element in subject:

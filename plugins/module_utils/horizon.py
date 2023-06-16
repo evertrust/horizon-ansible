@@ -496,7 +496,7 @@ class Horizon:
 
         for element in sans:
             if sans[element] == "" or sans[element] is None:
-                raise AnsibleError(f'the san value for {element} is not allowed')
+                raise AnsibleError(f'The san value for {element} is not allowed.')
 
             elif isinstance(sans[element], list):
                 for i in range(len(sans[element])):
@@ -519,7 +519,7 @@ class Horizon:
         for element in sans:
             done = False
             if sans[element] == "" or sans[element] is None:
-                raise AnsibleError(f'the san value for {element} is not allowed')
+                raise AnsibleError(f'The san value for {element} is not allowed.')
             
             elements = element.split('.')
             element_name = elements[0]
@@ -568,8 +568,9 @@ class Horizon:
         my_subject = []
 
         if "dn" in subject:
+            dn = subject["dn"].replace(" ", "")
             temp_subject = {}
-            test = (re.split(r'(?<!\\),', subject["dn"]))
+            test = (re.split(r'(?<!\\),', dn))
             for val in test:
                 ma_val = (re.split(r'(?<!\\)=', val))
                 if len(ma_val) == 2:
@@ -589,7 +590,7 @@ class Horizon:
 
         for element in subject:
             if subject[element] == "" or subject[element] is None:
-                raise AnsibleError(f'the subject value for {element} is not allowed')
+                raise AnsibleError(f'The subject value for {element} is not allowed.')
 
             elif isinstance(subject[element], list):
                 for i in range(len(subject[element])):
