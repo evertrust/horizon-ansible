@@ -16,9 +16,6 @@ from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import rsa, ec
 from cryptography.x509.oid import NameOID
 
-from ansible.errors import AnsibleError
-
-
 class HorizonCrypto:
 
     @staticmethod
