@@ -96,7 +96,7 @@ class HorizonCrypto:
                         temp_subject[dn_element + '.1'] = ma_val[1]
 
                 else:
-                    raise AnsibleError('Error in the dn, some values are not understood.')
+                    raise Exception('Error in the dn, some values are not understood.')
 
             subject = temp_subject
 

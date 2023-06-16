@@ -32,9 +32,12 @@ class ActionModule(HorizonAction):
             # Generate a key pair and CSR if none was provided
             if should_generate_csr:
                 if content["key_type"] != None:
-                    private_key, public_key = HorizonCrypto.generate_key_pair(content['key_type'])
-                    csr = HorizonCrypto.generate_pckcs10(subject=content['subject'], private_key=private_key)
-                    content['csr'] = csr
+                    try:
+                        private_key, public_key = HorizonCrypto.generate_key_pair(content['key_type'])
+                        csr = HorizonCrypto.generate_pckcs10(subject=content['subject'], private_key=private_key)
+                        content['csr'] = csr
+                    except Exception as e:
+                        raise AnsibleError(e)
                 else:
                     raise AnsibleError("When using the decentralized mode, either a csr or the key_type is mandatory.")
 
