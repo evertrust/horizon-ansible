@@ -58,14 +58,6 @@ EXAMPLES = '''
 
 # language=yaml
 RETURN = '''
-p12:
-  description: The generated PKCS#12 for this request. This is only available after the request has been approved in centralized mode.
-  returned: If enrollement mode is "centralized" or if a key pair was generated on-the-fly
-  type: str
-p12_password:
-  description: The password to decrypt the PKCS12 file. Must be set if password mode is manual.
-  returned: If enrollement mode is "centralized" or if a key pair was generated on-the-fly
-  type: str
 certificate:
   description: The certificate that was generated for this request. This is only available after the request has been approved.
   returned: Always
@@ -373,11 +365,19 @@ certificate:
       type: str
       returned: If specifically requested
 chain:
-  description: The certificate's PEM-encoded content.
+  description: Certificate's trust chain.
   returned: Always
   type: str
 key:
-  description: The certificate's private key.
-  returned: If enrollement mode is "centralized" or if a key pair was generated on-the-fly
+  description: Certificate's private key.
+  returned: If present
+  type: str
+p12:
+  description: Base64-encoded PKCS#12
+  returned: If present
+  type: str
+p12_password:
+  description: PKCS#12 password
+  returned: If present
   type: str
 '''

@@ -26,7 +26,7 @@ options:
         required: false
         type: path
   revocation_reason:
-    description: Revocation reason
+    description: The reason for revoking the certificate.
     required: false
     choices:
     - UNSPECIFIED
@@ -65,7 +65,9 @@ EXAMPLES = '''
 # language=yaml
 RETURN = '''
 certificate:
-  description: The certificate that was revoked for this request. This is only available after the request has been approved.
+  description: 
+    - The certificate that was revoked for this request. 
+    - This is only available after the request has been approved.
   returned: Always
   type: dict
   contains:
@@ -370,4 +372,8 @@ certificate:
       description: The certificate's revocation reason.
       type: str
       returned: If specifically requested
+chain:
+  description: Certificate's trust chain.
+  returned: Always
+  type: str
 '''

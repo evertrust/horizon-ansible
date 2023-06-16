@@ -32,11 +32,36 @@ options:
     required: false
     type: dict
   metadata:
-    description: 
-      - Metadata of the certificate.
-      - "The allowed values are : [gs_order_id, renewed_certificate_id, metapki_id, pki_connector, digicert_id, entrust_id, scep_transid, fcms_id, previous_certificate_id, gsatlas_id, certeurope_id, digicert_order_id, automation_policy]."
+    description: Technical metadata related to the certificate.
     required: false
     type: dict
+    suboptions:
+      gs_order_id:
+        type: str
+      renewed_certificate_id:
+        type: str
+      metapki_id:
+        type: str
+      pki_connector:
+        type: str
+      digicert_id:
+        type: str
+      entrust_id:
+        type: str
+      scep_transid:
+        type: str
+      fcms_id:
+        type: str
+      previous_certificate_id:
+        type: str
+      gsatlas_id:
+        type: str
+      certeurope_id:
+        type: str
+      digicert_order_id:
+        type: str
+      automation_policy:
+        type: str
   owner:
     description: Certificate's owner.
     required: false
@@ -386,4 +411,8 @@ certificate:
       description: The certificate's revocation reason.
       type: str
       returned: If specifically requested
+chain:
+  description: Certificate's trust chain.
+  returned: Always
+  type: str
 '''

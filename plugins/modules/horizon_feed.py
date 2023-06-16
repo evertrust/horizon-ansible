@@ -19,17 +19,17 @@ extends_documentation_fragment: evertrust.horizon.auth_options
 options:
   campaign:
     description:
-      - Discovery campaign name.
+      - The name of the discovery campaign to feed into.
     required: true
     type: str
   ip:
     description:
-      - IP address of the discovered host
+      - The certificate's host ip
     required: true
     type: str
   certificate_pem:
     description:
-      - A certificate in PEM format, or the path to the certificate PEM file.
+      - The PEM-encoded certificate to feed the discovery campaign with.
     required: false
     type: str
     suboptions:
@@ -39,22 +39,22 @@ options:
         type: path
   hostnames:
     description:
-      - Hostnames of the discovered host.
+      - The certificate's host hostnames.
     required: false
     type: list
   operating_systems:
     description:
-      - Operating system of the discovered host.
+      - The certificate's host operating system.
     required: false
     type: list
   paths:
     description:
-      - Path of any configuration file referencing the certificate.
+      - The path to the certificate on the host machine.
     required: false
     type: str
   usages:
     description:
-      - Path of any configuration file referencing the certificate.
+      - The path of the configuration files that were used to find the certificates.
     required: false
     type: str
 '''
