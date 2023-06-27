@@ -1,4 +1,4 @@
-on:
+on: 
   workflow_dispatch:
   push:
     tags:
@@ -6,17 +6,17 @@ on:
 
 jobs:
   # Build job
-  build:
+  build: 
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
-
+      
     - name: Install Python
       uses: actions/setup-python@v4
       with:
         python-version: '3.9'
         cache: 'pip' # caching pip dependencies
-
+        
     - name: Install dependencies
       run: pip install ansible antsibull-docs sphinx sphinx-ansible-theme
     
@@ -24,11 +24,7 @@ jobs:
       run: ansible-galaxy collection install .
 
     - name: Build ansible docs with antsibull-doc
-      # run: antsibull-docs collection --use-current --squash-hierarchy --dest-dir=docs/ evertrust.horizon
-      run: antsibull-docs sphinx-init --use-current --dest-dir=docs/ evertrust.horizon
-
-    # - name: Build with Sphinx
-    #   run: sphinx-build docs/ docs/html
+      run: antsibull-docs sphinx-init --use-current --squash-hierarchy --dest-dir=docs/ --project "Horizon Ansible" --copyright "2023, Evertrust" --title "Horizon Ansible Documentation" evertrust.horizon
 
     - name: Install requirements
       run: pip install -r ./docs/requirements.txt
