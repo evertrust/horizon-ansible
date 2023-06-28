@@ -29,6 +29,9 @@ jobs:
     - name: Install requirements
       run: pip install -r ./docs/requirements.txt
 
+    - name: Add custom script to reformat doc
+      run: sed -i 's/\(sphinx-build.*\)/python reformat.py || python3 reformat.py\n\1/' docs/build.sh
+
     - name: Build with sphinx
       run: ./docs/build.sh
 
