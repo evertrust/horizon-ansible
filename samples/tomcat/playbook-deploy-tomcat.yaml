@@ -32,8 +32,8 @@
         cn.1: "{{ domain }}"
         ou.1: "Web Server"
       sans:
-        dnsname.1: "{{ domain }}"
-        dnsname.2: "www.{{ domain }}"
+        dnsname: "{{ domain }}"
+        dnsname: "www.{{ domain }}"
       labels:
         business_unit: "{{ business_unit }}"
         ansible_host: "{{ ansible_host }}"

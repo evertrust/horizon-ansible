@@ -306,10 +306,11 @@ discoveryInfo:
 """
 
 from ansible_collections.evertrust.horizon.plugins.module_utils.horizon import Horizon
+from ansible_collections.evertrust.horizon.plugins.module_utils.horizon_errors import HorizonError
 
 from ansible.plugins.lookup import LookupBase
 from ansible.utils.display import Display
-from ansible.errors import AnsibleError, AnsibleAction
+from ansible.errors import AnsibleLookupError
 
 display = Display()
 
@@ -322,8 +323,8 @@ class LookupModule(LookupBase):
             content = self._get_content(kwargs)
             result = client.certificate(**content)
 
-        except AnsibleAction as e:
-            raise AnsibleError(f'Error: {e}')
+        except HorizonError as e:
+            raise AnsibleLookupError(e.full_message)
 
         return result
 

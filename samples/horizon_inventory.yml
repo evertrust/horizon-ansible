@@ -1,6 +1,6 @@
 plugin: evertrust.horizon.horizon_inventory
 
-query:
+query: "status is valid"
 fields:
   - labels
   - module

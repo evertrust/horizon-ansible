@@ -3,15 +3,13 @@
 
 from __future__ import (absolute_import, division, print_function)
 
-__metaclass__ = type
-
-from ansible.errors import AnsibleParserError
+from ansible.errors import AnsibleParserError, AnsibleError
 from ansible.plugins.inventory import BaseInventoryPlugin, Constructable
 from ansible_collections.evertrust.horizon.plugins.module_utils.horizon import Horizon
+from ansible_collections.evertrust.horizon.plugins.module_utils.horizon_errors import HorizonError
 
 # language=yaml
-DOCUMENTATION = r'''
----
+DOCUMENTATION = '''
 name: horizon_inventory
 author: Evertrust R&D (@EverTrust)
 plugin_type: inventory
@@ -19,7 +17,7 @@ short_description: Horizon inventory plugin
 description:
     - Generate hosts inventory from Horizon using an HCQL query.
     - Use a YAML configuration file that ends with C(horizon_inventory.(yml|yaml)).
-extends_documentation_fragment:
+extends_documentation_fragment: 
     - evertrust.horizon.auth_options
     - evertrust.horizon.fields.options
 options:
@@ -44,8 +42,11 @@ endpoint: "https://<horizon-endpoint>"
 x_api_id: "<horizon-id>"
 x_api_key: "<horizon-password>"
 
-query: "null"
-# fields:
+query: "status is valid"
+fields: 
+  - labels
+  - module
+  - subjectAlternateNames
 
 # Possible values: san.ip, san.dns, discoveryData.ip, discoveryData.Hostname, label.<key>
 # To use your host IPs as inventory hostnames, the correct syntax would be label.ansible_host
@@ -67,12 +68,13 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
             :param hostnames: a list of hostname destination variables in order of preferences
             :param fields: a list of fields
         '''
+        group_list = []
         for certificate in certificates:
             my_group = self.inventory.add_group(certificate["module"])
-
-            self._add_hosts(hosts=certificates, group=my_group, hostnames=hostnames, fields=fields)
-
-            self.inventory.add_child('all', my_group)
+            if my_group not in group_list:
+                group_list.append(my_group)
+                self._add_hosts(hosts=certificates, group=my_group, hostnames=hostnames, fields=fields)
+                self.inventory.add_child('all', my_group)
 
     def _add_hosts(self, hosts, group, hostnames, fields):
         '''
@@ -82,35 +84,41 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
             :param fields: a list of fields
         '''
         for host in hosts:
-            hostname = self.get_hostnames(host, hostnames)
+            if host["module"] == group:
+                hostname = self.get_hostnames(host, hostnames)
 
-            if not hostname:
-                continue
+                if not hostname:
+                    continue
 
-            if 'profile' in host:
-                my_group = self.inventory.add_group(host["profile"])
-                self.inventory.add_child(group, my_group)
-            else:
-                my_group = group
+                if 'profile' in host:
+                    my_group = self.inventory.add_group(host["profile"])
+                    self.inventory.add_child(group, my_group)
+                else:
+                    my_group = group
 
-            self.inventory.add_host(hostname, my_group)
+                self.inventory.add_host(hostname, my_group)
 
-            if 'labels' in host:
-                for label in host["labels"]:
-                    self.inventory.set_variable(hostname, "label_" + label["key"], label["value"])
+                if 'labels' in host:
+                    for label in host["labels"]:
+                        self.inventory.set_variable(hostname, "label_" + label["key"], label["value"])
 
-            if fields is not None:
-                for field in fields:
-                    self.inventory.set_variable(hostname, field, host[field])
+                if fields is not None:
+                    for field in fields:
+                        if field == 'labels':
+                            if 'labels' in host:
+                                for label in host["labels"]:
+                                    self.inventory.set_variable(hostname, "label_" + label["key"], label["value"])
+                        else:
+                            self.inventory.set_variable(hostname, field, host[field])
 
-            # Composed variables
-            self._set_composite_vars(self.config.get('compose'), host, hostname, strict=True)
+                # Composed variables
+                self._set_composite_vars(self.config.get('compose'), host, hostname, strict=True)
 
-            # Complex groups based on jinja2 conditionals, hosts that meet the conditional are added to group
-            self._add_host_to_composed_groups(self.config.get('groups'), host, hostname, strict=True)
+                # Complex groups based on jinja2 conditionals, hosts that meet the conditional are added to group
+                self._add_host_to_composed_groups(self.config.get('groups'), host, hostname, strict=True)
 
-            # Create groups based on variable values and add the corresponding hosts to it
-            self._add_host_to_keyed_groups(self.config.get('keyed_groups'), host, hostname, strict=True)
+                # Create groups based on variable values and add the corresponding hosts to it
+                self._add_host_to_keyed_groups(self.config.get('keyed_groups'), host, hostname, strict=True)
 
     def verify_file(self, path):
         '''
@@ -145,7 +153,10 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
                 f'All correct options required: {e}'
             )
 
-        response = self.client.search(**content)
+        try: 
+            response = self.client.search(**content)
+        except HorizonError as e:
+            raise AnsibleError(e.full_message)
 
         self._populate(response, self.config.get("hostnames"), content["fields"])
 
@@ -169,6 +180,7 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
 
     def _get_client(self):
         return Horizon(**self._get_auth())
+
 
     def get_hostnames(self, certificate, hostnames):
         """

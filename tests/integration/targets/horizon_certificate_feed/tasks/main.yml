@@ -1,25 +1,38 @@
 - name: Feed a certificate by a file
   evertrust.horizon.horizon_feed:
 
-    endpoint: "{{ endpoint }}"
+    endpoint: "{{ endpoint }}"
     x_api_id: "{{ x_api_id }}"
     x_api_key: "{{ x_api_key }}"
 
     certificate_pem: 
       src: "/PEM.pem"
     campaign: "Ansible"
+    ip: 0.0.0.1
       
-
 
 - name: Feed a certificate without campaign
   evertrust.horizon.horizon_feed:
 
-    endpoint: "{{ endpoint }}"
+    endpoint: "{{ endpoint }}"
     x_api_id: "{{ x_api_id }}"
     x_api_key: "{{ x_api_key }}"
       
     certificate_pem: 
       src: "/PEM.pem"
-    # campaign: "{{ campaign }}"
+    ip: 0.0.0.1
+    
+  ignore_errors: yes
+
+- name: Feed a certificate without ip
+  evertrust.horizon.horizon_feed:
+
+    endpoint: "{{ endpoint }}"
+    x_api_id: "{{ x_api_id }}"
+    x_api_key: "{{ x_api_key }}"
+      
+    certificate_pem: 
+      src: "/PEM.pem"
+    campaign: "Ansible"
     
   ignore_errors: yes

@@ -23,7 +23,7 @@ class Horizon:
     DISCOVERY_FEED_URL = "/api/v1/discovery/feed"
     RFC5280_TC_URL = "/api/v1/rfc5280/tc/"
 
-    def __init__(self, endpoint, x_api_id=None, x_api_key=None, client_cert=None, client_key=None, ca_bundle=None):
+    def __init__(self, endpoint=None, x_api_id=None, x_api_key=None, client_cert=None, client_key=None, ca_bundle=None):
         """
         Initialize client with endpoint and authentication parameters
         :type endpoint: str
@@ -33,7 +33,13 @@ class Horizon:
         :type client_key: str
         :type ca_bundle: str
         """
+        if endpoint == None:
+            raise AnsibleError("Endpoint parameter is mandatory")
+        
         # Initialize values to avoid errors later
+        if endpoint[-1] == '/':
+            endpoint = endpoint[:-1]
+            
         self.endpoint = endpoint
         self.headers = None
         self.cert = None
@@ -46,10 +52,10 @@ class Horizon:
             self.headers = {"x-api-id": str(x_api_id), "x-api-key": str(x_api_key)}
 
         else:
-            raise AnsibleError('You have to inform authentication parameters')
+            raise AnsibleError("Please inform authentication parameters : 'x_api_id' and 'x_api_key' or 'client_cert' and 'client_key'.")
 
     def enroll(self, profile, mode=None, csr=None, password=None, key_type=None, labels=None, metadata=None,
-               sans=None, subject=None, owner=None, team=None):
+               sans=None, subject=None, owner=None, team=None, contact_email=None):
         """
         Enroll a certificate
         :type profile: str
@@ -81,34 +87,51 @@ class Horizon:
         if mode == "decentralized":
             if csr is None:
                 raise AnsibleError("You must specify a CSR when using decentralized enrollment")
+        
+        # On horizon2.4 keyTypes has been replaced by keyType.
+        # I'm using this parameters to check which version of horizon we are using and send the right template to it.
         if "keyTypes" in template["template"]:
-            if key_type not in template["template"]["keyTypes"]:
-                raise AnsibleError(f'key_type not in list')
-        else:
-            if key_type != template["template"]["capabilities"]["defaultKeyType"]:
-                raise AnsibleError(f'key_type is neither the default keyType nor in the list')
-
-        json = {
-            "workflow": "enroll",
-            "module": "webra",
-            "profile": profile,
-            "template": {
-                "keyTypes": [key_type],
-                "sans": self.__set_sans(sans),
-                "subject": self.__set_subject(subject, template),
-                "csr": csr,
-                "labels": self.__set_labels(labels),
-                "metadata": self.__set_metadata(metadata)
-            },
-        }
+            json = {
+                "workflow": "enroll",
+                "module": "webra",
+                "profile": profile,
+                "template": {
+                    "keyTypes": [key_type],
+                    "sans": self.__set_sans(sans),
+                    "subject": self.__set_subject(subject, template),
+                    "csr": csr,
+                    "labels": self.__set_labels(labels),
+                    "metadata": self.__set_metadata(metadata)
+                },
+            }
+            if contact_email is not None:
+                json["template"]["metadata"].append({"metadata": "contact_email", "value": contact_email})
+        else :
+            json = {
+                "workflow": "enroll",
+                "module": "webra",
+                "profile": profile,
+                "template": {
+                    "keyType": key_type,
+                    "sans": self.__set_sans_post_2_4(sans),
+                    "subject": self.__set_subject(subject, template),
+                    "csr": csr,
+                    "labels": self.__set_labels(labels)
+                },
+            }
+            if "contact_email" in metadata:
+                json["template"]["contactEmail"] = {"value": metadata["contact_email"]}
+            
 
         if password is not None:
             json["password"] = {}
             json["password"]["value"] = password
-            if owner is not None:
-                json["template"]["owner"] = {"value": owner}
-            if team is not None:
-                json["template"]["team"] = {"value": team}
+        if owner is not None:
+            json["template"]["owner"] = {"value": owner}
+        if team is not None:
+            json["template"]["team"] = {"value": team}
+        if contact_email is not None:
+            json["template"]["contactEmail"] = {"value": contact_email}
 
         return self.post(self.REQUEST_SUBMIT_URL, json)
 
@@ -134,6 +157,25 @@ class Horizon:
 
         return self.post(self.REQUEST_SUBMIT_URL, json)
 
+    def renew(self, certificate_pem, certificate_id, password=None):
+        """
+        Renew a certificate
+        :type certificate_pem: Union[str,dict]
+        :type certificate_id: str
+        :rtype: dict
+        """
+        json = {
+            "module": "webra",
+            "workflow": "renew",
+            "certificateId": certificate_id,
+            "certificatePem": self.__load_file_or_string(certificate_pem)
+        }
+        if password is not None:
+            json["password"] = {}
+            json["password"]["value"] = password
+
+        return self.post(self.REQUEST_SUBMIT_URL, json)
+
     def revoke(self, certificate_pem, revocation_reason):
         """
         Revoke a certificate
@@ -153,7 +195,7 @@ class Horizon:
 
         return self.post(self.REQUEST_SUBMIT_URL, json)
 
-    def update(self, certificate_pem, labels=None, metadata=None, owner=None, team=None):
+    def update(self, certificate_pem, labels=None, metadata=None, owner=None, team=None, contact_email=None):
         """
         Update a certificate
         :param metadata:
@@ -181,6 +223,10 @@ class Horizon:
             json["template"]["owner"] = {"value": owner}
         if team is not None:
             json["template"]["team"] = {"value": team}
+        if "contact_email" in metadata:
+            json["template"]["contactEmail"] = {"value": metadata["contact_email"]}
+        elif contact_email is not None:
+            json["template"]["contactEmail"] = {"value": contact_email}
 
         return self.post(self.REQUEST_SUBMIT_URL, json)
 
@@ -210,8 +256,7 @@ class Horizon:
 
         return results
 
-    def feed(self, campaign, certificate_pem, ip, hostnames=None, operating_systems=None, paths=None, usages=None,
-             tls_ports=None):
+    def feed(self, campaign=None, certificate_pem=None, ip=None, hostnames=None, operating_systems=None, paths=None, usages=None):
         """
         Feed a certificate to Horizon
         :type campaign: str
@@ -221,9 +266,23 @@ class Horizon:
         :type operating_systems: list
         :type paths: list
         :type usages: list
-        :type tls_ports: list
         :rtype: NoneType
         """
+        if campaign == None:
+            raise AnsibleError("Missing discovery campaign")
+        if certificate_pem == None:
+            raise AnsibleError("Missing certificate")
+        if ip == None:
+            raise AnsibleError("Missing certificate's host ip")
+        if not isinstance(hostnames, list) and hostnames != None:
+            hostnames = [hostnames]
+        if not isinstance(operating_systems, list) and operating_systems != None:
+            operating_systems = [operating_systems]
+        if not isinstance(paths, list) and paths != None:
+            paths = [paths]
+        if not isinstance(usages, list) and usages != None:
+            usages = [usages]
+
         json = {
             "campaign": campaign,
             "certificate": self.__load_file_or_string(certificate_pem),
@@ -232,8 +291,7 @@ class Horizon:
                 "hostnames": hostnames,
                 "operatingSystems": operating_systems,
                 "paths": paths,
-                "usages": usages,
-                "tlsPorts": tls_ports
+                "usages": usages
             }
         }
 
@@ -302,11 +360,12 @@ class Horizon:
         # Check if the password is needed and given
         if password_mode == "manual" and password is None:
             message = f'A password is required. '
-            message += f'The password has to contains between {password_policy["minChar"]} and {password_policy["maxChar"]} characters, '
-            message += f'it has to contains at least : {password_policy["minLoChar"]} lowercase letter, {password_policy["minUpChar"]} uppercase letter, '
-            message += f'{password_policy["minDiChar"]} number '
-            if "spChar" in password_policy:
-                f'and {password_policy["minSpChar"]} symbol characters in {password_policy["spChar"]}'
+            if password_policy != -1:
+                message += f'The password has to contains between {password_policy["minChar"]} and {password_policy["maxChar"]} characters, '
+                message += f'it has to contains at least : {password_policy["minLoChar"]} lowercase letter, {password_policy["minUpChar"]} uppercase letter, '
+                message += f'{password_policy["minDiChar"]} number '
+                if "spChar" in password_policy:
+                    f'and {password_policy["minSpChar"]} symbol characters in {password_policy["spChar"]}'
             raise AnsibleError(message)
         # Exit if the password_mode is random
         elif password_mode == "random":
@@ -437,7 +496,7 @@ class Horizon:
 
         for element in sans:
             if sans[element] == "" or sans[element] is None:
-                raise AnsibleError(f'the san value for {element} is not allowed')
+                raise AnsibleError(f'The san value for {element} is not allowed.')
 
             elif isinstance(sans[element], list):
                 for i in range(len(sans[element])):
@@ -447,13 +506,48 @@ class Horizon:
             my_sans.append({"element": element, "value": sans[element]})
 
         return my_sans
-
+    
     @staticmethod
-    def __set_metadata(metadata):
+    def __set_sans_post_2_4(sans):
         """
         Format SANs returned by the API
         :param sans: a dict containing the subject alternates names of the certificate
         :return the subject alternate names with a format readable by the API
+        """
+        my_sans = []
+
+        for element in sans:
+            done = False
+            if sans[element] == "" or sans[element] is None:
+                raise AnsibleError(f'The san value for {element} is not allowed.')
+            
+            elements = element.split('.')
+            element_name = elements[0]
+            if len(elements) > 1:
+                Display().warning(f"Using sans as `{element_name}.x: value` is deprecated, we advise you to write `{element_name}: [value1, value2]`.")
+
+            for san in my_sans:
+                if element_name.upper() == san["type"]:
+                    san["value"].append(sans[element])
+                    done = True
+                continue
+
+            if not done:
+                value = []
+                if isinstance(sans[element], list):
+                    value = sans[element]
+                else :
+                    value.append(sans[element])
+                my_sans.append({"type": element_name.upper(), "value": value})
+
+        return my_sans
+
+    @staticmethod
+    def __set_metadata(metadata):
+        """
+        Format metadata returned by the API
+        :param metadata: a dict containing the metadatas of the certificate
+        :return the metadatas with a format readable by the API
         """
         serialized_metadata = []
 
@@ -461,6 +555,7 @@ class Horizon:
             serialized_metadata.append({"metadata": element, "value": metadata[element]})
 
         return serialized_metadata
+
 
     @staticmethod
     def __set_subject(subject, template):
@@ -473,8 +568,9 @@ class Horizon:
         my_subject = []
 
         if "dn" in subject:
+            dn = subject["dn"].replace(" ", "")
             temp_subject = {}
-            test = (re.split(r'(?<!\\),', subject["dn"]))
+            test = (re.split(r'(?<!\\),', dn))
             for val in test:
                 ma_val = (re.split(r'(?<!\\)=', val))
                 if len(ma_val) == 2:
@@ -494,7 +590,7 @@ class Horizon:
 
         for element in subject:
             if subject[element] == "" or subject[element] is None:
-                raise AnsibleError(f'the subject value for {element} is not allowed')
+                raise AnsibleError(f'The subject value for {element} is not allowed.')
 
             elif isinstance(subject[element], list):
                 for i in range(len(subject[element])):
@@ -540,8 +636,6 @@ class Horizon:
         result = {}
 
         for field in fields:
-            result[field] = response[field]
-
             if field == "metadata":
                 metadata = {}
                 for data in response[field]:
@@ -562,9 +656,14 @@ class Horizon:
 
             elif field == "labels":
                 labels = {}
-                for label in response[field]:
-                    labels[label['key']] = label['value']
-                result[field] = labels
+                if "labels" in response:
+                    for label in response[field]:
+                        labels[label['key']] = label['value']
+                    result[field] = labels
+            
+            elif field in response:
+                    result[field] = response[field]
+
 
         return result
 
@@ -577,8 +676,12 @@ class Horizon:
         """
         if isinstance(content, dict):
             if "src" in content:
-                with open(content["src"], 'r') as file:
-                    pulled_content = file.read()
+                try:
+                    with open(content["src"], 'r') as file:
+                        pulled_content = file.read()
+                except Exception as e:
+                    raise AnsibleError(e)
+                
                 return pulled_content
             else:
                 raise AnsibleError('You must specify an src attribute when passing a dict')

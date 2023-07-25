@@ -7,9 +7,10 @@ from re import M
 
 __metaclass__ = type
 
-from ansible.errors import AnsibleAction
+from ansible.errors import AnsibleError
 from ansible_collections.evertrust.horizon.plugins.module_utils.horizon_action import HorizonAction
 from ansible_collections.evertrust.horizon.plugins.module_utils.horizon_crypto import HorizonCrypto
+from ansible_collections.evertrust.horizon.plugins.module_utils.horizon_errors import HorizonError
 
 
 class ActionModule(HorizonAction):
@@ -25,18 +26,18 @@ class ActionModule(HorizonAction):
             client = self._get_client()
             content = self._get_content()
             response = client.recover(**content)
-            chain = client.chain(response["certificate"]["certificate"])
-            my_dict = {
-                "chain": chain,
-                "certificate": response["certificate"],
-                "p12_password": response["password"]["value"]
-            }
+            
+            if "certificate" in response:
+                result["certificate"] = response["certificate"]
+                result["chain"] = client.chain(response["certificate"]["certificate"])
 
             if "pkcs12" in response:
-                my_dict["p12"] = response["pkcs12"]["value"]
-                my_dict["key"] = HorizonCrypto.get_key_from_p12(response["pkcs12"]["value"], response["password"]["value"])
+                result["p12"] = response["pkcs12"]["value"]
+                result["p12_password"] = response["password"]["value"]
+                result["key"] = HorizonCrypto.get_key_from_p12(response["pkcs12"]["value"], response["password"]["value"])
 
-            return my_dict
 
-        except AnsibleAction as e:
-            result.update(e.result)
+        except HorizonError as e:
+            raise AnsibleError(e.full_message)
+
+        return result

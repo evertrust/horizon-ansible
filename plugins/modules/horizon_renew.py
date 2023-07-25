@@ -9,65 +9,50 @@ __metaclass__ = type
 
 # language=yaml
 DOCUMENTATION = '''
-module: horizon_revoke
+module: horizon_renew
 author: Evertrust R&D (@EverTrust)
-short_description: Horizon revoke plugin
-description: Performs an revocation against the Horizon API.
-notes: Revoking a certificate requires permissions on the related profile.
+short_description: Horizon renew plugin
+description: Performs a renew against the Horizon API.
 extends_documentation_fragment: evertrust.horizon.auth_options
 options:
   certificate_pem:
-    description: The PEM encoded certificate to revoke.
+    description: The PEM encoded certificate to renew.
     required: false
     type: str
     suboptions:
       src:
-        description: The path to the PEM encoded certificate to revoke.
+        description: The path to the PEM encoded certificate to renew.
         required: false
         type: path
-  revocation_reason:
-    description: The reason for revoking the certificate.
+  certificate_id:
+    description: The ID of the certificate to renew.
     required: false
-    choices:
-    - UNSPECIFIED
-    - KEYCOMPROMISE
-    - CACOMPROMISE
-    - AFFILIATIONCHANGE
-    - SUPERSEDED
-    - CESSATIONOFOPERATION
     type: str
-  skip_already_revoked:
-    description: Do not raise an exception when the certificate is already revoked.
-    required: false
-    default: false
-    type: boolean
 '''
 
 # language=yaml
 EXAMPLES = '''
-- name: Revoke a certificate by its content
-  evertrust.horizon.horizon_revoke:
-    endpoint: "https://<horizon-endpoint>"
-    x_api_id: "<horizon-id>"
-    x_api_key: "<horizon-password>"
-    certificate_pem: "-----BEGIN CERTIFICATE----- ... -----END CERTIFICATE-----"
-    skip_already_revoked: true
-
-- name: Revoke a certificate by its file
-  evertrust.horizon.horizon_revoke:
+- name: renew a certificate with the pem file
+  evertrust.horizon.horizon_renew:
     endpoint: "https://<horizon-endpoint>"
     x_api_id: "<horizon-id>"
     x_api_key: "<horizon-password>"
     certificate_pem:
-      src: /pem/file/path
+      src: pem/file/path
+
+- name: renew a certificate from his ID
+  evertrust.horizon.horizon_renew:
+    endpoint: "https://<horizon-endpoint>"
+    x_api_id: "<horizon-id>"
+    x_api_key: "<horizon-password>"
+    certificate_id: <id>
 '''
+
 
 # language=yaml
 RETURN = '''
 certificate:
-  description: 
-    - The certificate that was revoked for this request. 
-    - This is only available after the request has been approved.
+  description: The certificate that was generated for this request. This is only available after the request has been approved.
   returned: Always
   type: dict
   contains:
@@ -375,5 +360,17 @@ certificate:
 chain:
   description: Certificate's trust chain.
   returned: Always
+  type: str
+key:
+  description: Certificate's private key.
+  returned: If present
+  type: str
+p12:
+  description: Base64-encoded PKCS#12
+  returned: If present
+  type: str
+p12_password:
+  description: PKCS#12 password
+  returned: If present
   type: str
 '''

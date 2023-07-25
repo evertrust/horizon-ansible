@@ -25,8 +25,9 @@
       subject:
         cn.1: "{{ domain }}"
       sans:
-        dnsname.1: "{{ domain }}"
-        dnsname.2: "www.{{ domain }}"
+        dnsname: 
+          - "{{ domain }}"
+          - "www.{{ domain }}"
       labels:
         business_unit: "{{ business_unit }}"
         ansible_host: "{{ ansible_host }}"

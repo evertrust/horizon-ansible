@@ -7,14 +7,16 @@ from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
 
-from ansible.errors import AnsibleAction
+from ansible.errors import AnsibleError
 from ansible_collections.evertrust.horizon.plugins.module_utils.horizon_action import HorizonAction
+from ansible_collections.evertrust.horizon.plugins.module_utils.horizon_errors import HorizonError
+
 
 class ActionModule(HorizonAction):
     TRANSFERS_FILES = True
 
     def _args(self):
-        return ["labels", "certificate_pem", "metadata", "owner", "team"]
+        return ["labels", "certificate_pem", "metadata", "owner", "team", "contact_email"]
 
     def run(self, tmp=None, task_vars=None):
         result = super(ActionModule, self).run(tmp, task_vars)
@@ -22,8 +24,13 @@ class ActionModule(HorizonAction):
         try:
             client = self._get_client()
             content = self._get_content()
-            result = client.update(**content)
-        except AnsibleAction as e:
-            result.update(e.result)
+            response = client.update(**content)
+
+            if "certificate" in response:
+                result["certificate"] = response["certificate"]
+                result["chain"] = client.chain(result["certificate"]["certificate"])
+
+        except HorizonError as e:
+            raise AnsibleError(e.full_message)
 
         return result

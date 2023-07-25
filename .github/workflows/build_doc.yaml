@@ -24,19 +24,25 @@ jobs:
       run: ansible-galaxy collection install .
 
     - name: Build ansible docs with antsibull-doc
-      run: antsibull-docs collection --use-current --squash-hierarchy --dest-dir=docs/ evertrust.horizon
+      run: antsibull-docs sphinx-init --use-current --squash-hierarchy --dest-dir=docs/ --project "Horizon Ansible" --copyright "2023, Evertrust" --title "Horizon Ansible Documentation" evertrust.horizon
 
-    - name: Build with Sphinx
-      run: sphinx-build docs/ docs/html
-    
+    - name: Install requirements
+      run: pip install -r ./docs/requirements.txt
+
+    - name: Add custom script to reformat doc
+      run: sed -i 's/\(sphinx-build.*\)/python reformat.py || python3 reformat.py\n\1/' docs/build.sh
+
+    - name: Build with sphinx
+      run: ./docs/build.sh
+
     - name: Configure Pages
       uses: actions/configure-pages@v3
-      
+
     - name: Upload artifact
       uses: actions/upload-pages-artifact@v1
       with:
         # Upload entire repository
-        path: ./docs/html
+        path: ./docs/build/html
 
   # Deployment job
   deploy:

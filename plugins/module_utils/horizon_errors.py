@@ -16,8 +16,6 @@ class HorizonError(Exception):
         self.detail = detail
         self.response = response
 
-        full_message = "Error %s : %s" % (self.code, self.message)
+        self.full_message = "Error %s : %s" % (self.code, self.message)
         if self.detail:
-            full_message = "%s (%s)" % (full_message, self.detail)
-
-        raise AnsibleError(full_message)
+            self.full_message = "%s (%s)" % (self.full_message, self.detail)
