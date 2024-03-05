@@ -230,6 +230,36 @@ class Horizon:
 
         return self.post(self.REQUEST_SUBMIT_URL, json)
 
+    def webra_import(self, profile, certificate_pem, certificate_id, private_key, labels=None, metadata=None, owner=None, team=None, contact_email=None):
+
+        if metadata is None:
+            metadata = {}
+        if labels is None:
+            labels = {}
+
+        json = {
+            "workflow": "import",
+            "profile": profile,
+            "template": {
+                "privateKey": self.__load_file_or_string(private_key),
+                "metadata": self.__set_metadata(metadata),
+                "labels": self.__set_labels(labels)
+            },
+            "certificateId": certificate_id,
+            "certificatePem": self.__load_file_or_string(certificate_pem)
+        }
+
+        if owner is not None:
+            json["template"]["owner"] = {"value": owner}
+        if team is not None:
+            json["template"]["team"] = {"value": team}
+        if "contact_email" in metadata:
+            json["template"]["contactEmail"] = {"value": metadata["contact_email"]}
+        elif contact_email is not None:
+            json["template"]["contactEmail"] = {"value": contact_email}
+        
+        return self.post(self.REQUEST_SUBMIT_URL, json)
+
     def search(self, query=None, fields=None):
         """
         Search for certificates
@@ -443,7 +473,7 @@ class Horizon:
         method = method.upper()
         response = requests.request(method, uri, cert=self.cert, verify=self.bundle,
                                     headers=self.headers, **kwargs)
-        if 'Content-Type' in response.headers and response.headers['Content-Type'] == 'application/json':
+        if ('Content-Type' in response.headers and response.headers['Content-Type'] == 'application/json') or  response.status_code >= 400: 
             content = response.json()
         else:
             content = response.content.decode()
