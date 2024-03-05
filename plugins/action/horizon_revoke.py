@@ -15,7 +15,7 @@ class ActionModule(HorizonAction):
     TRANSFERS_FILES = True
 
     def _args(self):
-        return ["certificate_pem", "revocation_reason", "skip_already_revoked"]
+        return ["certificate_pem", "certificate_id", "revocation_reason", "skip_already_revoked"]
 
     def run(self, tmp=None, task_vars=None):
         result = super(ActionModule, self).run(tmp, task_vars)

@@ -176,7 +176,7 @@ class Horizon:
 
         return self.post(self.REQUEST_SUBMIT_URL, json)
 
-    def revoke(self, certificate_pem, revocation_reason):
+    def revoke(self, certificate_pem, certificate_id, revocation_reason):
         """
         Revoke a certificate
         :type certificate_pem: Union[str,dict]
@@ -187,6 +187,7 @@ class Horizon:
         json = {
             "workflow": "revoke",
             "certificatePem": self.__load_file_or_string(certificate_pem),
+            "certificateId": certificate_id,
             "revocationReason": revocation_reason,
             "template": {
                 "revocationReason": revocation_reason

@@ -25,6 +25,10 @@ options:
         description: The path to the PEM encoded certificate to revoke.
         required: false
         type: path
+  certificate_id:
+    description: The ID of the certificate to revoke.
+    required: false
+    type: str
   revocation_reason:
     description: The reason for revoking the certificate.
     required: false
