@@ -19,3 +19,6 @@ class HorizonError(Exception):
         self.full_message = "Error %s : %s" % (self.code, self.message)
         if self.detail:
             self.full_message = "%s (%s)" % (self.full_message, self.detail)
+
+    def __str__(self):
+        return self.full_message
