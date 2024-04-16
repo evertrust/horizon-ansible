@@ -1,0 +1,67 @@
+# Test import of certificate and key
+- name: Create private key (RSA, 4096 bits)
+  community.crypto.openssl_privatekey:
+    path: /tmp/importcertandkey.key
+- name: Create certificate signing request (CSR) for self-signed certificate
+  community.crypto.openssl_csr_pipe:
+    privatekey_path: /tmp/importcertandkey.key
+    common_name: test-import
+  register: csr
+- name: Create simple self-signed certificate
+  community.crypto.x509_certificate:
+    path: /tmp/importcertandkey.pem
+    csr_content: "{{ csr.csr }}"
+    privatekey_path: /tmp/importcertandkey.key
+    provider: selfsigned
+
+- name: Import a certificate by a file
+  evertrust.horizon.horizon_import:
+    endpoint: "{{ endpoint }}"
+    x_api_id: "{{ x_api_id }}"
+    x_api_key: "{{ x_api_key }}"
+    profile: "Ansible"
+    certificate_pem: 
+      src: /tmp/importcertandkey.pem
+    private_key:
+      src: /tmp/importcertandkey.key
+
+
+# Test import of private key
+- name: Create private key (RSA, 4096 bits) 2
+  community.crypto.openssl_privatekey:
+    path: /tmp/importkey.key
+- name: Create certificate signing request (CSR) for self-signed certificate 2
+  community.crypto.openssl_csr_pipe:
+    privatekey_path: /tmp/importkey.key
+    common_name: test-import-2
+  register: csr
+- name: Create simple self-signed certificate 2
+  community.crypto.x509_certificate:
+    path: /tmp/importkey.pem
+    csr_content: "{{ csr.csr }}"
+    privatekey_path: /tmp/importkey.key
+    provider: selfsigned
+
+- name: feed the certificate
+  evertrust.horizon.horizon_feed:
+    endpoint: "{{ endpoint }}"
+    x_api_id: "{{ x_api_id }}"
+    x_api_key: "{{ x_api_key }}"
+    certificate_pem: 
+      src: /tmp/importkey.pem
+    campaign: "Ansible"
+    ip: 0.0.0.1
+
+- name: Import a certificate by a file
+  evertrust.horizon.horizon_import:
+    endpoint: "{{ endpoint }}"
+    x_api_id: "{{ x_api_id }}"
+    x_api_key: "{{ x_api_key }}"
+    profile: "Ansible"
+    certificate_id: "{{ cert_id._id }}"
+    private_key:
+      src: /tmp/importkey.key
+  vars:
+    certificate:
+      src: '/tmp/importkey.pem'
+    cert_id: "{{ lookup('evertrust.horizon.horizon_lookup', endpoint=endpoint, x_api_id=x_api_id, x_api_key=x_api_key, certificate_pem=certificate, fields='_id', wantlist=True) }}"

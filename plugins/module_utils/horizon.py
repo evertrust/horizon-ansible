@@ -388,6 +388,8 @@ class Horizon:
             password_mode = template["template"]["passwordMode"]
         if "passwordPolicy" in template["template"]:
             password_policy = template["template"]["passwordPolicy"]
+        else:
+            password_policy = -1
         # Check if the password is needed and given
         if password_mode == "manual" and password is None:
             message = f'A password is required. '
