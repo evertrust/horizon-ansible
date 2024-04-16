@@ -14,7 +14,7 @@
     privatekey_path: /tmp/importcertandkey.key
     provider: selfsigned
 
-- name: Import a certificate by a file
+- name: Import certificate and key by files
   evertrust.horizon.horizon_import:
     endpoint: "{{ endpoint }}"
     x_api_id: "{{ x_api_id }}"
@@ -52,7 +52,7 @@
     campaign: "Ansible"
     ip: 0.0.0.1
 
-- name: Import a certificate by a file
+- name: Import a key by a file
   evertrust.horizon.horizon_import:
     endpoint: "{{ endpoint }}"
     x_api_id: "{{ x_api_id }}"
