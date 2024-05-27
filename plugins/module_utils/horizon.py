@@ -479,7 +479,7 @@ class Horizon:
         except requests.exceptions.SSLError:
             raise AnsibleError("Got an SSL error try using the 'ca_bundle' paramater")
         
-        if ('Content-Type' in response.headers and response.headers['Content-Type'] == 'application/json') or  response.status_code >= 400: 
+        if 'Content-Type' in response.headers and response.headers['Content-Type'] in ['application/json', 'application/problem+json']: 
             content = response.json()
         else:
             content = response.content.decode()
