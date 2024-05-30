@@ -116,4 +116,5 @@
   assert: 
     that:
       - error3 is failed
-      - "'Profile does not exist or is disabled' in error3.msg"
+      - "'Label element' in error3.msg"
+      - "'is not authorized' in error3.msg"
