@@ -48,6 +48,14 @@
       label-2: "ansible"
 
   ignore_errors: yes
+  register: error1
+
+# Check error
+- name: Check error1
+  assert: 
+    that:
+      - error1 is failed
+      - "'Profile does not exist or is disabled' in error1.msg"
 
 
 - name: Test centralize enrollment with wrong key_type
@@ -70,6 +78,14 @@
       label-2: "ansible"
 
   ignore_errors: yes
+  register: error2
+
+# Check error
+- name: Check error2
+  assert: 
+    that:
+      - error2 is failed
+      - "'Invalid key type' in error2.msg"
 
 
 - name: Test centralize enrollment with unexistant label
@@ -93,3 +109,11 @@
       label-2: "ansible"
 
   ignore_errors: yes
+  register: error3
+
+# Check error
+- name: Check error3
+  assert: 
+    that:
+      - error3 is failed
+      - "'Profile does not exist or is disabled' in error3.msg"

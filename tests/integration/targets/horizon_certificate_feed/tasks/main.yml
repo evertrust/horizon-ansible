@@ -23,6 +23,15 @@
     ip: 0.0.0.1
     
   ignore_errors: yes
+  register: error1
+
+# Check error
+- name: Check error1
+  assert: 
+    that:
+      - error1 is failed
+      - "'Missing discovery campaign' in error1.msg"
+  
 
 - name: Feed a certificate without ip
   evertrust.horizon.horizon_feed:
@@ -36,3 +45,12 @@
     campaign: "Ansible"
     
   ignore_errors: yes
+  register: error2
+
+# Check error
+- name: Check error2
+  assert: 
+    that:
+      - error2 is failed
+      - "'Missing certificate' in error2.msg"
+      - "'host ip' in error2.msg"

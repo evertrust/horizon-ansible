@@ -80,3 +80,11 @@
       -----END CERTIFICATE REQUEST-----
 
   ignore_errors: yes
+  register: error1
+
+# Check error
+- name: Check error1
+  assert:
+    that:
+      - error1 is failed
+      - "'Could not parse provided PEM' in error1.msg"
