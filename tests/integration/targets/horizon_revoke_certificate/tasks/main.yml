@@ -24,4 +24,11 @@
     revocation_reason: "unspecified"
 
   ignore_errors: yes
-      
+  register: error1
+
+# Check error
+- name: Check error1
+  assert:
+    that:
+      - error1 is failed
+      - "'Certificate is already revoked' in error1.msg"

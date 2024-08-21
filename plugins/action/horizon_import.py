@@ -8,6 +8,7 @@ __metaclass__ = type
 
 from ansible.errors import AnsibleError
 from ansible_collections.evertrust.horizon.plugins.module_utils.horizon_action import HorizonAction
+from ansible_collections.evertrust.horizon.plugins.module_utils.horizon_crypto import HorizonCrypto
 from ansible_collections.evertrust.horizon.plugins.module_utils.horizon_errors import HorizonError
 
 
@@ -15,25 +16,27 @@ class ActionModule(HorizonAction):
     TRANSFERS_FILES = True
 
     def _args(self):
-        return ["certificate_pem", "certificate_id", "revocation_reason", "skip_already_revoked"]
-
+        return ['profile', 'certificate_id', 'certificate_pem', 'private_key', 'labels', 'metadata', 'owner', 'team', 'contact_email']
+    
     def run(self, tmp=None, task_vars=None):
         result = super(ActionModule, self).run(tmp, task_vars)
 
-        try:
+        try: 
             client = self._get_client()
             content = self._get_content()
-            skip_already_revoked = bool(content.pop("skip_already_revoked"))
-            response = client.revoke(**content)
+            response = client.webra_import(**content)
 
             if "certificate" in response:
                 result["certificate"] = response["certificate"]
                 result["chain"] = client.chain(result["certificate"]["certificate"])
 
+            if "pkcs12" in response.keys():
+                result["p12"] = response["pkcs12"]["value"]
+                result["p12_password"] = response["password"]["value"]
+                result["key"] = HorizonCrypto.get_key_from_p12(response["pkcs12"]["value"],
+                                                               response["password"]["value"])
+
         except HorizonError as e:
-            if e.code == 'WEBRA-REVOKE-005' and skip_already_revoked:
-                pass
-            else:
-                raise AnsibleError(e.full_message)
+            raise AnsibleError(e.full_message)
 
         return result

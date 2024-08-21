@@ -30,6 +30,15 @@
     team: "UnknownTeam"
 
   ignore_errors: yes
+  register: error1
+
+# Check error
+- name: Check error1
+  assert: 
+    that:
+      - error1 is failed
+      - "'Team' in error1.msg"
+      - "'is not authorized' in error1.msg"
 
 
 - name: Update with unexistant label
@@ -48,3 +57,12 @@
     team: "TeamB"
 
   ignore_errors: yes
+  register: error2
+
+# Check error
+- name: Check error2
+  assert: 
+    that:
+      - error2 is failed
+      - "'Label element' in error2.msg"
+      - "'is not authorized' in error2.msg"

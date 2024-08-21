@@ -9,69 +9,135 @@ __metaclass__ = type
 
 # language=yaml
 DOCUMENTATION = '''
-module: horizon_revoke
+module: horizon_import
 author: Evertrust R&D (@EverTrust)
-short_description: Horizon revoke plugin
-description: Performs an revocation against the Horizon API.
-notes: Revoking a certificate requires permissions on the related profile.
+short_description: Horizon import plugin
+description: Import a certificate or a private key.
+notes: Importing a certificate requires permissions on the related profile.
 extends_documentation_fragment: evertrust.horizon.auth_options
 options:
+  profile:
+    description: Name of the profile on which the certificate will be imported. 
+    required: true
+    type: str
   certificate_pem:
-    description: The PEM encoded certificate to revoke.
+    description: The PEM encoded certificate to import.
     required: false
     type: str
     suboptions:
       src:
-        description: The path to the PEM encoded certificate to revoke.
+        description: The path to the PEM encoded certificate to import.
+        required: false
+        type: path
+  private_key:
+    description: The PEM encoded private key to import.
+    required: false
+    type: str
+    suboptions:
+      src:
+        description: The path to the PEM encoded private key to import.
         required: false
         type: path
   certificate_id:
-    description: The ID of the certificate to revoke.
+    description: The ID of the certificate related to the key to import.
     required: false
     type: str
-  revocation_reason:
-    description: The reason for revoking the certificate.
+  labels:
+    description: Labels of the certificate.
     required: false
-    choices:
-    - UNSPECIFIED
-    - KEYCOMPROMISE
-    - CACOMPROMISE
-    - AFFILIATIONCHANGE
-    - SUPERSEDED
-    - CESSATIONOFOPERATION
+    type: dict
+  metadata:
+    description: Technical metadata related to the certificate.
+    required: false
+    type: dict
+    suboptions:
+      gs_order_id:
+        type: str
+      renewed_certificate_id:
+        type: str
+      metapki_id:
+        type: str
+      pki_connector:
+        type: str
+      digicert_id:
+        type: str
+      entrust_id:
+        type: str
+      scep_transid:
+        type: str
+      fcms_id:
+        type: str
+      previous_certificate_id:
+        type: str
+      gsatlas_id:
+        type: str
+      certeurope_id:
+        type: str
+      digicert_order_id:
+        type: str
+      automation_policy:
+        type: str
+  owner:
+    description: Certificate's owner.
+    required: false
     type: str
-  skip_already_revoked:
-    description: Do not raise an exception when the certificate is already revoked.
+  team:
+    description: Certificate's team.
     required: false
-    default: false
-    type: boolean
+    type: str
+  contact_email:
+    description: 
+      - Certificate's contact email.
+      - Default value will be the requester contact email adress.
+    required: false
+    type: str
 '''
 
 # language=yaml
 EXAMPLES = '''
-- name: Revoke a certificate by its content
-  evertrust.horizon.horizon_revoke:
+- name: Import a certificate
+  evertrust.horizon.horizon_import:
     endpoint: "https://<horizon-endpoint>"
     x_api_id: "<horizon-id>"
     x_api_key: "<horizon-password>"
+    profile: "exampleProfile"
+    labels:
+      label1: "exampleLabel"
+    contact_email: "contact.email@example.fr"
+    owner: "exempleOwner"
+    team: "exampleTeam"
     certificate_pem: "-----BEGIN CERTIFICATE----- ... -----END CERTIFICATE-----"
-    skip_already_revoked: true
 
-- name: Revoke a certificate by its file
-  evertrust.horizon.horizon_revoke:
+- name: Import a certificate by its file
+  evertrust.horizon.horizon_import:
     endpoint: "https://<horizon-endpoint>"
     x_api_id: "<horizon-id>"
     x_api_key: "<horizon-password>"
+    profile: "exampleProfile"
+    labels:
+      label1: "exampleLabel"
     certificate_pem:
       src: /pem/file/path
+    private_key:
+      src: /key/file/path
+
+- name: Import a private key by its file
+  evertrust.horizon.horizon_import:
+    endpoint: "https://<horizon-endpoint>"
+    x_api_id: "<horizon-id>"
+    x_api_key: "<horizon-password>"
+    profile: "exampleProfile"
+    labels:
+      label1: "exampleLabel"
+    certificate_id: "<certificate-id>"
+    private_key:
+      src: /key/file/path
 '''
 
 # language=yaml
 RETURN = '''
 certificate:
-  description: 
-    - The certificate that was revoked for this request. 
-    - This is only available after the request has been approved.
+  description: The certificate imported. This is only available after the request has been approved.
   returned: Always
   type: dict
   contains:
