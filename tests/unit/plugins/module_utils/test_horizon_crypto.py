@@ -50,7 +50,8 @@ class TestHorizonCrypto (unittest.TestCase) :
         """
         self.private_key, self.public_key = C.generate_key_pair("rsa-2048")
         self.build_pem()
-        self.p12, self.pwd = C.get_p12_from_key(self.private_key, self.cert)
+        password = "password123"
+        self.p12, self.pwd = C.get_p12_from_key(self.private_key, self.cert, password)
         self.new_key = C.get_key_from_p12(self.p12, self.pwd)
         
         self.assertEqual(self.private_key.private_bytes(
