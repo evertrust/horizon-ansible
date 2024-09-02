@@ -380,9 +380,8 @@ class Horizon:
         :rtype: str
         """
         # Get the password policy
-        if "capabilities" in template["template"]:
-            if "p12passwordMode" in template["template"]["capabilities"]:
-                password_mode = template["template"]["capabilities"]["p12passwordMode"]
+        if "capabilities" in template["template"] and "p12passwordMode" in template["template"]["capabilities"]:
+            password_mode = template["template"]["capabilities"]["p12passwordMode"]
         elif "passwordMode" in template["template"]:
             password_mode = template["template"]["passwordMode"]
         else:

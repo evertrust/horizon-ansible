@@ -40,7 +40,9 @@ class ActionModule(HorizonAction):
             if "key_type" in content and content["key_type"] is not None:
                 key_type = content['key_type']
             elif "capabilities" in template["template"] and "defaultKeyType" in template["template"]["capabilities"]:
-                    key_type = template["template"]["capabilities"]["defaultKeyType"]
+                key_type = template["template"]["capabilities"]["defaultKeyType"]
+            else:
+                key_type = None
 
             # Generate a key pair and CSR if none was provided
             if should_generate_csr:
