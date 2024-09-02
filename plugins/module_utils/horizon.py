@@ -54,7 +54,7 @@ class Horizon:
         else:
             raise AnsibleError("Please inform authentication parameters : 'x_api_id' and 'x_api_key' or 'client_cert' and 'client_key'.")
 
-    def enroll(self, profile, mode=None, csr=None, password=None, key_type=None, labels=None, metadata=None,
+    def enroll(self, profile, template, mode=None, csr=None, password=None, key_type=None, labels=None, metadata=None,
                sans=None, subject=None, owner=None, team=None, contact_email=None):
         """
         Enroll a certificate
@@ -79,8 +79,7 @@ class Horizon:
             labels = {}
         if metadata is None:
             metadata = {}
-        template = self.__get_template(profile, "enroll", "webra")
-        password = self.__check_password_policy(password, template)
+    
         mode = self.__check_mode(template, mode=mode)
         csr = self.__load_file_or_string(csr)
 
@@ -143,8 +142,8 @@ class Horizon:
         :rtype: dict
         """
         profile = self.certificate(certificate_pem)["profile"]
-        template = self.__get_template(profile, "recover", "webra")
-        password = self.__check_password_policy(password, template)
+        template = self.get_template(profile, "recover", "webra")
+        password = self.check_password_policy(password, template)
 
         json = {
             "workflow": "recover",
@@ -356,7 +355,7 @@ class Horizon:
         pem = urllib.parse.quote(pem, safe='')
         return self.get(self.RFC5280_TC_URL + pem)
 
-    def __get_template(self, profile, workflow, module=None):
+    def get_template(self, profile, workflow, module=None):
         """
         Retrieves a request template
         :type profile: str
@@ -373,7 +372,7 @@ class Horizon:
         return self.post(self.REQUEST_TEMPLATE_URL, data)
 
     @staticmethod
-    def __check_password_policy(password, template):
+    def check_password_policy(password, template):
         """
         Check a password string against a template password policy
         :type password: str
@@ -381,68 +380,86 @@ class Horizon:
         :rtype: str
         """
         # Get the password policy
-        if "capabilities" in template["template"]:
-            if "p12passwordMode" in template["template"]["capabilities"]:
-                password_mode = template["template"]["capabilities"]["p12passwordMode"]
+        if "capabilities" in template["template"] and "p12passwordMode" in template["template"]["capabilities"]:
+            password_mode = template["template"]["capabilities"]["p12passwordMode"]
         elif "passwordMode" in template["template"]:
             password_mode = template["template"]["passwordMode"]
+        else:
+            password_mode = -1
+
         if "passwordPolicy" in template["template"]:
             password_policy = template["template"]["passwordPolicy"]
         else:
             password_policy = -1
+
         # Check if the password is needed and given
-        if password_mode == "manual" and password is None:
-            message = f'A password is required. '
-            if password_policy != -1:
-                message += f'The password has to contains between {password_policy["minChar"]} and {password_policy["maxChar"]} characters, '
-                message += f'it has to contains at least : {password_policy["minLoChar"]} lowercase letter, {password_policy["minUpChar"]} uppercase letter, '
-                message += f'{password_policy["minDiChar"]} number '
-                if "spChar" in password_policy:
-                    f'and {password_policy["minSpChar"]} symbol characters in {password_policy["spChar"]}'
-            raise AnsibleError(message)
-        # Exit if the password_mode is random
-        elif password_mode == "random":
-            return password
-        # Verify if the password follow the password policy
-        if "passwordPolicy" in template["template"]:
-            minChar = password_policy["minChar"]
-            maxChar = password_policy["maxChar"]
-            minLo = password_policy["minLoChar"]
-            minUp = password_policy["minUpChar"]
-            minDi = password_policy["minDiChar"]
-            whiteList = []
-            c_not_allowed = False
-            if "spChar" in password_policy:
-                minSp = password_policy["minSpChar"]
-                for s in password_policy["spChar"]:
-                    whiteList.append(s)
-            else:
-                minSp = 0
-
-            for c in password:
-                if c in string.digits:
-                    minDi -= 1
-                elif c in string.ascii_lowercase:
-                    minLo -= 1
-                elif c in string.ascii_uppercase:
-                    minUp -= 1
-                elif c in whiteList:
-                    minSp -= 1
-                else:
-                    c_not_allowed = True
-                    break
-
-            if minDi > 0 or minLo > 0 or minUp > 0 or minSp > 0 or len(password) < minChar or len(
-                    password) > maxChar or c_not_allowed:
-                message = f'Your password does not match the password policy {password_policy["name"]}. '
-                message += f'The password has to contains between {password_policy["minChar"]} and {password_policy["maxChar"]} characters, '
-                message += f'it has to contains at least : {password_policy["minLoChar"]} lowercase letter, {password_policy["minUpChar"]} uppercase letter, '
-                message += f'{password_policy["minDiChar"]} number '
-                if "spChar" in password_policy:
-                    message += f'and {password_policy["minSpChar"]} special characters in {password_policy["spChar"]}'
-                else:
-                    message += 'but no special characters'
+        if password_mode == "manual":
+            if password is None:
+                message = f'A password is required. '
+                if password_policy != -1:
+                    message += f'The password has to contains between {password_policy["minChar"]} and {password_policy["maxChar"]} characters, '
+                    message += f'it has to contains at least : {password_policy["minLoChar"]} lowercase letter, {password_policy["minUpChar"]} uppercase letter, '
+                    message += f'{password_policy["minDiChar"]} number '
+                    if "spChar" in password_policy:
+                        f'and {password_policy["minSpChar"]} symbol characters in {password_policy["spChar"]}'
                 raise AnsibleError(message)
+
+            # Verify if the password follow the password policy
+            if "passwordPolicy" in template["template"]:
+                if "minChar" in password_policy:
+                    minChar = password_policy["minChar"]
+                else:
+                    minChar = 0
+                if "maxChar" in password_policy:
+                    maxChar = password_policy["maxChar"]
+                else:
+                    maxChar = 0
+                if "minLoChar" in password_policy:
+                    minLo = password_policy["minLoChar"]
+                else:
+                    minLo = 0
+                if "minUpChar" in password_policy:
+                    minUp = password_policy["minUpChar"]
+                else:
+                    minUp = 0
+                if "minDiChar" in password_policy:
+                    minDi = password_policy["minDiChar"]
+                else:
+                    minDi = 0
+                whiteList = []
+                c_not_allowed = False
+
+                if "spChar" in password_policy:
+                    minSp = password_policy["minSpChar"]
+                    for s in password_policy["spChar"]:
+                        whiteList.append(s)
+                else:
+                    minSp = 0
+
+                for c in password:
+                    if c in string.digits:
+                        minDi -= 1
+                    elif c in string.ascii_lowercase:
+                        minLo -= 1
+                    elif c in string.ascii_uppercase:
+                        minUp -= 1
+                    elif c in whiteList:
+                        minSp -= 1
+                    else:
+                        c_not_allowed = True
+                        break
+
+                if minDi > 0 or minLo > 0 or minUp > 0 or minSp > 0 or len(password) < minChar or len(
+                        password) > maxChar or c_not_allowed:
+                    message = f'Your password does not match the password policy {password_policy["name"]}. '
+                    message += f'The password has to contains between {password_policy["minChar"]} and {password_policy["maxChar"]} characters, '
+                    message += f'it has to contains at least : {password_policy["minLoChar"]} lowercase letter, {password_policy["minUpChar"]} uppercase letter, '
+                    message += f'{password_policy["minDiChar"]} number '
+                    if "spChar" in password_policy:
+                        message += f'and {password_policy["minSpChar"]} special characters in {password_policy["spChar"]}'
+                    else:
+                        message += 'but no special characters'
+                    raise AnsibleError(message)
 
         return password
 
@@ -743,3 +760,10 @@ class Horizon:
                         warning = True
 
         return warning
+
+    def get_password(self, password_policy):
+        """
+        Get a password from password_policy
+        :param password_policy
+        """   
+        return self.send('GET', "/api/v1/security/passwordpolicies/"+password_policy+"/generate")

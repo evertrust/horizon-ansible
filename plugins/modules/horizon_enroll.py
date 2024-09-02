@@ -40,6 +40,7 @@ options:
       - Security password for the certificate.
       - Password policies will be applied to check validity.
       - Required only if the enrollement is centralized and the password generation mode is not random.
+      - Can also be required if the profile allow for both centralized and decentralized enroll with a password generation mode set to manual, in this case it is necessary to inform a password for a decentralized enrollment.
     required: false
     type: str
   key_type:

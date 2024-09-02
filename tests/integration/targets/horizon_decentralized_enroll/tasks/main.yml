@@ -6,7 +6,7 @@
     x_api_key: "{{ x_api_key }}"
 
     profile: "Ansible"
-    mode: "centralized"
+    mode: "decentralized"
     key_type: "rsa-2048"
       
     subject:
@@ -43,7 +43,7 @@
     x_api_key: "{{ x_api_key }}"
 
     profile: "Ansible"
-    mode: "centralized"
+    mode: "decentralized"
     key_type: "rsa-2048"
 
     subject:
@@ -63,7 +63,7 @@
     x_api_key: "{{ x_api_key }}"
 
     profile: "Ansible"
-    mode: "centralized"
+    mode: "decentralized"
     key_type: "rsa-2048"
       
     subject:

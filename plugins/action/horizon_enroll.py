@@ -29,19 +29,31 @@ class ActionModule(HorizonAction):
             if content["subject"] == None:
                 raise AnsibleError("The subject parameter is mandatory.")
 
+            template = client.get_template(content["profile"], "enroll", "webra")
+            password = client.check_password_policy(content["password"], template)
+            if password is None or password == "":
+                password_policy = "Horizon-Default"
+                if "passwordPolicy" in template["template"]:
+                    password_policy = template["template"]["passwordPolicy"]
+                password = client.get_password(password_policy)
+            
+            if "key_type" in content and content["key_type"] is not None:
+                key_type = content['key_type']
+            elif "capabilities" in template["template"] and "defaultKeyType" in template["template"]["capabilities"]:
+                key_type = template["template"]["capabilities"]["defaultKeyType"]
+            else:
+                key_type = None
+
             # Generate a key pair and CSR if none was provided
             if should_generate_csr:
-                if content["key_type"] != None:
-                    try:
-                        private_key, public_key = HorizonCrypto.generate_key_pair(content['key_type'])
-                        csr = HorizonCrypto.generate_pckcs10(subject=content['subject'], private_key=private_key)
-                        content['csr'] = csr
-                    except Exception as e:
-                        raise AnsibleError(e)
-                else:
-                    raise AnsibleError("When using the decentralized mode, either a csr or the key_type is mandatory.")
-
-            response = client.enroll(**content)
+                try:
+                    private_key, public_key = HorizonCrypto.generate_key_pair(key_type)
+                    csr = HorizonCrypto.generate_pckcs10(subject=content['subject'], private_key=private_key)
+                    content['csr'] = csr
+                except Exception as e:
+                    raise AnsibleError(e)
+                
+            response = client.enroll(**content, template=template)
 
             if "certificate" in response:
                 result["certificate"] = response["certificate"]
@@ -49,7 +61,7 @@ class ActionModule(HorizonAction):
 
             if should_generate_csr:
                 result["key"] = HorizonCrypto.get_key_bytes(private_key)
-                p12, p12_password = HorizonCrypto.get_p12_from_key(result["key"], result["certificate"]["certificate"])
+                p12, p12_password = HorizonCrypto.get_p12_from_key(result["key"], result["certificate"]["certificate"], password)
                 result["p12"] = p12
                 result["p12_password"] = p12_password
             elif "pkcs12" in response.keys():

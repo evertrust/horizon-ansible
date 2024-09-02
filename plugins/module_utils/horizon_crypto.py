@@ -19,7 +19,7 @@ from cryptography.x509.oid import NameOID
 class HorizonCrypto:
 
     @staticmethod
-    def get_p12_from_key(private_key, certificate):
+    def get_p12_from_key(private_key, certificate, password):
         """
         :return: A tuple containing a base64-encoded PKCS#12 and its password
         """
@@ -28,15 +28,13 @@ class HorizonCrypto:
         if isinstance(private_key, str):
             private_key = serialization.load_pem_private_key(private_key.encode(), None)
 
-        generated_password = secrets.token_urlsafe(16)
-
         return base64.b64encode(pkcs12.serialize_key_and_certificates(
             name=str(certificate.serial_number).encode(),
             key=private_key,
             cert=certificate,
-            encryption_algorithm=BestAvailableEncryption(generated_password.encode()),
+            encryption_algorithm=BestAvailableEncryption(password.encode()),
             cas=None
-        )), generated_password
+        )), password
 
     @staticmethod
     def parse_pem_certificate(pem_content):
