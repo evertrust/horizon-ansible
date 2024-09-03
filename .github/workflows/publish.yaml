@@ -1,0 +1,25 @@
+on:
+  workflow_dispatch:
+  push:
+      tags:
+        - '*'
+jobs:
+  publish:
+    runs-on: ${{ vars.RUNS_ON }}
+    env:
+      ANSIBLE_GALAXY_API_TOKEN: ${{ secrets.ANSIBLE_GALAXY_API_TOKEN }}
+    steps:
+      - name: Setup ansible
+        run: apt-get update && apt-get install -y ansible
+        
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+          fetch-depth: 0
+
+      - name: Build collection
+        run: make build
+        
+      - name: Publish collection
+        run: make publish
