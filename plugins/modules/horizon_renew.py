@@ -28,6 +28,15 @@ options:
     description: The ID of the certificate to renew.
     required: false
     type: str
+  csr: 
+    description: A certificate signing request, or the path to the CSR file. Required for decentralized renew.
+    required: false
+    type: str
+    suboptions:
+      src:
+        description: The path to a CSR file
+        required: false
+        type: path
 '''
 
 # language=yaml
@@ -46,6 +55,15 @@ EXAMPLES = '''
     x_api_id: "<horizon-id>"
     x_api_key: "<horizon-password>"
     certificate_id: <id>
+
+- name: decentralized renew with csr
+  evertrust.horizon.horizon_renew:
+    endpoint: "https://<horizon-endpoint>"
+    x_api_id: "<horizon-id>"
+    x_api_key: "<horizon-password>"
+    certificate_id: <id>
+    csr: 
+      src: csr/file/path
 '''
 
 

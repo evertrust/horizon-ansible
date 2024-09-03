@@ -156,19 +156,25 @@ class Horizon:
 
         return self.post(self.REQUEST_SUBMIT_URL, json)
 
-    def renew(self, certificate_pem, certificate_id, password=None):
+    def renew(self, certificate_pem, certificate_id, password=None, csr=None):
         """
         Renew a certificate
         :type certificate_pem: Union[str,dict]
         :type certificate_id: str
         :rtype: dict
         """
+        csr = self.__load_file_or_string(csr)
+
         json = {
             "module": "webra",
             "workflow": "renew",
             "certificateId": certificate_id,
-            "certificatePem": self.__load_file_or_string(certificate_pem)
+            "certificatePem": self.__load_file_or_string(certificate_pem),
+            "template": {
+                "csr": csr
+            }
         }
+
         if password is not None:
             json["password"] = {}
             json["password"]["value"] = password
