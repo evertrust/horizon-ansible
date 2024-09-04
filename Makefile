@@ -1,7 +1,7 @@
 # Makefile used to build the collection docs
 
 ANSIBLEGALAXYBUILD ?= ansible-galaxy
-ANSIBLEGALAXYOPTS  ?= --token="${ANSIBLE_GALAXY_TOKEN}" 
+ANSIBLEGALAXYOPTS  ?= --token="$(ANSIBLE_GALAXY_API_TOKEN)" 
 ANTSIBULLBUILD     ?= antsibull-docs
 ANTSIBULLOPTS	   ?=
 SPHINXBUILD        ?= sphinx-build
