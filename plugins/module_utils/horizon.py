@@ -80,7 +80,6 @@ class Horizon:
         if metadata is None:
             metadata = {}
     
-        mode = self.__check_mode(template, mode=mode)
         csr = self.__load_file_or_string(csr)
 
         if mode == "decentralized":
@@ -666,7 +665,7 @@ class Horizon:
         return my_subject
 
     @staticmethod
-    def __check_mode(template, mode=None):
+    def check_mode(template, mode=None):
         """
         :param template: the template of the request
         :param mode: mode precised in the playbook

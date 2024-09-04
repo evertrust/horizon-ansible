@@ -24,7 +24,6 @@ class ActionModule(HorizonAction):
         try:
             client = self._get_client()
             content = self._get_content()
-            should_generate_csr = content["mode"] == "decentralized" and content['csr'] is None
 
             if content["subject"] == None:
                 raise AnsibleError("The subject parameter is mandatory.")
@@ -43,6 +42,11 @@ class ActionModule(HorizonAction):
                 key_type = template["template"]["capabilities"]["defaultKeyType"]
             else:
                 key_type = None
+
+            mode = client.check_mode(template, content["mode"])
+            content["mode"] = mode
+            should_generate_csr = content["mode"] == "decentralized" and content['csr'] is None
+
 
             # Generate a key pair and CSR if none was provided
             if should_generate_csr:
