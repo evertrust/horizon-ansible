@@ -1,0 +1,122 @@
+- hosts: webserver
+  become: yes
+  tasks:
+  - name: Updating APT cache
+    apt: 
+      update_cache: yes   
+
+  - name: Creating group "tomcat"
+    group: 
+      name: tomcat
+
+  - name: Creating user "tomcat"
+    user: 
+      name: tomcat 
+      group: tomcat 
+      createhome: yes
+    become: true
+  
+  - name: Installing tomcat
+    apt: 
+      name: tomcat10
+      state: latest
+  
+  - name: Get webra enroll template
+    evertrust.horizon.horizon_template:
+      endpoint: "{{ horizon_endpoint }}"
+      x_api_id: "{{ api_id }}"
+      x_api_key: "{{ api_key }}"
+      profile: "{{ profile }}"
+      workflow: "enroll"
+    register: template
+
+  - name: Generate an OpenSSL private RSA key with size-2048 bits
+    openssl_privatekey:
+      path: /tmp/ansible_key
+      type: "{{ template.capabilities.defaultKeyType | split('-') | first | upper }}"
+      size: "{{ template.capabilities.defaultKeyType | split('-') | last }}"
+    register: privatekey
+
+  - name: Generate an OpenSSL certificate signing request file bases on input key values
+    openssl_csr:
+      path: /tmp/ansible_csr
+      privatekey_path: "{{ privatekey.filename }}"
+    register: csr
+
+  - name: Enrolling a certificate on Horizon for domain {{ domain }}
+    evertrust.horizon.horizon_enroll:
+      endpoint: "{{ horizon_endpoint }}"
+      mode: "decentralized"
+      key_type: "{{ key_type }}"
+      x_api_id: "{{ api_id }}"
+      x_api_key: "{{ api_key }}"
+      profile: "{{ profile }}"
+      subject:
+        cn.1: "{{ domain }}"
+        ou.1: "Web Server"
+      labels:
+        business_unit: "{{ business_unit }}"
+        ansible_host: "{{ ansible_host }}"
+      contact_email: "{{ contact_email }}"
+      csr:
+        src: "{{csr.filename}}"
+    register: enrolled_certificate
+
+  - name: Creating the tomcat directory
+    file:
+      path: /etc/tomcat10
+      state: directory
+      mode: '0775'
+      owner: "tomcat"
+      group: "tomcat"
+
+  - name: Creating the SSL directory
+    file:
+      path: /etc/tomcat10/ssl
+      state: directory
+      mode: '0775'
+      owner: "tomcat"
+      group: "tomcat"
+
+  - name: Uploading the {{ domain }} certificate
+    copy:
+      content: "{{ enrolled_certificate['certificate']['certificate'] }}"
+      dest: "/etc/tomcat10/ssl/{{ domain }}.crt"
+      mode: '0660'
+      owner: tomcat 
+      group: tomcat
+  
+  - name: Building the {{ domain }} PKCS12
+    openssl_pkcs12:
+      action: export
+      path: "/etc/tomcat10/ssl/{{ domain }}.p12"
+      privatekey_path: /tmp/ansible_key
+      certificate_path: "/etc/tomcat10/ssl/{{ domain }}.crt"
+      friendly_name: "{{ domain }}"
+      passphrase: "Thisis@securep4ssw0rd"
+      state: present
+    register: p12
+
+  - name: Deploying the {{ domain }} index page
+    template:
+      src: ../templates/index.html.j2
+      dest: "/var/lib/tomcat10/webapps/ROOT/index.html"
+      owner: "www-data"
+      group: "www-data"
+      mode: '0644'
+
+  - name: Uploading the tomcat configuration
+    template: 
+      src: ../templates/tomcat.server.xml.decentralized.j2
+      dest: /etc/tomcat10/server.xml
+
+  - name: Restarting tomcat
+    service:
+      name: tomcat10
+      state: restarted
+
+  - name: Waiting for the tomcat service to start
+    wait_for: 
+      port: 8443
+      timeout: 600
+

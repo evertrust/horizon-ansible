@@ -80,7 +80,6 @@ class Horizon:
         if metadata is None:
             metadata = {}
     
-        mode = self.__check_mode(template, mode=mode)
         csr = self.__load_file_or_string(csr)
 
         if mode == "decentralized":
@@ -156,19 +155,25 @@ class Horizon:
 
         return self.post(self.REQUEST_SUBMIT_URL, json)
 
-    def renew(self, certificate_pem, certificate_id, password=None):
+    def renew(self, certificate_pem, certificate_id, password=None, csr=None):
         """
         Renew a certificate
         :type certificate_pem: Union[str,dict]
         :type certificate_id: str
         :rtype: dict
         """
+        csr = self.__load_file_or_string(csr)
+
         json = {
             "module": "webra",
             "workflow": "renew",
             "certificateId": certificate_id,
-            "certificatePem": self.__load_file_or_string(certificate_pem)
+            "certificatePem": self.__load_file_or_string(certificate_pem),
+            "template": {
+                "csr": csr
+            }
         }
+
         if password is not None:
             json["password"] = {}
             json["password"]["value"] = password
@@ -660,7 +665,7 @@ class Horizon:
         return my_subject
 
     @staticmethod
-    def __check_mode(template, mode=None):
+    def check_mode(template, mode=None):
         """
         :param template: the template of the request
         :param mode: mode precised in the playbook

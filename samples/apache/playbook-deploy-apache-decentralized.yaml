@@ -1,0 +1,118 @@
+- hosts: webserver
+  become: yes
+  tasks:
+  - name: Updating APT cache
+    apt: update_cache=yes  
+  
+  - name: Installing apache
+    apt: 
+      name: apache2 
+      state: latest
+
+  - name: Enabling the SSL module
+    command: "a2enmod ssl"
+    become: true
+    become_user: root
+  
+  - name: Get webra enroll template
+    evertrust.horizon.horizon_template:
+      endpoint: "{{ horizon_endpoint }}"
+      x_api_id: "{{ api_id }}"
+      x_api_key: "{{ api_key }}"
+      profile: "{{ profile }}"
+      workflow: "enroll"
+    register: template
+
+  - name: Generate an OpenSSL private RSA key with size-2048 bits
+    openssl_privatekey:
+      path: /tmp/ansible_key
+      type: "{{ template.capabilities.defaultKeyType | split('-') | first | upper }}"
+      size: "{{ template.capabilities.defaultKeyType | split('-') | last }}"
+      return_content: true
+    register: privatekey
+
+  - name: Generate an OpenSSL certificate signing request file bases on input key values
+    openssl_csr:
+      path: /tmp/ansible_csr
+      privatekey_path: "{{ privatekey.filename }}"
+    register: csr
+  
+  - name: Enrolling a certificate on Horizon for domain {{ domain }}
+    evertrust.horizon.horizon_enroll:
+      endpoint: "{{ horizon_endpoint }}"
+      mode: "centralized"
+      key_type: "{{ key_type }}"
+      x_api_id: "{{ api_id }}"
+      x_api_key: "{{ api_key }}"
+      profile: "{{ profile }}"
+      subject:
+        cn.1: "{{ domain }}"
+      sans:
+        dnsname: 
+          - "{{ domain }}"
+          - "www.{{ domain }}"
+      labels:
+        business_unit: "{{ business_unit }}"
+        ansible_host: "{{ ansible_host }}"
+      contact_email: "{{ contact_email }}"
+      csr:
+        src: "{{csr.filename}}"
+    register: enrolled_certificate
+
+  - name: Creating the SSL directory
+    file:
+      path: /etc/apache2/ssl
+      state: directory
+      mode: '0775'
+      owner: "www-data"
+      group: "www-data"
+
+  - name: Uploading the {{ domain }} certificate
+    copy:
+      content: "{{ enrolled_certificate['certificate']['certificate'] }}"
+      dest: "/etc/apache2/ssl/{{ domain }}.crt"
+      mode: '0775'
+      owner: "www-data"
+      group: "www-data"
+    
+  - name: Uploading the {{ domain }} private key
+    copy:
+      content: "{{ privatekey.privatekey }}"
+      dest: "/etc/apache2/ssl/{{ domain }}.key"
+      mode: '0660'
+      owner: "www-data"
+      group: "www-data"
+
+  - name: Creating the {{ domain }} webroot directory
+    file:
+      path: /var/www/{{ domain }}
+      state: directory
+      mode: '0775'
+      owner: "www-data"
+      group: "www-data"
+
+  - name: Deploying the {{ domain }} index page
+    template:
+      src: ../templates/index.html.j2
+      dest: "/var/www/{{ domain }}/index.html"
+      owner: "www-data"
+      group: "www-data"
+      mode: '0644'
+
+  - name: Uploading the {{ domain }} site config
+    template:
+      src: ../templates/apache.conf.j2
+      dest: "/etc/apache2/sites-available/{{ domain }}.conf"
+      owner: root
+      group: root
+      mode: '0644'
+
+  - name: Activating SSL for {{ domain }}
+    command: "a2ensite {{ domain }}"
+    become: true
+    become_user: root
+
+  - name: Restarting Apache
+    service:
+      name: apache2
+      state: restarted
