@@ -13,7 +13,8 @@ module: horizon_import
 author: Evertrust R&D (@EverTrust)
 short_description: Horizon import plugin
 description: Import a certificate or a private key.
-notes: Importing a certificate requires permissions on the related profile.
+notes: 
+  - Importing a certificate requires permissions on the related profile.
 extends_documentation_fragment: evertrust.horizon.auth_options
 options:
   profile:
