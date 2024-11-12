@@ -1,7 +1,7 @@
 # Makefile used to build the collection docs
 
 ANSIBLEGALAXYBUILD ?= ansible-galaxy
-ANSIBLEGALAXYOPTS  ?= --token="${ANSIBLE_GALAXY_TOKEN}" 
+ANSIBLEGALAXYOPTS  ?= --token="$(ANSIBLE_GALAXY_API_TOKEN)" 
 ANTSIBULLBUILD     ?= antsibull-docs
 ANTSIBULLOPTS	   ?=
 SPHINXBUILD        ?= sphinx-build
@@ -20,6 +20,6 @@ clean: ## Clean build artifacts
 	@rm -f build/*
 	
 publish: build ## Build and publish build artifact to Ansible Galaxy
-	@ARTIFACT=$$(find "build" -name "*.tar.gz" ); \
+	ARTIFACT=$$(find "build" -name "*.tar.gz" ); \
 	echo $$ARTIFACT; \
-	$(ANSIBLEGALAXYBUILD) "collection" "publish" $$ARTIFACT $(ANSIBLEGALAXYPOTS)
+	$(ANSIBLEGALAXYBUILD) "collection" "publish" $$ARTIFACT $(ANSIBLEGALAXYOPTS)
