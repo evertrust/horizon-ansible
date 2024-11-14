@@ -30,6 +30,15 @@ options:
     description: The ID of the certificate to revoke.
     required: false
     type: str
+  private_key:
+    description: The PEM encoded private key associated to the certificate.
+    required: false
+    type: str
+    suboptions:
+      src:
+        description: The path to the PEM encoded private key associated to the certificate.
+        required: false
+        type: path
   revocation_reason:
     description: The reason for revoking the certificate.
     required: false
@@ -64,7 +73,15 @@ EXAMPLES = '''
     x_api_id: "<horizon-id>"
     x_api_key: "<horizon-password>"
     certificate_pem:
-      src: /pem/file/path
+      src: path/to/pem
+
+- name: Revoke a certificate with pop
+  evertrust.horizon.horizon_revoke:
+    endpoint: "https://<horizon-endpoint>"
+    certificate_pem:
+      src: path/to/pem
+    private_key:
+      src: path/to/key
 '''
 
 # language=yaml

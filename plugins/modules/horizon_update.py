@@ -67,6 +67,15 @@ options:
     description: Certificate's owner.
     required: false
     type: str
+  private_key:
+    description: The PEM encoded private key associated to the certificate.
+    required: false
+    type: str
+    suboptions:
+      src:
+        description: The path to the PEM encoded private key associated to the certificate.
+        required: false
+        type: path
   team:
     description: Certificate's team.
     required: false
@@ -101,7 +110,17 @@ EXAMPLES = '''
     labels:
       label1: "exampleLabel"
     certificate_pem:
-      src: /pem/file/path
+      src: path/to/pem
+
+- name: Update a certificate with pop
+  evertrust.horizon.horizon_update:
+    endpoint: "https://<horizon-endpoint>"
+    labels:
+      label1: "exampleLabel"
+    certificate_pem:
+      src: path/to/pem
+    private_key:
+      src: path/to/key
 '''
 
 # language=yaml
