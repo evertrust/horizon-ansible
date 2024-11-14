@@ -16,7 +16,7 @@ class ActionModule(HorizonAction):
     TRANSFERS_FILES = True
 
     def _args(self):
-        return ['certificate_id', 'certificate_pem', 'password', 'csr']
+        return ['certificate_id', 'certificate_pem', 'password', 'csr', 'private_key']
     
     def run(self, tmp=None, task_vars=None):
         result = super(ActionModule, self).run(tmp, task_vars)
