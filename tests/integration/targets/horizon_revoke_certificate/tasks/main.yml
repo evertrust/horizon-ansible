@@ -32,3 +32,38 @@
     that:
       - error1 is failed
       - "'Certificate is already revoked' in error1.msg"
+
+
+# Enroll a certificate for pop revoke
+- name: Certificate enroll
+  evertrust.horizon.horizon_enroll:
+
+    endpoint: "{{ endpoint }}"
+    x_api_id: "{{ x_api_id }}"
+    x_api_key: "{{ x_api_key }}"
+
+    profile: "Ansible"
+    mode: "centralized"
+    key_type: "rsa-2048"
+      
+    subject:
+      cn.1: "IntegrationTestCI"
+      o.1: "Evertrust"
+      ou.1: "R&D"
+  
+  register: data
+
+- copy: content="{{ data.certificate.certificate }}" dest="/PEM2.pem"
+- copy: content="{{ data.key }}" dest="/KEY2.key"
+
+- name: Revoke a certificate by its file
+  evertrust.horizon.horizon_revoke:
+
+    endpoint: "{{ endpoint }}"
+
+    certificate_pem: 
+      src: "/PEM2.pem"
+    private_key:
+      src: "/KEY2.key"
+
+    revocation_reason: "unspecified"

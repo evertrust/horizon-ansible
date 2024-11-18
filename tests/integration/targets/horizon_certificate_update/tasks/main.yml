@@ -66,3 +66,18 @@
       - error2 is failed
       - "'Label element' in error2.msg"
       - "'is not authorized' in error2.msg"
+
+- name: Update a certificate with pop
+  evertrust.horizon.horizon_update:
+
+    endpoint: "{{endpoint }}"
+
+    certificate_pem:
+      src: "/PEM.pem"
+    private_key:
+      src: "/KEY.key"
+        
+    labels: 
+      label-1: "test"
+
+    team: "TeamA"

@@ -5,6 +5,8 @@ jobs:
   test:
     runs-on: ${{ vars.RUNS_ON }}
     steps:
+    - uses: actions/checkout@v4
+
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
