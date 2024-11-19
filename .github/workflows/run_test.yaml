@@ -3,29 +3,23 @@ on:
 
 jobs:
   test:
-    runs-on: ${{ vars.RUNS_ON }}
+    runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        submodules: true
+        fetch-depth: 0
 
-    - name: Install dependencies
+    - name: Install requirements
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
+        pip install ansible
 
-    - name: Perform integration testing with ansible-test
-      uses: ansible-community/ansible-test-gh-action@release/v1
-      with:
-        ansible-core-version: stable-2.14
-        target-python-version: 3.9
-        testing-type: integration
-        test-deps: >-
-          community.crypto
-        pre-test-cmd: >-
-          echo "[endpoint: ${{ secrets.HORIZON_ENDPOINT }}, x_api_id: ${{ secrets.HORIZON_API_ID }}, x_api_key: ${{ secrets.HORIZON_API_KEY }}]" >> tests/integration/integration_config.yml
+    - name: Set integration_config.yml
+      run: >-
+        echo "[endpoint: ${{ secrets.HORIZON_ENDPOINT }}, x_api_id: ${{ secrets.HORIZON_API_ID }}, x_api_key: ${{ secrets.HORIZON_API_KEY }}]" >> tests/integration/integration_config.yml
 
-    - name: Perform unit testing with ansible-test
-      uses: ansible-community/ansible-test-gh-action@release/v1
-      with:
-        ansible-core-version: stable-2.14
-        target-python-version: 3.9
-        testing-type: units
+    - name: Run tests
+      run: make test

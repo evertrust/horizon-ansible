@@ -1,2 +1,4 @@
 cryptography>=3.5.0
 pyjwt
+requests
+pytest-xdist

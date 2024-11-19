@@ -26,8 +26,8 @@
   
   register: data
 
-- copy: content="{{ data.certificate.certificate }}" dest="/PEM.pem"
-- copy: content="{{ data.key }}" dest="/KEY.key"
+- copy: content="{{ data.certificate.certificate }}" dest="/tmp/PEM.pem"
+- copy: content="{{ data.key }}" dest="/tmp/KEY.key"
 
 - name: Test centralize enrollment with unidentified profile
   evertrust.horizon.horizon_enroll:

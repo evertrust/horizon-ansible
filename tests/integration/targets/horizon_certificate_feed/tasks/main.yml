@@ -6,7 +6,7 @@
     x_api_key: "{{ x_api_key }}"
 
     certificate_pem: 
-      src: "/PEM.pem"
+      src: "/tmp/PEM.pem"
     campaign: "Ansible"
     ip: 0.0.0.1
       
@@ -19,7 +19,7 @@
     x_api_key: "{{ x_api_key }}"
       
     certificate_pem: 
-      src: "/PEM.pem"
+      src: "/tmp/PEM.pem"
     ip: 0.0.0.1
     
   ignore_errors: yes
@@ -41,7 +41,7 @@
     x_api_key: "{{ x_api_key }}"
       
     certificate_pem: 
-      src: "/PEM.pem"
+      src: "/tmp/PEM.pem"
     campaign: "Ansible"
     
   ignore_errors: yes

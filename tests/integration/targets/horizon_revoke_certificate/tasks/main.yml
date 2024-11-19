@@ -6,7 +6,7 @@
     x_api_key: "{{ x_api_key }}"
 
     certificate_pem: 
-      src: "/PEM.pem"
+      src: "/tmp/PEM.pem"
 
     revocation_reason: "unspecified"
         
@@ -19,7 +19,7 @@
     x_api_key: "{{ x_api_key }}"
 
     certificate_pem: 
-      src: "/PEM.pem"
+      src: "/tmp/PEM.pem"
 
     revocation_reason: "unspecified"
 
@@ -53,8 +53,8 @@
   
   register: data
 
-- copy: content="{{ data.certificate.certificate }}" dest="/PEM2.pem"
-- copy: content="{{ data.key }}" dest="/KEY2.key"
+- copy: content="{{ data.certificate.certificate }}" dest="/tmp/PEM2.pem"
+- copy: content="{{ data.key }}" dest="/tmp/KEY2.key"
 
 - name: Revoke a certificate by its file
   evertrust.horizon.horizon_revoke:
@@ -62,8 +62,8 @@
     endpoint: "{{ endpoint }}"
 
     certificate_pem: 
-      src: "/PEM2.pem"
+      src: "/tmp/PEM2.pem"
     private_key:
-      src: "/KEY2.key"
+      src: "/tmp/KEY2.key"
 
     revocation_reason: "unspecified"

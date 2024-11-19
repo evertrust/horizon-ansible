@@ -6,7 +6,7 @@
     x_api_key: "{{ x_api_key }}"
 
     certificate_pem:
-      src: "/PEM.pem"
+      src: "/tmp/PEM.pem"
         
     labels: 
       label-1: "retest"
@@ -22,7 +22,7 @@
     x_api_key: "{{ x_api_key }}"
 
     certificate_pem:
-      src: "/PEM.pem"
+      src: "/tmp/PEM.pem"
         
     labels: 
       label-1: "retest"
@@ -49,7 +49,7 @@
     x_api_key: "{{ x_api_key }}"
 
     certificate_pem:
-      src: "/PEM.pem"
+      src: "/tmp/PEM.pem"
         
     labels: 
       unexistantLabel: "retest"
@@ -73,9 +73,9 @@
     endpoint: "{{endpoint }}"
 
     certificate_pem:
-      src: "/PEM.pem"
+      src: "/tmp/PEM.pem"
     private_key:
-      src: "/KEY.key"
+      src: "/tmp/KEY.key"
         
     labels: 
       label-1: "test"
