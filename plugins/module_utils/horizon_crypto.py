@@ -9,12 +9,20 @@ __metaclass__ = type
 import base64
 import secrets
 import re
+import jwt
+import time
+import hashlib
+import time
+import json
 
 from cryptography.hazmat.primitives.serialization import pkcs12, BestAvailableEncryption
 from cryptography import x509
 from cryptography.hazmat.primitives import hashes, serialization
-from cryptography.hazmat.primitives.asymmetric import rsa, ec
+from cryptography.hazmat.primitives.asymmetric import rsa, ec, padding
 from cryptography.x509.oid import NameOID
+from cryptography.hazmat.primitives.asymmetric.utils import encode_dss_signature
+from cryptography.hazmat.backends import default_backend
+
 
 class HorizonCrypto:
 
@@ -134,3 +142,33 @@ class HorizonCrypto:
         public_key = private_key.public_key()
 
         return private_key, public_key
+
+    @staticmethod
+    def generate_jwt_token(cert, private_key, nonce=""):
+        # Define payload
+        jwt_payload = {
+            "sub": cert,
+            "iat": int(time.time()),
+            "exp": int(time.time()) + 5
+        }
+        if nonce != "":
+            jwt_payload["nonce"] = nonce
+
+        # Load the private key from PEM format if it's a string
+        if isinstance(private_key, str):
+            private_key = private_key.encode('utf-8')
+        key = serialization.load_pem_private_key(private_key, password=None, backend=default_backend())
+
+        # Determine algorithm based on key type
+        if isinstance(key, rsa.RSAPrivateKey):
+            signing_method = "RS256"
+        elif isinstance(key, ec.EllipticCurvePrivateKey):
+            signing_method = "ES256"
+        else:
+            raise ValueError("Unsupported key type")
+
+        # Use PyJWT to encode and sign the token
+        jwt_token = jwt.encode(jwt_payload, private_key, algorithm=signing_method)
+
+        return jwt_token
+

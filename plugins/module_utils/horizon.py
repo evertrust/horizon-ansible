@@ -11,6 +11,7 @@ import urllib.parse
 
 import requests
 from ansible.errors import AnsibleError
+from ansible_collections.evertrust.horizon.plugins.module_utils.horizon_crypto import HorizonCrypto
 from ansible_collections.evertrust.horizon.plugins.module_utils.horizon_errors import HorizonError
 from ansible.utils.display import Display
 
@@ -23,7 +24,7 @@ class Horizon:
     DISCOVERY_FEED_URL = "/api/v1/discovery/feed"
     RFC5280_TC_URL = "/api/v1/rfc5280/tc/"
 
-    def __init__(self, endpoint=None, x_api_id=None, x_api_key=None, client_cert=None, client_key=None, ca_bundle=None):
+    def __init__(self, endpoint=None, x_api_id=None, x_api_key=None, client_cert=None, client_key=None, ca_bundle=None, private_key=None):
         """
         Initialize client with endpoint and authentication parameters
         :type endpoint: str
@@ -51,7 +52,7 @@ class Horizon:
         elif x_api_id is not None and x_api_key is not None:
             self.headers = {"x-api-id": str(x_api_id), "x-api-key": str(x_api_key)}
 
-        else:
+        elif private_key is None: # Authorizing missin authent parameters for pop request
             raise AnsibleError("Please inform authentication parameters : 'x_api_id' and 'x_api_key' or 'client_cert' and 'client_key'.")
 
     def enroll(self, profile, template, mode=None, csr=None, password=None, key_type=None, labels=None, metadata=None,
@@ -155,7 +156,7 @@ class Horizon:
 
         return self.post(self.REQUEST_SUBMIT_URL, json)
 
-    def renew(self, certificate_pem, certificate_id, password=None, csr=None):
+    def renew(self, certificate_pem, certificate_id, password=None, csr=None, private_key=None):
         """
         Renew a certificate
         :type certificate_pem: Union[str,dict]
@@ -163,12 +164,16 @@ class Horizon:
         :rtype: dict
         """
         csr = self.__load_file_or_string(csr)
+        cert = self.__load_file_or_string(certificate_pem)
+        if private_key is not None:
+            key = self.__load_file_or_string(private_key)
+            self.set_jwt_headers(cert, key)
 
         json = {
             "module": "webra",
             "workflow": "renew",
             "certificateId": certificate_id,
-            "certificatePem": self.__load_file_or_string(certificate_pem),
+            "certificatePem": cert,
             "template": {
                 "csr": csr
             }
@@ -180,17 +185,22 @@ class Horizon:
 
         return self.post(self.REQUEST_SUBMIT_URL, json)
 
-    def revoke(self, certificate_pem, certificate_id, revocation_reason):
+    def revoke(self, certificate_pem, certificate_id, revocation_reason, private_key=None):
         """
         Revoke a certificate
         :type certificate_pem: Union[str,dict]
         :type revocation_reason: str
         :rtype: dict
         """
+        cert = self.__load_file_or_string(certificate_pem)
+        if private_key is not None:
+            key = self.__load_file_or_string(private_key)
+            self.set_jwt_headers(cert, key)
+
         # Duplication of value is to support older API versions
         json = {
             "workflow": "revoke",
-            "certificatePem": self.__load_file_or_string(certificate_pem),
+            "certificatePem": cert,
             "certificateId": certificate_id,
             "revocationReason": revocation_reason,
             "template": {
@@ -200,7 +210,7 @@ class Horizon:
 
         return self.post(self.REQUEST_SUBMIT_URL, json)
 
-    def update(self, certificate_pem, labels=None, metadata=None, owner=None, team=None, contact_email=None):
+    def update(self, certificate_pem, labels=None, metadata=None, owner=None, team=None, contact_email=None, private_key=None):
         """
         Update a certificate
         :param metadata:
@@ -215,9 +225,14 @@ class Horizon:
         if labels is None:
             labels = {}
 
+        cert = self.__load_file_or_string(certificate_pem)
+        if private_key is not None:
+            key = self.__load_file_or_string(private_key)
+            self.set_jwt_headers(cert, key)
+
         json = {
             "workflow": "update",
-            "certificatePem": self.__load_file_or_string(certificate_pem),
+            "certificatePem": cert,
             "template": {
                 "metadata": self.__set_metadata(metadata),
                 "labels": self.__set_labels(labels)
@@ -498,6 +513,12 @@ class Horizon:
         method = method.upper()
         try:
             response = requests.request(method, uri, cert=self.cert, verify=self.bundle, headers=self.headers, **kwargs)
+            if "Replay-Nonce" in response.headers:
+                nonce = response.headers["Replay-Nonce"]
+                valid_jwt_token = HorizonCrypto.generate_jwt_token(self.certificate, self.private_key, nonce)
+                self.headers["X-JWT-CERT-POP"] = valid_jwt_token
+                response = requests.request(method, uri, cert=self.cert, verify=self.bundle, headers=self.headers, **kwargs)
+
         except requests.exceptions.SSLError:
             raise AnsibleError("Got an SSL error try using the 'ca_bundle' paramater")
         
@@ -772,3 +793,9 @@ class Horizon:
         :param password_policy
         """   
         return self.send('GET', "/api/v1/security/passwordpolicies/"+password_policy+"/generate")
+    
+    def set_jwt_headers(self, cert, key):
+        jwt_token = HorizonCrypto.generate_jwt_token(cert, key, "")
+        self.headers = {"X-JWT-CERT-POP": jwt_token}
+        self.certificate = cert
+        self.private_key = key

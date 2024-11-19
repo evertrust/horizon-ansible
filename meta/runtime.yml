@@ -10,4 +10,5 @@ action_groups:
     - horizon_feed
     - horion_inventory
     - horizon_lookup
+    - horizon_template
     - horizon

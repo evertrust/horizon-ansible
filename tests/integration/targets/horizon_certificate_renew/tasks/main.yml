@@ -50,3 +50,11 @@
         att/xqOGwLPrhZDgSQVtGnVFW2848ZCB4MjkvQFmF+rnqKP8DEDkjDujEPC27f/7
         UOZa8OXHqLGN6HsCwd7gcJYwAA==
         -----END CERTIFICATE REQUEST-----
+
+- name: Test pop renew
+  evertrust.horizon.horizon_renew:
+
+    endpoint: "{{ endpoint }}"
+
+    certificate_pem: "{{ data.certificate.certificate }}"
+    private_key: "{{ data.key }}"
