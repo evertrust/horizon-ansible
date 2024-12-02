@@ -37,6 +37,19 @@ options:
         description: The path to a CSR file
         required: false
         type: path
+  password:
+    description: Security password of the certificate.
+    required: false
+    type: str
+  private_key:
+    description: The PEM encoded private key associated to the certificate.
+    required: false
+    type: str
+    suboptions:
+      src:
+        description: The path to the PEM encoded private key associated to the certificate.
+        required: false
+        type: path
 '''
 
 # language=yaml
@@ -47,7 +60,7 @@ EXAMPLES = '''
     x_api_id: "<horizon-id>"
     x_api_key: "<horizon-password>"
     certificate_pem:
-      src: pem/file/path
+      src: path/to/pem
 
 - name: renew a certificate from his ID
   evertrust.horizon.horizon_renew:
@@ -63,7 +76,15 @@ EXAMPLES = '''
     x_api_key: "<horizon-password>"
     certificate_id: <id>
     csr: 
-      src: csr/file/path
+      src: path/to/csr
+
+- name: renew a certificate with pop
+  evertrust.horizon_renew:
+    endpoint: "https://<horizon-endpoint>"
+    certificate_pem:
+      src: path/to/pem
+    private_key:
+      src: path/to/key
 '''
 
 
