@@ -7,6 +7,8 @@ from __future__ import absolute_import, division, print_function
 
 __metaclass__ = type
 
+# TODO: update doc
+
 # language=yaml
 DOCUMENTATION = '''
 module: horizon_renew
@@ -15,6 +17,14 @@ short_description: Horizon renew plugin
 description: Performs a renew against the Horizon API.
 extends_documentation_fragment: evertrust.horizon.auth_options
 options:
+  mode:
+    description:
+      - Enable the generation of a csr if set at 'decentralized' on pop renew.
+    required: false
+    type: str
+    choices:
+      - centralized
+      - decentralized
   certificate_pem:
     description: The PEM encoded certificate to renew.
     required: false
@@ -81,6 +91,15 @@ EXAMPLES = '''
 - name: renew a certificate with pop
   evertrust.horizon_renew:
     endpoint: "https://<horizon-endpoint>"
+    certificate_pem:
+      src: path/to/pem
+    private_key:
+      src: path/to/key
+
+- name: decentralized pop renewal
+  evertrust.horizon_renew:
+    endpoint: "https://<horizon-endpoint>"
+    mode: "decentralized"
     certificate_pem:
       src: path/to/pem
     private_key:
