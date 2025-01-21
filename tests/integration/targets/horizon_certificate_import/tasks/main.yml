@@ -67,4 +67,4 @@
   vars:
     certificate:
       src: '/tmp/importkey.pem'
-    cert_id: "{{ lookup('evertrust.horizon.horizon_lookup', ca_bundle=ca_bundle, endpoint=endpoint, x_api_id=x_api_id, x_api_key=x_api_key, certificate_pem=certificate, fields='_id', wantlist=True) }}"
+    cert_id: "{{ lookup('evertrust.horizon.horizon_lookup', endpoint=endpoint, x_api_id=x_api_id, x_api_key=x_api_key, certificate_pem=certificate, fields='_id', wantlist=True) }}"
