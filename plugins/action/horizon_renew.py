@@ -10,7 +10,6 @@ from ansible.errors import AnsibleError
 from ansible_collections.evertrust.horizon.plugins.module_utils.horizon_action import HorizonAction
 from ansible_collections.evertrust.horizon.plugins.module_utils.horizon_crypto import HorizonCrypto
 from ansible_collections.evertrust.horizon.plugins.module_utils.horizon_errors import HorizonError
-from cryptography.hazmat.primitives.serialization import load_pem_private_key
 
 
 class ActionModule(HorizonAction):
@@ -51,15 +50,16 @@ class ActionModule(HorizonAction):
 
             if should_generate_csr:
                 result["key"] = HorizonCrypto.get_key_bytes(private_key)
-
-            if "pkcs12" in response.keys():
+                if password in content and content["password"] != "" and content["password"] is not None:
+                    p12, p12_password = HorizonCrypto.get_p12_from_key(result["key"], result["certificate"]["certificate"], password)
+                    result["p12"] = p12
+                    result["p12_password"] = p12_password
+            elif "pkcs12" in response.keys():
                 result["p12"] = response["pkcs12"]["value"]
                 result["p12_password"] = response["password"]["value"]
                 result["key"] = HorizonCrypto.get_key_from_p12(response["pkcs12"]["value"],
                                                                response["password"]["value"])
             
-            
-
         except HorizonError as e:
             raise AnsibleError(e.full_message)
 
