@@ -16,7 +16,8 @@ description: Performs a renew against the Horizon API.
 extends_documentation_fragment: evertrust.horizon.auth_options
 options:
   mode:
-    description:
+    description: 
+      - Renewal mode.
       - Enable the generation of a csr if set at 'decentralized' on pop renew.
     required: false
     type: str
@@ -46,7 +47,9 @@ options:
         required: false
         type: path
   password:
-    description: Security password of the certificate.
+    description: 
+      - Security password of the certificate.
+      - If the csr has been generated automatically, this options will add the pkcs12 in the result.
     required: false
     type: str
   private_key:
