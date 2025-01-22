@@ -50,7 +50,7 @@ class ActionModule(HorizonAction):
 
             if should_generate_csr:
                 result["key"] = HorizonCrypto.get_key_bytes(private_key)
-                if password in content and content["password"] != "" and content["password"] is not None:
+                if "password" in content and content["password"] != "" and content["password"] is not None:
                     p12, p12_password = HorizonCrypto.get_p12_from_key(result["key"], result["certificate"]["certificate"], password)
                     result["p12"] = p12
                     result["p12_password"] = p12_password
