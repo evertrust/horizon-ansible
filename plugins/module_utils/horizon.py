@@ -747,8 +747,6 @@ class Horizon:
             elif field in response:
                     result[field] = response[field]
 
-
-        # TODO: return a list instead
         return [result]
 
     @staticmethod
