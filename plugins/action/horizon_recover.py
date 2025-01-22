@@ -12,6 +12,7 @@ from ansible_collections.evertrust.horizon.plugins.module_utils.horizon_action i
 from ansible_collections.evertrust.horizon.plugins.module_utils.horizon_crypto import HorizonCrypto
 from ansible_collections.evertrust.horizon.plugins.module_utils.horizon_errors import HorizonError
 
+from ansible import __version__ as ansible_version
 
 class ActionModule(HorizonAction):
     TRANSFERS_FILES = True
@@ -25,7 +26,7 @@ class ActionModule(HorizonAction):
         try:
             client = self._get_client()
             content = self._get_content()
-            response = client.recover(**content)
+            response = client.recover(**content, version=ansible_version)
             
             if "certificate" in response:
                 result["certificate"] = response["certificate"]

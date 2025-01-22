@@ -14,6 +14,7 @@ from ansible.errors import AnsibleError
 from ansible_collections.evertrust.horizon.plugins.module_utils.horizon_crypto import HorizonCrypto
 from ansible_collections.evertrust.horizon.plugins.module_utils.horizon_errors import HorizonError
 from ansible.utils.display import Display
+from packaging.version import parse as parse_version
 
 
 class Horizon:
@@ -134,14 +135,21 @@ class Horizon:
 
         return self.post(self.REQUEST_SUBMIT_URL, json)
 
-    def recover(self, certificate_pem, password):
+    def recover(self, certificate_pem, password, version):
         """
         Recover a certificate
         :type certificate_pem: Union[str,dict]
         :type password: str
         :rtype: dict
         """
-        profile = self.certificate(certificate_pem)[0]["profile"]
+        cert_infos = self.certificate(certificate_pem, version)
+        if isinstance(cert_infos, dict):
+            profile = cert_infos["profile"]
+        elif isinstance(cert_infos, list):
+            profile = cert_infos[0]["profile"]
+        else:
+            raise AnsibleError("Unknown format of certificate infos")
+        
         template = self.get_template(profile, "recover", "webra")
         password = self.check_password_policy(password, template)
 
@@ -351,7 +359,7 @@ class Horizon:
 
         return self.post(self.DISCOVERY_FEED_URL, json)
 
-    def certificate(self, certificate_pem, fields=None):
+    def certificate(self, certificate_pem, version, fields=None):
         """
         Retrieve a certificate's attributes
         :type certificate_pem: Union[str,dict]
@@ -367,7 +375,7 @@ class Horizon:
             fields = []
             for value in response:
                 fields.append(value)
-        return self.__format_response(response, fields)
+        return self.__format_response(response, fields, version)
 
     def chain(self, certificate_pem):
         """
@@ -707,7 +715,7 @@ class Horizon:
             raise AnsibleError(f'The mode: {mode} is not available.')
 
     @staticmethod
-    def __format_response(response, fields):
+    def __format_response(response, fields, version):
         """
         :param response: an answer from the API
         :param fields: list of fields
@@ -747,7 +755,12 @@ class Horizon:
             elif field in response:
                     result[field] = response[field]
 
-        return [result]
+        # Check ansible version to return the correct format
+        parsed_version = parse_version(version)
+        if parsed_version < parse_version("2.18.0"):
+            return result
+        else:
+            return [result]
 
     @staticmethod
     def load_file_or_string(content):

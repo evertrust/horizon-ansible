@@ -312,6 +312,8 @@ from ansible.plugins.lookup import LookupBase
 from ansible.utils.display import Display
 from ansible.errors import AnsibleLookupError
 
+from ansible import __version__ as ansible_version
+
 display = Display()
 
 
@@ -321,7 +323,7 @@ class LookupModule(LookupBase):
         try:
             client = Horizon(**self._get_auth(kwargs))
             content = self._get_content(kwargs)
-            result = client.certificate(**content)
+            result = client.certificate(**content, version=ansible_version)
 
         except HorizonError as e:
             raise AnsibleLookupError(e.full_message)
