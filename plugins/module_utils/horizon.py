@@ -52,7 +52,7 @@ class Horizon:
         elif x_api_id is not None and x_api_key is not None:
             self.headers = {"x-api-id": str(x_api_id), "x-api-key": str(x_api_key)}
 
-        elif private_key is None: # Authorizing missin authent parameters for pop request
+        elif private_key is None: # Authorizing missing authent parameters for pop request
             raise AnsibleError("Please inform authentication parameters : 'x_api_id' and 'x_api_key' or 'client_cert' and 'client_key'.")
 
     def enroll(self, profile, template, mode=None, csr=None, password=None, key_type=None, labels=None, metadata=None,
@@ -81,7 +81,7 @@ class Horizon:
         if metadata is None:
             metadata = {}
     
-        csr = self.__load_file_or_string(csr)
+        csr = self.load_file_or_string(csr)
 
         if mode == "decentralized":
             if csr is None:
@@ -151,23 +151,27 @@ class Horizon:
             "password": {
                 "value": password,
             },
-            "certificatePem": self.__load_file_or_string(certificate_pem)
+            "certificatePem": self.load_file_or_string(certificate_pem)
         }
 
         return self.post(self.REQUEST_SUBMIT_URL, json)
 
-    def renew(self, certificate_pem, certificate_id, password=None, csr=None, private_key=None):
+    def renew(self, certificate_pem, certificate_id, password=None, csr=None, private_key=None, mode=None):
         """
         Renew a certificate
         :type certificate_pem: Union[str,dict]
         :type certificate_id: str
         :rtype: dict
         """
-        csr = self.__load_file_or_string(csr)
-        cert = self.__load_file_or_string(certificate_pem)
+        csr = self.load_file_or_string(csr)
+        cert = self.load_file_or_string(certificate_pem)
         if private_key is not None:
-            key = self.__load_file_or_string(private_key)
+            key = self.load_file_or_string(private_key)
             self.set_jwt_headers(cert, key)
+
+        if mode == "decentralized":
+            if csr is None:
+                raise AnsibleError("You must specify a CSR when using decentralized enrollment")
 
         json = {
             "module": "webra",
@@ -192,9 +196,9 @@ class Horizon:
         :type revocation_reason: str
         :rtype: dict
         """
-        cert = self.__load_file_or_string(certificate_pem)
+        cert = self.load_file_or_string(certificate_pem)
         if private_key is not None:
-            key = self.__load_file_or_string(private_key)
+            key = self.load_file_or_string(private_key)
             self.set_jwt_headers(cert, key)
 
         # Duplication of value is to support older API versions
@@ -225,9 +229,9 @@ class Horizon:
         if labels is None:
             labels = {}
 
-        cert = self.__load_file_or_string(certificate_pem)
+        cert = self.load_file_or_string(certificate_pem)
         if private_key is not None:
-            key = self.__load_file_or_string(private_key)
+            key = self.load_file_or_string(private_key)
             self.set_jwt_headers(cert, key)
 
         json = {
@@ -261,12 +265,12 @@ class Horizon:
             "workflow": "import",
             "profile": profile,
             "template": {
-                "privateKey": self.__load_file_or_string(private_key),
+                "privateKey": self.load_file_or_string(private_key),
                 "metadata": self.__set_metadata(metadata),
                 "labels": self.__set_labels(labels)
             },
             "certificateId": certificate_id,
-            "certificatePem": self.__load_file_or_string(certificate_pem)
+            "certificatePem": self.load_file_or_string(certificate_pem)
         }
 
         if owner is not None:
@@ -335,7 +339,7 @@ class Horizon:
 
         json = {
             "campaign": campaign,
-            "certificate": self.__load_file_or_string(certificate_pem),
+            "certificate": self.load_file_or_string(certificate_pem),
             "hostDiscoveryData": {
                 "ip": ip,
                 "hostnames": hostnames,
@@ -354,8 +358,8 @@ class Horizon:
         :type fields: list
         :rtype: dict
         """
-        pem = self.__load_file_or_string(certificate_pem)
-        pem = urllib.parse.quote(pem, safe='')
+        pem = self.load_file_or_string(certificate_pem)
+        pem = urllib.parse.quote(str(pem), safe='')
 
         response = self.get(self.CERTIFICATES_SHOW_URL + pem)
 
@@ -371,7 +375,7 @@ class Horizon:
         :type certificate_pem: Union[str,dict]
         :rtype: str
         """
-        pem = self.__load_file_or_string(certificate_pem)
+        pem = self.load_file_or_string(certificate_pem)
         pem = urllib.parse.quote(pem, safe='')
         return self.get(self.RFC5280_TC_URL + pem)
 
@@ -747,7 +751,7 @@ class Horizon:
         return result
 
     @staticmethod
-    def __load_file_or_string(content):
+    def load_file_or_string(content):
         """
         Opens a certificate if a path is given
         :param content:
@@ -781,7 +785,6 @@ class Horizon:
             if 'template' in args['json'] and 'certificate' in content:
                 for arg in args['json']['template']:
                     if arg not in content['certificate'] and arg not in exception_list:
-                        #TODO: Write a better message for the warning.
                         Display().warning('The value "%s" has not been returned by the API' % (arg))
                         warning = True
 

@@ -1,37 +1,29 @@
 - name: centralize enroll
   evertrust.horizon.horizon_enroll:
-
     endpoint: "{{ endpoint }}"
     x_api_id: "{{ x_api_id }}"
     x_api_key: "{{ x_api_key }}"
-
     profile: "Ansible"
     mode: "centralized"
     key_type: "rsa-2048"
-      
     subject:
       cn.1: "IntegrationTestCI-certificate-to-renew"
       o.1: "Evertrust"
       ou.1: "R&D"
-  
   register: data
 
 - name: Test centralized renew
   evertrust.horizon.horizon_renew:
-
     endpoint: "{{ endpoint }}"
     x_api_id: "{{ x_api_id }}"
     x_api_key: "{{ x_api_key }}"
-
     certificate_id: "{{ data.certificate._id }}"
 
 - name: Test decentralized renew
   evertrust.horizon.horizon_renew:
-
     endpoint: "{{ endpoint }}"
     x_api_id: "{{ x_api_id }}"
     x_api_key: "{{ x_api_key }}"
-
     certificate_id: "{{ data.certificate._id }}"
     csr: |
         -----BEGIN CERTIFICATE REQUEST-----
@@ -53,8 +45,99 @@
 
 - name: Test pop renew
   evertrust.horizon.horizon_renew:
-
     endpoint: "{{ endpoint }}"
-
     certificate_pem: "{{ data.certificate.certificate }}"
     private_key: "{{ data.key }}"
+
+- name: Test pop renew decentralized
+  evertrust.horizon.horizon_renew:
+    endpoint: "{{ endpoint }}"
+    mode: "decentralized"
+    certificate_pem: "{{ data.certificate.certificate }}"
+    private_key: "{{ data.key }}"
+    csr: |
+      -----BEGIN CERTIFICATE REQUEST-----
+      MIICfzCCAWcCAQAwOjELMAkGA1UEBhMCRlIxEjAQBgNVBAoMCUV2ZXJ0cnVzdDEX
+      MBUGA1UEAwwOTVlBTlNJQkxFQ0lDU1IwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAw
+      ggEKAoIBAQDXYHbD54XThxsD01uRZVYKRJpdyvQtd9EGMXXhiEKljQ2cXuFUHT/F
+      MYTr15gF1T6zF0XSKXVYI3Q98WseU2b/obKa3fxDaIDMh5ARJJnFxfaYw6v8m7Wn
+      iJCYlu8jQRmfxcPBRbX0r6GQtwMI9ge38goBGh7kwnG1Shuqxb1XjBwFouSZ+yL2
+      kFonhFYsFCDcRaUIWJfGSgpAzdK66w2SnKBYGjFn/LOh/tybY0QE/7sMSKtYOvUj
+      YVNyxLPCWFLNkl1UV7I2c7eWuCDDwvUGI1sbpydFAewEn805zWapZRDHfFX/06YW
+      9BzaxZmO1Zs4tGj/GZOXG21NM9aT0FDdAgMBAAGgADANBgkqhkiG9w0BAQsFAAOC
+      AQEABXD15Bb/jq0+/3zZl63i2RaLob4LVNk1/yII0HPgr4OYCMPcILpJPb9/GzeH
+      3CCzGuFuDr8kBHumyA24YbdtNQ46iM2HUmw4JaFlzTYmo0zMsa5MbQhmKfym0k9v
+      XcO4CHnP9TBCh/yWSlagqSUrQVN0mxHQrzVUGsM5KMjW83xnQhuvGDZ8Ke9Vjvyv
+      KXsklafhHYh4DCGAlfElS0Ye/TP+L5m0jS7IigrsrtqDeK8I+MBnQpyHUAZUhENp
+      att/xqOGwLPrhZDgSQVtGnVFW2848ZCB4MjkvQFmF+rnqKP8DEDkjDujEPC27f/7
+      UOZa8OXHqLGN6HsCwd7gcJYwAA==
+      -----END CERTIFICATE REQUEST-----
+
+- name: Test pop renew centralized
+  evertrust.horizon.horizon_renew:
+    endpoint: "{{ endpoint }}"
+    mode: "centralized"
+    certificate_pem: "{{ data.certificate.certificate }}"
+    private_key: "{{ data.key }}"
+
+- name: Test pop renew decentralized generate csr
+  evertrust.horizon.horizon_renew:
+    endpoint: "{{ endpoint }}"
+    mode: "decentralized"
+    certificate_pem: "{{ data.certificate.certificate }}"
+    private_key: "{{ data.key }}"
+
+- name: Test centralized renew with csr
+  evertrust.horizon.horizon_renew:
+    endpoint: "{{ endpoint }}"
+    x_api_id: "{{ x_api_id }}"
+    x_api_key: "{{ x_api_key }}"
+    mode: centralized
+    certificate_id: "{{ data.certificate._id }}"
+    csr: |
+        -----BEGIN CERTIFICATE REQUEST-----
+        MIICfzCCAWcCAQAwOjELMAkGA1UEBhMCRlIxEjAQBgNVBAoMCUV2ZXJ0cnVzdDEX
+        MBUGA1UEAwwOTVlBTlNJQkxFQ0lDU1IwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAw
+        ggEKAoIBAQDXYHbD54XThxsD01uRZVYKRJpdyvQtd9EGMXXhiEKljQ2cXuFUHT/F
+        MYTr15gF1T6zF0XSKXVYI3Q98WseU2b/obKa3fxDaIDMh5ARJJnFxfaYw6v8m7Wn
+        iJCYlu8jQRmfxcPBRbX0r6GQtwMI9ge38goBGh7kwnG1Shuqxb1XjBwFouSZ+yL2
+        kFonhFYsFCDcRaUIWJfGSgpAzdK66w2SnKBYGjFn/LOh/tybY0QE/7sMSKtYOvUj
+        YVNyxLPCWFLNkl1UV7I2c7eWuCDDwvUGI1sbpydFAewEn805zWapZRDHfFX/06YW
+        9BzaxZmO1Zs4tGj/GZOXG21NM9aT0FDdAgMBAAGgADANBgkqhkiG9w0BAQsFAAOC
+        AQEABXD15Bb/jq0+/3zZl63i2RaLob4LVNk1/yII0HPgr4OYCMPcILpJPb9/GzeH
+        3CCzGuFuDr8kBHumyA24YbdtNQ46iM2HUmw4JaFlzTYmo0zMsa5MbQhmKfym0k9v
+        XcO4CHnP9TBCh/yWSlagqSUrQVN0mxHQrzVUGsM5KMjW83xnQhuvGDZ8Ke9Vjvyv
+        KXsklafhHYh4DCGAlfElS0Ye/TP+L5m0jS7IigrsrtqDeK8I+MBnQpyHUAZUhENp
+        att/xqOGwLPrhZDgSQVtGnVFW2848ZCB4MjkvQFmF+rnqKP8DEDkjDujEPC27f/7
+        UOZa8OXHqLGN6HsCwd7gcJYwAA==
+        -----END CERTIFICATE REQUEST-----
+  ignore_errors: yes
+  register: error1
+
+# Check error
+- name: Check error1
+  assert: 
+    that:
+      - error1 is failed
+      - "'Parameter csr cannot be used in centralized mode' in error1.msg"
+
+- name: Test decentralized renew without csr
+  evertrust.horizon.horizon_renew:
+    endpoint: "{{ endpoint }}"
+    x_api_id: "{{ x_api_id }}"
+    x_api_key: "{{ x_api_key }}"
+    mode: "decentralized"
+    certificate_id: "{{ data.certificate._id }}"
+  ignore_errors: yes
+  register: error2
+
+# Check error
+- name: Check error2
+  assert: 
+    that:
+      - error2 is failed
+      - "'You must specify a CSR when using decentralized enrollment' in error2.msg"
+
+
+
+# TODO: add pop renew (decentralized/centralized) with constraint profiles
