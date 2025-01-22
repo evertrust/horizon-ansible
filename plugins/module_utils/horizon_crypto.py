@@ -174,9 +174,12 @@ class HorizonCrypto:
 
     @staticmethod
     def get_key_type(pem_data):
-        cert = x509.load_pem_x509_certificate(pem_data.encode('utf-8'))
-        public_key = cert.public_key()
-        if isinstance(public_key, rsa.RSAPublicKey):
-            return "rsa-" + str(public_key.key_size)
-        elif isinstance(public_key, ec.EllipticCurvePublicKey):
-            return "ec-" + str(public_key.curve.name)
+        if pem_data != "" and pem_data is not None:
+            cert = x509.load_pem_x509_certificate(pem_data.encode('utf-8'))
+            public_key = cert.public_key()
+            if isinstance(public_key, rsa.RSAPublicKey):
+                return "rsa-" + str(public_key.key_size)
+            elif isinstance(public_key, ec.EllipticCurvePublicKey):
+                return "ec-" + str(public_key.curve.name)
+        else:
+            raise Exception("Certificate data not found")

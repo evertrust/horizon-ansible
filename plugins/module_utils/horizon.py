@@ -785,7 +785,6 @@ class Horizon:
             if 'template' in args['json'] and 'certificate' in content:
                 for arg in args['json']['template']:
                     if arg not in content['certificate'] and arg not in exception_list:
-                        #TODO: Write a better message for the warning.
                         Display().warning('The value "%s" has not been returned by the API' % (arg))
                         warning = True
 
