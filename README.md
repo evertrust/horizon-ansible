@@ -35,7 +35,7 @@ collections:
 
 Some modules require external Python dependencies (mainly the `cryptography` module), which are not installed by `ansible-galaxy`. They can be manually installed using pip:
 
-    pip install requirements.txt
+    pip install -r requirements.txt
 
 
 ## Documentation
