@@ -359,7 +359,7 @@ class Horizon:
         :rtype: dict
         """
         pem = self.load_file_or_string(certificate_pem)
-        pem = urllib.parse.quote(pem, safe='')
+        pem = urllib.parse.quote(str(pem), safe='')
 
         response = self.get(self.CERTIFICATES_SHOW_URL + pem)
 

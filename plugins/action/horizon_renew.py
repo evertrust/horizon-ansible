@@ -34,12 +34,14 @@ class ActionModule(HorizonAction):
 
             # In pop renewal, generate empty csr in decentralized mode
             if should_generate_csr:                
-                key_data = client.load_file_or_string(content["private_key"])
-                if isinstance(key_data, str):
-                    key_data = key_data.encode("utf-8")
-                private_key = load_pem_private_key(key_data, None)
-                csr = HorizonCrypto.generate_pckcs10(subject={"cn.1": ""}, private_key=private_key)
-                content["csr"] = csr
+                try:
+                    pem_data = client.load_file_or_string(content["certificate_pem"])
+                    key_type = HorizonCrypto.get_key_type(pem_data)
+                    private_key, public_key = HorizonCrypto.generate_key_pair(key_type)
+                    csr = HorizonCrypto.generate_pckcs10(subject={"cn.1": ""}, private_key=private_key)
+                    content['csr'] = csr
+                except Exception as e:
+                    raise AnsibleError(e)
 
             response = client.renew(**content)
 
@@ -47,11 +49,18 @@ class ActionModule(HorizonAction):
                 result["certificate"] = response["certificate"]
                 result["chain"] = client.chain(result["certificate"]["certificate"])
 
-            if "pkcs12" in response.keys():
+            if should_generate_csr:
+                result["key"] = HorizonCrypto.get_key_bytes(private_key)
+                p12, p12_password = HorizonCrypto.get_p12_from_key(result["key"], result["certificate"]["certificate"], content["password"])
+                result["p12"] = p12
+                result["p12_password"] = p12_password
+            elif "pkcs12" in response.keys():
                 result["p12"] = response["pkcs12"]["value"]
                 result["p12_password"] = response["password"]["value"]
                 result["key"] = HorizonCrypto.get_key_from_p12(response["pkcs12"]["value"],
                                                                response["password"]["value"])
+            
+            
 
         except HorizonError as e:
             raise AnsibleError(e.full_message)
