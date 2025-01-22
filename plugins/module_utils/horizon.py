@@ -52,7 +52,7 @@ class Horizon:
         elif x_api_id is not None and x_api_key is not None:
             self.headers = {"x-api-id": str(x_api_id), "x-api-key": str(x_api_key)}
 
-        elif private_key is None: # Authorizing missin authent parameters for pop request
+        elif private_key is None: # Authorizing missing authent parameters for pop request
             raise AnsibleError("Please inform authentication parameters : 'x_api_id' and 'x_api_key' or 'client_cert' and 'client_key'.")
 
     def enroll(self, profile, template, mode=None, csr=None, password=None, key_type=None, labels=None, metadata=None,
