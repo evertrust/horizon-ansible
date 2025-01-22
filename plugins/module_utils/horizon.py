@@ -19,6 +19,7 @@ from packaging.version import parse as parse_version
 
 class Horizon:
     REQUEST_SUBMIT_URL = "/api/v1/requests/submit"
+    REQUEST_CANCEL_URL = "/api/v1/requests/cancel"
     REQUEST_TEMPLATE_URL = "/api/v1/requests/template"
     CERTIFICATES_SHOW_URL = "/api/v1/certificates/"
     CERTIFICATES_SEARCH_URL = "/api/v1/certificates/search"
@@ -542,7 +543,10 @@ class Horizon:
         # Check args returned by the API
         self.__get_warnings(kwargs, content=content)
 
-        if response.ok:
+        if "status" in content and content["status"] == "pending":
+            self.cancel_request(content["_id"], content["workflow"])
+            raise AnsibleError(message=f"Request has been canceled. It seems user '{ content['requester'] }' doesn't have the autorization to perform a '{ content['workflow'] }' request on '{ content['profile'] }' profile.")
+        elif response.ok:
             return content
 
         if 'message' in content:
@@ -561,6 +565,15 @@ class Horizon:
             error_code = response.status_code
 
         raise HorizonError(message=error_message, code=error_code, detail=error_detail, response=response)
+
+    def cancel_request(self, request_id, workflow):
+        json = {
+            "_id": request_id,
+            "module": "webra",
+            "workflow": workflow
+        }
+
+        return self.post(self.REQUEST_CANCEL_URL, json)
 
     @staticmethod
     def __set_labels(labels):
