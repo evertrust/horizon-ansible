@@ -1,6 +1,6 @@
 - name: Update a certificate by its content
   evertrust.horizon.horizon_update:
-    endpoint: "{{endpoint }}"
+    endpoint: "{{ endpoint }}"
     x_api_id: "{{ x_api_id }}"
     x_api_key: "{{ x_api_key }}"
     certificate_pem:
@@ -12,7 +12,7 @@
 
 - name: Update with unknown team
   evertrust.horizon.horizon_update:
-    endpoint: "{{endpoint }}"
+    endpoint: "{{ endpoint }}"
     x_api_id: "{{ x_api_id }}"
     x_api_key: "{{ x_api_key }}"
     certificate_pem:
@@ -34,7 +34,7 @@
 
 - name: Update with unexistant label
   evertrust.horizon.horizon_update:
-    endpoint: "{{endpoint }}"
+    endpoint: "{{ endpoint }}"
     x_api_id: "{{ x_api_id }}"
     x_api_key: "{{ x_api_key }}"
     certificate_pem:
@@ -55,7 +55,7 @@
 
 - name: Update a certificate with pop
   evertrust.horizon.horizon_update:
-    endpoint: "{{endpoint }}"
+    endpoint: "{{ endpoint }}"
     certificate_pem:
       src: "/tmp/PEM.pem"
     private_key:

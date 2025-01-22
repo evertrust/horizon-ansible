@@ -54,18 +54,17 @@
     campaign: "Ansible"
     ip: 0.0.0.1
 
-# TODO: fix problem and uncomment
-# - name: Import a key by a file
-#   evertrust.horizon.horizon_import:
-#     endpoint: "{{ endpoint }}"
-#     x_api_id: "{{ x_api_id }}"
-#     x_api_key: "{{ x_api_key }}"
+- name: Import a key by a file
+  evertrust.horizon.horizon_import:
+    endpoint: "{{ endpoint }}"
+    x_api_id: "{{ x_api_id }}"
+    x_api_key: "{{ x_api_key }}"
 
-#     profile: "Ansible"
-#     certificate_id: "{{ cert_id._id }}"
-#     private_key:
-#       src: /tmp/importkey.key
-#   vars:
-#     certificate:
-#       src: '/tmp/importkey.pem'
-#     cert_id: "{{ lookup('evertrust.horizon.horizon_lookup', endpoint=endpoint, x_api_id=x_api_id, x_api_key=x_api_key, certificate_pem=certificate, fields='_id', wantlist=True) }}"
+    profile: "Ansible"
+    certificate_id: "{{ cert_id._id }}"
+    private_key:
+      src: /tmp/importkey.key
+  vars:
+    certificate:
+      src: '/tmp/importkey.pem'
+    cert_id: "{{ lookup('evertrust.horizon.horizon_lookup', endpoint=endpoint, x_api_id=x_api_id, x_api_key=x_api_key, certificate_pem=certificate, fields='_id', wantlist=True)[0] }}"

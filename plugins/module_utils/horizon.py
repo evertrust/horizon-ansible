@@ -141,7 +141,7 @@ class Horizon:
         :type password: str
         :rtype: dict
         """
-        profile = self.certificate(certificate_pem)["profile"]
+        profile = self.certificate(certificate_pem)[0]["profile"]
         template = self.get_template(profile, "recover", "webra")
         password = self.check_password_policy(password, template)
 
@@ -747,8 +747,7 @@ class Horizon:
             elif field in response:
                     result[field] = response[field]
 
-
-        return result
+        return [result]
 
     @staticmethod
     def load_file_or_string(content):
