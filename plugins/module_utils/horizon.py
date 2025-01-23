@@ -545,7 +545,7 @@ class Horizon:
 
         if "status" in content and content["status"] == "pending":
             self.cancel_request(content["_id"], content["workflow"])
-            raise AnsibleError(message=f"Request has been canceled. It seems user '{ content['requester'] }' doesn't have the autorization to perform a '{ content['workflow'] }' request on '{ content['profile'] }' profile.")
+            raise AnsibleError(message=f"Request has been canceled. User '{ content['requester'] }' doesn't have the rights to perform a '{ content['workflow'] }' request on profile '{ content['profile'] }'.")
         elif response.ok:
             return content
 
