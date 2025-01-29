@@ -1,0 +1,26 @@
+[
+  {
+    "_id": {
+      "$oid": "65771cc92a00001d00283789"
+    },
+    "name": "EMPTY",
+    "profile": "est-pwd-simple",
+    "compliancePolicy": {}
+  },
+  {
+    "_id": {
+      "$oid": "65771cc92a00001d00283790"
+    },
+    "name": "challenge",
+    "profile": "est-challenge-template",
+    "compliancePolicy": {}
+  },
+  {
+    "_id": {
+      "$oid": "65771cc92a00001d00283791"
+    },
+    "name": "acme",
+    "profile": "acme-metadata",
+    "compliancePolicy": {}
+  }
+]

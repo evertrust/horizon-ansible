@@ -1,0 +1,42 @@
+services:
+  mongo:
+    image: mongo:${MONGO_VERSION}
+    container_name: mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - ./etc/horizon_db/${HORIZON_DB}:/data/horizon
+      - ./etc/horizon_db/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js
+
+  horizon:
+    image: quay.io/evertrust/horizon:${HORIZON_VERSION}
+    container_name: horizon
+    depends_on:
+      - mongo
+    environment:
+      LICENSE: ${LICENSE}
+      MONGODB_URI: mongodb://mongo:27017/horizon_db
+      APPLICATION_SECRET: arandomsecretthatisverylongotherwiseplaywillnotbehappy
+      EVENT_SEAL_SECRET: arandomsecretthatisverylongotherwiseplaywillnotbehappy
+      VAULT_MASTER_PASSWORD: password
+      VAULT_TYPE: ssv
+      HOSTS_ALLOWED.0: "."
+      HTTP_CERTIFICATE_HEADER: SSL_CLIENT_CERT
+    ports:
+      - "9000:9000"
+
+  nginx:
+    image: nginx:1
+    container_name: nginx
+    depends_on:
+      - horizon
+    environment:
+      NGINX_ENVSUBST_OUTPUT_DIR: /etc/nginx
+      HORIZON_HOST: horizon
+    volumes:
+      - ./etc/ssl/cert.pem:/var/ssl/cert.pem
+      - ./etc/ssl/key.pem:/var/ssl/key.pem
+      - ./etc/nginx/templates/nginx.conf.template:/etc/nginx/templates/nginx.conf.template
+    ports:
+      - "80:80"
+      - "443:443"

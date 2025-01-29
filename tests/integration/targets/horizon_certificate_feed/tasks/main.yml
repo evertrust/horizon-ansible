@@ -2,6 +2,7 @@
   evertrust.horizon.horizon_feed:
 
     endpoint: "{{ endpoint }}"
+    ca_bundle: "{{ ca_bundle }}"
     x_api_id: "{{ x_api_id }}"
     x_api_key: "{{ x_api_key }}"
 
@@ -15,6 +16,7 @@
   evertrust.horizon.horizon_feed:
 
     endpoint: "{{ endpoint }}"
+    ca_bundle: "{{ ca_bundle }}"
     x_api_id: "{{ x_api_id }}"
     x_api_key: "{{ x_api_key }}"
       
@@ -37,6 +39,7 @@
   evertrust.horizon.horizon_feed:
 
     endpoint: "{{ endpoint }}"
+    ca_bundle: "{{ ca_bundle }}"
     x_api_id: "{{ x_api_id }}"
     x_api_key: "{{ x_api_key }}"
       

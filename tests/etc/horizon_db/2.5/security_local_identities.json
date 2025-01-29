@@ -1,0 +1,33 @@
+[{
+  "_id": {
+    "$oid": "64d3a6b72a0000340017594d"
+  },
+  "identifier": "administrator",
+  "name": "Horizon Administrator",
+  "hash": "$6$Vzib4IPtkfOtci.r$t5qrQjNUFaW5PwJEyPaFRFHC9H2qApSFxk29wuc9M/iWY3p2ODVKhJJO2AGHRkuqarEw0Hcsf9ClRMvkxykVO."
+},
+{
+  "_id": {
+    "$oid": "64d3ad8f2a00003500175977"
+  },
+  "identifier": "evtqa",
+  "hash": "$6$wqZyNftV9w6Hg8wX$mksHWJ2SfW3HcMJOZmN13vkMrxCx0Lm.jMil8kc2Zj8Kqunu7GbP5UM/etLkiRinF7o5t0RsiME0d9/WCts2z."
+},
+{
+  "_id": {
+    "$oid": "65412b242a00002d00bf7b51"
+  },
+  "identifier": "reference_owner"
+},
+{
+  "_id": {
+    "$oid": "66165f3a2b00003000a510f3"
+  },
+  "identifier": "migrater"
+},
+{
+  "_id": {
+    "$oid": "66165f3f2b00002f00a510f4"
+  },
+  "identifier": "updater"
+}]

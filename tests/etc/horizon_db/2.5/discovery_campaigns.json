@@ -1,0 +1,20 @@
+[{
+  "_id": {
+    "$oid": "64d3add92a00001d00175979"
+  },
+  "name": "Ansible",
+  "authorizationLevels": {
+    "search": {
+      "accessLevel": "authorized"
+    },
+    "feed": {
+      "accessLevel": "authorized"
+    }
+  },
+  "eventOnSuccess": false,
+  "eventOnWarning": true,
+  "eventOnFailure": false,
+  "enabled": true,
+  "hosts": [],
+  "ports": []
+}]

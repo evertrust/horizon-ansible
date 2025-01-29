@@ -1,6 +1,7 @@
 - name: centralize enroll
   evertrust.horizon.horizon_enroll:
     endpoint: "{{ endpoint }}"
+    ca_bundle: "{{ ca_bundle }}"
     x_api_id: "{{ x_api_id }}"
     x_api_key: "{{ x_api_key }}"
     profile: "Ansible"
@@ -15,6 +16,7 @@
 - name: Test centralized renew
   evertrust.horizon.horizon_renew:
     endpoint: "{{ endpoint }}"
+    ca_bundle: "{{ ca_bundle }}"
     x_api_id: "{{ x_api_id }}"
     x_api_key: "{{ x_api_key }}"
     certificate_id: "{{ data.certificate._id }}"
@@ -22,6 +24,7 @@
 - name: Test decentralized renew
   evertrust.horizon.horizon_renew:
     endpoint: "{{ endpoint }}"
+    ca_bundle: "{{ ca_bundle }}"
     x_api_id: "{{ x_api_id }}"
     x_api_key: "{{ x_api_key }}"
     certificate_id: "{{ data.certificate._id }}"
@@ -46,12 +49,14 @@
 - name: Test pop renew
   evertrust.horizon.horizon_renew:
     endpoint: "{{ endpoint }}"
+    ca_bundle: "{{ ca_bundle }}"
     certificate_pem: "{{ data.certificate.certificate }}"
     private_key: "{{ data.key }}"
 
 - name: Test pop renew decentralized
   evertrust.horizon.horizon_renew:
     endpoint: "{{ endpoint }}"
+    ca_bundle: "{{ ca_bundle }}"
     mode: "decentralized"
     certificate_pem: "{{ data.certificate.certificate }}"
     private_key: "{{ data.key }}"
@@ -76,6 +81,7 @@
 - name: Test pop renew centralized
   evertrust.horizon.horizon_renew:
     endpoint: "{{ endpoint }}"
+    ca_bundle: "{{ ca_bundle }}"
     mode: "centralized"
     certificate_pem: "{{ data.certificate.certificate }}"
     private_key: "{{ data.key }}"
@@ -83,6 +89,7 @@
 - name: Test pop renew decentralized generate csr
   evertrust.horizon.horizon_renew:
     endpoint: "{{ endpoint }}"
+    ca_bundle: "{{ ca_bundle }}"
     mode: "decentralized"
     certificate_pem: "{{ data.certificate.certificate }}"
     private_key: "{{ data.key }}"
@@ -90,6 +97,7 @@
 - name: Test centralized renew with csr
   evertrust.horizon.horizon_renew:
     endpoint: "{{ endpoint }}"
+    ca_bundle: "{{ ca_bundle }}"
     x_api_id: "{{ x_api_id }}"
     x_api_key: "{{ x_api_key }}"
     mode: centralized
@@ -124,6 +132,7 @@
 - name: Test decentralized renew without csr
   evertrust.horizon.horizon_renew:
     endpoint: "{{ endpoint }}"
+    ca_bundle: "{{ ca_bundle }}"
     x_api_id: "{{ x_api_id }}"
     x_api_key: "{{ x_api_key }}"
     mode: "decentralized"

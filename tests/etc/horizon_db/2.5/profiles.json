@@ -1,0 +1,1484 @@
+[
+  {
+    "_id": {
+      "$oid": "64d63cfd2a00003500175a00"
+    },
+    "module": "webra",
+    "name": "Ansible",
+    "enabled": true,
+    "pkiConnector": "integrated-clientserver",
+    "authorizationLevels": {
+      "revoke": {
+        "accessLevel": "authorized"
+      },
+      "requestRevoke": {
+        "accessLevel": "authorized"
+      },
+      "approveRevoke": {
+        "accessLevel": "authorized"
+      },
+      "search": {
+        "accessLevel": "authorized"
+      },
+      "update": {
+        "accessLevel": "authorized"
+      },
+      "requestUpdate": {
+        "accessLevel": "authorized"
+      },
+      "approveUpdate": {
+        "accessLevel": "authorized"
+      },
+      "enroll": {
+        "accessLevel": "authorized"
+      },
+      "enrollApi": {
+        "accessLevel": "authorized"
+      },
+      "requestEnroll": {
+        "accessLevel": "authorized"
+      },
+      "approveEnroll": {
+        "accessLevel": "authorized"
+      },
+      "recover": {
+        "accessLevel": "authorized"
+      },
+      "recoverApi": {
+        "accessLevel": "authorized"
+      },
+      "requestRecover": {
+        "accessLevel": "authorized"
+      },
+      "approveRecover": {
+        "accessLevel": "authorized"
+      },
+      "migrate": {
+        "accessLevel": "authorized"
+      },
+      "requestMigrate": {
+        "accessLevel": "authorized"
+      },
+      "approveMigrate": {
+        "accessLevel": "authorized"
+      },
+      "renew": {
+        "accessLevel": "authorized"
+      },
+      "renewApi": {
+        "accessLevel": "authorized"
+      },
+      "requestRenew": {
+        "accessLevel": "authorized"
+      },
+      "approveRenew": {
+        "accessLevel": "authorized"
+      },
+      "auditRequest": {
+        "accessLevel": "authorized"
+      }
+    },
+    "requestsPolicy": {
+      "enroll": "7 days",
+      "revoke": "7 days",
+      "update": "7 days",
+      "migrate": "7 days",
+      "renew": "7 days"
+    },
+    "cryptoPolicy": {
+      "centralized": true,
+      "decentralized": true,
+      "escrow": true,
+      "defaultKeyType": "rsa-2048",
+      "authorizedKeyTypes": [
+        "rsa-2048",
+        "rsa-3072",
+        "rsa-4096",
+        "ec-secp384r1",
+        "ec-secp256r1"
+      ],
+      "preferredEnrollmentMode": "decentralized",
+      "p12passwordMode": "random",
+      "p12storeEncryptionType": "DES_AVERAGE",
+      "showP12PasswordOnEnroll": true,
+      "showP12OnEnroll": true,
+      "showP12PasswordOnRecover": false,
+      "showP12OnRecover": false
+    },
+    "selfPermissions": {
+      "selfUpdate": true,
+      "selfRevoke": true,
+      "selfRenew": true,
+      "selfPopRenew": true,
+      "selfPopRevoke": true,
+      "selfPopUpdate": true,
+      "selfRecover": true
+    },
+    "displayName": [],
+    "description": [],
+    "csrDataMapping": {},
+    "triggers": {
+      "onEnroll": [],
+      "onRevoke": [],
+      "onRenew": []
+    },
+    "certificateTemplate": {
+      "subject": [
+        {
+          "type": "CN",
+          "mandatory": true,
+          "editableByRequester": true,
+          "editableByApprover": true
+        },
+        {
+          "type": "O",
+          "mandatory": false,
+          "editableByRequester": true,
+          "editableByApprover": true
+        },
+        {
+          "type": "OU",
+          "mandatory": false,
+          "editableByRequester": true,
+          "editableByApprover": true
+        }
+      ],
+      "sans": [
+        {
+          "type": "DNSNAME",
+          "editableByRequester": true,
+          "editableByApprover": true
+        },
+        {
+          "type": "RFC822NAME",
+          "editableByRequester": true,
+          "editableByApprover": true,
+          "regex": "^(\\W|^)[\\w.+\\-]*@evertrust\\.fr(\\W|)$"
+        }
+      ],
+      "ownerPolicy": {
+        "editableByRequester": true,
+        "editableByApprover": true,
+        "mandatory": false
+      },
+      "teamPolicy": {
+        "editableByRequester": true,
+        "editableByApprover": true,
+        "mandatory": false
+      },
+      "labels": [
+        {
+          "label": "label-1",
+          "mandatory": false,
+          "editableByRequester": true,
+          "editableByApprover": true
+        },
+        {
+          "label": "label-2",
+          "mandatory": false,
+          "editableByRequester": true,
+          "editableByApprover": true
+        }
+      ],
+      "contactEmailPolicy": {
+        "mandatory": false,
+        "editableByRequester": true,
+        "editableByApprover": false
+      }
+    },
+    "renewalPeriod": "1000 days"
+  },
+  {
+    "_id": {
+      "$oid": "64ef0e142a00002d00175db1"
+    },
+    "module": "webra",
+    "name": "webra-centralized",
+    "enabled": true,
+    "pkiConnector": "integrated-clientserver",
+    "authorizationLevels": {
+      "revoke": {
+        "accessLevel": "authorized"
+      },
+      "requestRevoke": {
+        "accessLevel": "authorized"
+      },
+      "approveRevoke": {
+        "accessLevel": "authorized"
+      },
+      "search": {
+        "accessLevel": "authorized"
+      },
+      "update": {
+        "accessLevel": "authorized"
+      },
+      "requestUpdate": {
+        "accessLevel": "authorized"
+      },
+      "approveUpdate": {
+        "accessLevel": "authorized"
+      },
+      "enroll": {
+        "accessLevel": "authorized"
+      },
+      "enrollApi": {
+        "accessLevel": "authorized"
+      },
+      "requestEnroll": {
+        "accessLevel": "authorized"
+      },
+      "approveEnroll": {
+        "accessLevel": "authorized"
+      },
+      "recover": {
+        "accessLevel": "authorized"
+      },
+      "recoverApi": {
+        "accessLevel": "authorized"
+      },
+      "requestRecover": {
+        "accessLevel": "authorized"
+      },
+      "approveRecover": {
+        "accessLevel": "authorized"
+      },
+      "migrate": {
+        "accessLevel": "authorized"
+      },
+      "requestMigrate": {
+        "accessLevel": "authorized"
+      },
+      "approveMigrate": {
+        "accessLevel": "authorized"
+      },
+      "renew": {
+        "accessLevel": "authorized"
+      },
+      "renewApi": {
+        "accessLevel": "authorized"
+      },
+      "requestRenew": {
+        "accessLevel": "authorized"
+      },
+      "approveRenew": {
+        "accessLevel": "authorized"
+      },
+      "auditRequest": {
+        "accessLevel": "authorized"
+      }
+    },
+    "requestsPolicy": {
+      "enroll": "7 days",
+      "revoke": "7 days",
+      "update": "7 days",
+      "migrate": "7 days",
+      "renew": "7 days"
+    },
+    "cryptoPolicy": {
+      "centralized": true,
+      "decentralized": false,
+      "escrow": false,
+      "defaultKeyType": "rsa-2048",
+      "authorizedKeyTypes": [
+        "rsa-2048",
+        "rsa-3072",
+        "rsa-4096",
+        "ec-secp384r1",
+        "ec-secp256r1"
+      ],
+      "p12passwordMode": "random",
+      "p12storeEncryptionType": "DES_AVERAGE",
+      "showP12PasswordOnEnroll": true,
+      "showP12OnEnroll": false,
+      "showP12PasswordOnRecover": false,
+      "showP12OnRecover": false
+    },
+    "selfPermissions": {
+      "selfUpdate": false,
+      "selfRevoke": false,
+      "selfRenew": false,
+      "selfPopRenew": false,
+      "selfPopRevoke": false,
+      "selfPopUpdate": false,
+      "selfRecover": false
+    },
+    "displayName": [],
+    "description": [],
+    "csrDataMapping": {},
+    "triggers": {
+      "onEnroll": [],
+      "onRevoke": [],
+      "onRenew": []
+    },
+    "certificateTemplate": {
+      "subject": [
+        {
+          "type": "CN",
+          "mandatory": true,
+          "editableByRequester": true,
+          "editableByApprover": true
+        },
+        {
+          "type": "OU",
+          "mandatory": false,
+          "editableByRequester": true,
+          "editableByApprover": true
+        }
+      ],
+      "ownerPolicy": {
+        "editableByRequester": false,
+        "editableByApprover": false,
+        "mandatory": false
+      },
+      "teamPolicy": {
+        "editableByRequester": false,
+        "editableByApprover": false,
+        "mandatory": false
+      },
+      "contactEmailPolicy": {
+        "mandatory": false,
+        "editableByRequester": true,
+        "editableByApprover": false
+      }
+    },
+    "renewalPeriod": "1000 days"
+  },
+  {
+    "_id": {
+      "$oid": "64ef0e3b2a00003500175db2"
+    },
+    "module": "webra",
+    "name": "webra-decentralized",
+    "enabled": true,
+    "pkiConnector": "integrated-clientserver",
+    "authorizationLevels": {
+      "revoke": {
+        "accessLevel": "authorized"
+      },
+      "requestRevoke": {
+        "accessLevel": "authorized"
+      },
+      "approveRevoke": {
+        "accessLevel": "authorized"
+      },
+      "search": {
+        "accessLevel": "authorized"
+      },
+      "update": {
+        "accessLevel": "authorized"
+      },
+      "requestUpdate": {
+        "accessLevel": "authorized"
+      },
+      "approveUpdate": {
+        "accessLevel": "authorized"
+      },
+      "enroll": {
+        "accessLevel": "authorized"
+      },
+      "enrollApi": {
+        "accessLevel": "authorized"
+      },
+      "requestEnroll": {
+        "accessLevel": "authorized"
+      },
+      "approveEnroll": {
+        "accessLevel": "authorized"
+      },
+      "recover": {
+        "accessLevel": "authorized"
+      },
+      "recoverApi": {
+        "accessLevel": "authorized"
+      },
+      "requestRecover": {
+        "accessLevel": "authorized"
+      },
+      "approveRecover": {
+        "accessLevel": "authorized"
+      },
+      "migrate": {
+        "accessLevel": "authorized"
+      },
+      "requestMigrate": {
+        "accessLevel": "authorized"
+      },
+      "approveMigrate": {
+        "accessLevel": "authorized"
+      },
+      "renew": {
+        "accessLevel": "authorized"
+      },
+      "renewApi": {
+        "accessLevel": "authorized"
+      },
+      "requestRenew": {
+        "accessLevel": "authorized"
+      },
+      "approveRenew": {
+        "accessLevel": "authorized"
+      },
+      "auditRequest": {
+        "accessLevel": "authorized"
+      }
+    },
+    "requestsPolicy": {
+      "enroll": "7 days",
+      "revoke": "7 days",
+      "update": "7 days",
+      "migrate": "7 days",
+      "renew": "7 days"
+    },
+    "cryptoPolicy": {
+      "centralized": false,
+      "decentralized": true,
+      "escrow": false,
+      "authorizedKeyTypes": [
+        "rsa-2048",
+        "rsa-3072",
+        "rsa-4096",
+        "ec-secp256r1",
+        "ec-secp384r1"
+      ],
+      "p12storeEncryptionType": "DES_AVERAGE",
+      "showP12PasswordOnEnroll": false,
+      "showP12OnEnroll": false,
+      "showP12PasswordOnRecover": false,
+      "showP12OnRecover": false
+    },
+    "selfPermissions": {
+      "selfUpdate": false,
+      "selfRevoke": false,
+      "selfRenew": false,
+      "selfPopRenew": false,
+      "selfPopRevoke": false,
+      "selfPopUpdate": false,
+      "selfRecover": false
+    },
+    "displayName": [],
+    "description": [],
+    "csrDataMapping": {},
+    "triggers": {
+      "onEnroll": [],
+      "onRevoke": [],
+      "onRenew": []
+    },
+    "certificateTemplate": {
+      "subject": [
+        {
+          "type": "CN",
+          "mandatory": true,
+          "editableByRequester": true,
+          "editableByApprover": true
+        },
+        {
+          "type": "OU",
+          "mandatory": false,
+          "editableByRequester": true,
+          "editableByApprover": true
+        }
+      ],
+      "ownerPolicy": {
+        "editableByRequester": false,
+        "editableByApprover": false,
+        "mandatory": false
+      },
+      "teamPolicy": {
+        "editableByRequester": false,
+        "editableByApprover": false,
+        "mandatory": false
+      },
+      "contactEmailPolicy": {
+        "mandatory": false,
+        "editableByRequester": true,
+        "editableByApprover": false
+      }
+    },
+    "renewalPeriod": "1000 days"
+  },
+  {
+    "_id": {
+      "$oid": "64ef13972a00002e00175db3"
+    },
+    "module": "webra",
+    "name": "webra-default-values",
+    "enabled": true,
+    "pkiConnector": "integrated-clientserver",
+    "authorizationLevels": {
+      "revoke": {
+        "accessLevel": "authorized"
+      },
+      "requestRevoke": {
+        "accessLevel": "authorized"
+      },
+      "approveRevoke": {
+        "accessLevel": "authorized"
+      },
+      "search": {
+        "accessLevel": "authorized"
+      },
+      "update": {
+        "accessLevel": "authorized"
+      },
+      "requestUpdate": {
+        "accessLevel": "authorized"
+      },
+      "approveUpdate": {
+        "accessLevel": "authorized"
+      },
+      "enroll": {
+        "accessLevel": "authorized"
+      },
+      "enrollApi": {
+        "accessLevel": "authorized"
+      },
+      "requestEnroll": {
+        "accessLevel": "authorized"
+      },
+      "approveEnroll": {
+        "accessLevel": "authorized"
+      },
+      "recover": {
+        "accessLevel": "authorized"
+      },
+      "recoverApi": {
+        "accessLevel": "authorized"
+      },
+      "requestRecover": {
+        "accessLevel": "authorized"
+      },
+      "approveRecover": {
+        "accessLevel": "authorized"
+      },
+      "migrate": {
+        "accessLevel": "authorized"
+      },
+      "requestMigrate": {
+        "accessLevel": "authorized"
+      },
+      "approveMigrate": {
+        "accessLevel": "authorized"
+      },
+      "renew": {
+        "accessLevel": "authorized"
+      },
+      "renewApi": {
+        "accessLevel": "authorized"
+      },
+      "requestRenew": {
+        "accessLevel": "authorized"
+      },
+      "approveRenew": {
+        "accessLevel": "authorized"
+      },
+      "auditRequest": {
+        "accessLevel": "authorized"
+      }
+    },
+    "requestsPolicy": {
+      "enroll": "7 days",
+      "revoke": "7 days",
+      "update": "7 days",
+      "migrate": "7 days",
+      "renew": "7 days"
+    },
+    "cryptoPolicy": {
+      "centralized": true,
+      "decentralized": true,
+      "escrow": false,
+      "defaultKeyType": "rsa-2048",
+      "authorizedKeyTypes": [
+        "rsa-2048",
+        "rsa-3072",
+        "ec-secp256r1",
+        "rsa-4096",
+        "ec-secp384r1"
+      ],
+      "preferredEnrollmentMode": "decentralized",
+      "p12passwordMode": "random",
+      "p12storeEncryptionType": "DES_AVERAGE",
+      "showP12PasswordOnEnroll": false,
+      "showP12OnEnroll": false,
+      "showP12PasswordOnRecover": false,
+      "showP12OnRecover": false
+    },
+    "selfPermissions": {
+      "selfUpdate": false,
+      "selfRevoke": false,
+      "selfRenew": false,
+      "selfPopRenew": false,
+      "selfPopRevoke": false,
+      "selfPopUpdate": false,
+      "selfRecover": false
+    },
+    "displayName": [],
+    "description": [],
+    "csrDataMapping": {},
+    "triggers": {
+      "onEnroll": [],
+      "onRevoke": [],
+      "onRenew": []
+    },
+    "certificateTemplate": {
+      "subject": [
+        {
+          "type": "CN",
+          "mandatory": true,
+          "value": "default-cn",
+          "editableByRequester": true,
+          "editableByApprover": true
+        }
+      ],
+      "ownerPolicy": {
+        "editableByRequester": false,
+        "editableByApprover": false,
+        "mandatory": false
+      },
+      "teamPolicy": {
+        "editableByRequester": false,
+        "editableByApprover": false,
+        "mandatory": false
+      },
+      "contactEmailPolicy": {
+        "mandatory": false,
+        "editableByRequester": true,
+        "editableByApprover": false
+      }
+    },
+    "renewalPeriod": "1000 days"
+  },
+  {
+    "_id": {
+      "$oid": "64ef3d232a00002e00175db4"
+    },
+    "module": "webra",
+    "name": "webra-one-san",
+    "enabled": true,
+    "pkiConnector": "integrated-clientserver",
+    "authorizationLevels": {
+      "revoke": {
+        "accessLevel": "authorized"
+      },
+      "requestRevoke": {
+        "accessLevel": "authorized"
+      },
+      "approveRevoke": {
+        "accessLevel": "authorized"
+      },
+      "search": {
+        "accessLevel": "authorized"
+      },
+      "update": {
+        "accessLevel": "authorized"
+      },
+      "requestUpdate": {
+        "accessLevel": "authorized"
+      },
+      "approveUpdate": {
+        "accessLevel": "authorized"
+      },
+      "enroll": {
+        "accessLevel": "authorized"
+      },
+      "enrollApi": {
+        "accessLevel": "authorized"
+      },
+      "requestEnroll": {
+        "accessLevel": "authorized"
+      },
+      "approveEnroll": {
+        "accessLevel": "authorized"
+      },
+      "recover": {
+        "accessLevel": "authorized"
+      },
+      "recoverApi": {
+        "accessLevel": "authorized"
+      },
+      "requestRecover": {
+        "accessLevel": "authorized"
+      },
+      "approveRecover": {
+        "accessLevel": "authorized"
+      },
+      "migrate": {
+        "accessLevel": "authorized"
+      },
+      "requestMigrate": {
+        "accessLevel": "authorized"
+      },
+      "approveMigrate": {
+        "accessLevel": "authorized"
+      },
+      "renew": {
+        "accessLevel": "authorized"
+      },
+      "renewApi": {
+        "accessLevel": "authorized"
+      },
+      "requestRenew": {
+        "accessLevel": "authorized"
+      },
+      "approveRenew": {
+        "accessLevel": "authorized"
+      },
+      "auditRequest": {
+        "accessLevel": "authorized"
+      }
+    },
+    "requestsPolicy": {
+      "enroll": "7 days",
+      "revoke": "7 days",
+      "update": "7 days",
+      "migrate": "7 days",
+      "renew": "7 days"
+    },
+    "cryptoPolicy": {
+      "centralized": true,
+      "decentralized": true,
+      "escrow": false,
+      "defaultKeyType": "rsa-2048",
+      "authorizedKeyTypes": [
+        "rsa-2048",
+        "rsa-3072",
+        "ec-secp256r1",
+        "rsa-4096",
+        "ec-secp384r1"
+      ],
+      "preferredEnrollmentMode": "decentralized",
+      "p12passwordMode": "random",
+      "p12storeEncryptionType": "DES_AVERAGE",
+      "showP12PasswordOnEnroll": false,
+      "showP12OnEnroll": false,
+      "showP12PasswordOnRecover": false,
+      "showP12OnRecover": false
+    },
+    "selfPermissions": {
+      "selfUpdate": false,
+      "selfRevoke": false,
+      "selfRenew": false,
+      "selfPopRenew": false,
+      "selfPopRevoke": false,
+      "selfPopUpdate": false,
+      "selfRecover": false
+    },
+    "displayName": [],
+    "description": [],
+    "csrDataMapping": {},
+    "triggers": {
+      "onEnroll": [],
+      "onRevoke": [],
+      "onRenew": []
+    },
+    "certificateTemplate": {
+      "subject": [
+        {
+          "type": "CN",
+          "mandatory": true,
+          "editableByRequester": true,
+          "editableByApprover": true
+        }
+      ],
+      "sans": [
+        {
+          "type": "DNSNAME",
+          "editableByRequester": true,
+          "editableByApprover": true,
+          "min": 1,
+          "max": 1
+        }
+      ],
+      "ownerPolicy": {
+        "editableByRequester": false,
+        "editableByApprover": false,
+        "mandatory": false
+      },
+      "teamPolicy": {
+        "editableByRequester": false,
+        "editableByApprover": false,
+        "mandatory": false
+      },
+      "contactEmailPolicy": {
+        "mandatory": false,
+        "editableByRequester": true,
+        "editableByApprover": false
+      }
+    },
+    "renewalPeriod": "1000 days"
+  },
+  {
+    "_id": {
+      "$oid": "64f053af2a00003400175e52"
+    },
+    "module": "webra",
+    "name": "webra-all-editable",
+    "enabled": true,
+    "pkiConnector": "integrated-clientserver",
+    "authorizationLevels": {
+      "revoke": {
+        "accessLevel": "authorized"
+      },
+      "requestRevoke": {
+        "accessLevel": "authorized"
+      },
+      "approveRevoke": {
+        "accessLevel": "authorized"
+      },
+      "search": {
+        "accessLevel": "authorized"
+      },
+      "update": {
+        "accessLevel": "authorized"
+      },
+      "requestUpdate": {
+        "accessLevel": "authorized"
+      },
+      "approveUpdate": {
+        "accessLevel": "authorized"
+      },
+      "enroll": {
+        "accessLevel": "authorized"
+      },
+      "enrollApi": {
+        "accessLevel": "authorized"
+      },
+      "requestEnroll": {
+        "accessLevel": "authorized"
+      },
+      "approveEnroll": {
+        "accessLevel": "authorized"
+      },
+      "recover": {
+        "accessLevel": "authorized"
+      },
+      "recoverApi": {
+        "accessLevel": "authorized"
+      },
+      "requestRecover": {
+        "accessLevel": "authorized"
+      },
+      "approveRecover": {
+        "accessLevel": "authorized"
+      },
+      "migrate": {
+        "accessLevel": "authorized"
+      },
+      "requestMigrate": {
+        "accessLevel": "authorized"
+      },
+      "approveMigrate": {
+        "accessLevel": "authorized"
+      },
+      "renew": {
+        "accessLevel": "authorized"
+      },
+      "renewApi": {
+        "accessLevel": "authorized"
+      },
+      "requestRenew": {
+        "accessLevel": "authorized"
+      },
+      "approveRenew": {
+        "accessLevel": "authorized"
+      },
+      "auditRequest": {
+        "accessLevel": "authorized"
+      }
+    },
+    "requestsPolicy": {
+      "enroll": "7 days",
+      "revoke": "7 days",
+      "update": "7 days",
+      "migrate": "7 days",
+      "renew": "7 days"
+    },
+    "cryptoPolicy": {
+      "centralized": true,
+      "decentralized": true,
+      "escrow": false,
+      "defaultKeyType": "rsa-2048",
+      "authorizedKeyTypes": [
+        "rsa-2048",
+        "rsa-3072",
+        "rsa-4096",
+        "ec-secp256r1",
+        "ec-secp384r1"
+      ],
+      "preferredEnrollmentMode": "decentralized",
+      "p12passwordMode": "random",
+      "p12storeEncryptionType": "DES_AVERAGE",
+      "showP12PasswordOnEnroll": true,
+      "showP12OnEnroll": false,
+      "showP12PasswordOnRecover": false,
+      "showP12OnRecover": false
+    },
+    "selfPermissions": {
+      "selfUpdate": false,
+      "selfRevoke": false,
+      "selfRenew": false,
+      "selfPopRenew": false,
+      "selfPopRevoke": false,
+      "selfPopUpdate": false,
+      "selfRecover": false
+    },
+    "displayName": [],
+    "description": [],
+    "csrDataMapping": {},
+    "triggers": {
+      "onEnroll": [],
+      "onRevoke": [],
+      "onRenew": []
+    },
+    "certificateTemplate": {
+      "subject": [
+        {
+          "type": "CN",
+          "mandatory": true,
+          "editableByRequester": true,
+          "editableByApprover": true
+        },
+        {
+          "type": "OU",
+          "mandatory": false,
+          "editableByRequester": true,
+          "editableByApprover": true
+        }
+      ],
+      "sans": [
+        {
+          "type": "DNSNAME",
+          "editableByRequester": true,
+          "editableByApprover": true
+        },
+        {
+          "type": "RFC822NAME",
+          "editableByRequester": true,
+          "editableByApprover": true
+        },
+        {
+          "type": "IPADDRESS",
+          "editableByRequester": true,
+          "editableByApprover": true,
+          "regex": "^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$"
+        },
+        {
+          "type": "OTHERNAME_UPN",
+          "editableByRequester": true,
+          "editableByApprover": true
+        },
+        {
+          "type": "OTHERNAME_GUID",
+          "editableByRequester": true,
+          "editableByApprover": true
+        },
+        {
+          "type": "URI",
+          "editableByRequester": true,
+          "editableByApprover": true
+        }
+      ],
+      "ownerPolicy": {
+        "editableByRequester": false,
+        "editableByApprover": false,
+        "mandatory": false
+      },
+      "teamPolicy": {
+        "editableByRequester": false,
+        "editableByApprover": false,
+        "mandatory": false
+      },
+      "contactEmailPolicy": {
+        "mandatory": false,
+        "editableByRequester": true,
+        "editableByApprover": false
+      }
+    },
+    "renewalPeriod": "1000 days"
+  },
+  {
+    "_id": {
+      "$oid": "64f056a22a00001700175e53"
+    },
+    "module": "webra",
+    "name": "webra-non-editable",
+    "enabled": true,
+    "pkiConnector": "integrated-clientserver",
+    "authorizationLevels": {
+      "revoke": {
+        "accessLevel": "authorized"
+      },
+      "requestRevoke": {
+        "accessLevel": "authorized"
+      },
+      "approveRevoke": {
+        "accessLevel": "authorized"
+      },
+      "search": {
+        "accessLevel": "authorized"
+      },
+      "update": {
+        "accessLevel": "authorized"
+      },
+      "requestUpdate": {
+        "accessLevel": "authorized"
+      },
+      "approveUpdate": {
+        "accessLevel": "authorized"
+      },
+      "enroll": {
+        "accessLevel": "authorized"
+      },
+      "enrollApi": {
+        "accessLevel": "authorized"
+      },
+      "requestEnroll": {
+        "accessLevel": "authorized"
+      },
+      "approveEnroll": {
+        "accessLevel": "authorized"
+      },
+      "recover": {
+        "accessLevel": "authorized"
+      },
+      "recoverApi": {
+        "accessLevel": "authorized"
+      },
+      "requestRecover": {
+        "accessLevel": "authorized"
+      },
+      "approveRecover": {
+        "accessLevel": "authorized"
+      },
+      "migrate": {
+        "accessLevel": "authorized"
+      },
+      "requestMigrate": {
+        "accessLevel": "authorized"
+      },
+      "approveMigrate": {
+        "accessLevel": "authorized"
+      },
+      "renew": {
+        "accessLevel": "authorized"
+      },
+      "renewApi": {
+        "accessLevel": "authorized"
+      },
+      "requestRenew": {
+        "accessLevel": "authorized"
+      },
+      "approveRenew": {
+        "accessLevel": "authorized"
+      },
+      "auditRequest": {
+        "accessLevel": "authorized"
+      }
+    },
+    "requestsPolicy": {
+      "enroll": "7 days",
+      "revoke": "7 days",
+      "update": "7 days",
+      "migrate": "7 days",
+      "renew": "7 days"
+    },
+    "cryptoPolicy": {
+      "centralized": true,
+      "decentralized": true,
+      "escrow": false,
+      "defaultKeyType": "rsa-2048",
+      "authorizedKeyTypes": [
+        "rsa-2048",
+        "rsa-3072",
+        "rsa-4096",
+        "ec-secp256r1",
+        "ec-secp384r1"
+      ],
+      "preferredEnrollmentMode": "decentralized",
+      "p12passwordMode": "random",
+      "p12storeEncryptionType": "DES_AVERAGE",
+      "showP12PasswordOnEnroll": true,
+      "showP12OnEnroll": false,
+      "showP12PasswordOnRecover": false,
+      "showP12OnRecover": false
+    },
+    "selfPermissions": {
+      "selfUpdate": false,
+      "selfRevoke": false,
+      "selfRenew": false,
+      "selfPopRenew": false,
+      "selfPopRevoke": false,
+      "selfPopUpdate": false,
+      "selfRecover": false
+    },
+    "displayName": [],
+    "description": [],
+    "csrDataMapping": {},
+    "triggers": {
+      "onEnroll": [],
+      "onRevoke": [],
+      "onRenew": []
+    },
+    "certificateTemplate": {
+      "subject": [
+        {
+          "type": "CN",
+          "mandatory": true,
+          "editableByRequester": true,
+          "editableByApprover": true
+        }
+      ],
+      "sans": [
+        {
+          "type": "DNSNAME",
+          "editableByRequester": false,
+          "editableByApprover": false
+        },
+        {
+          "type": "RFC822NAME",
+          "editableByRequester": false,
+          "editableByApprover": false
+        },
+        {
+          "type": "IPADDRESS",
+          "editableByRequester": false,
+          "editableByApprover": false
+        },
+        {
+          "type": "OTHERNAME_UPN",
+          "editableByRequester": false,
+          "editableByApprover": false
+        },
+        {
+          "type": "OTHERNAME_GUID",
+          "editableByRequester": false,
+          "editableByApprover": false
+        },
+        {
+          "type": "URI",
+          "editableByRequester": false,
+          "editableByApprover": false
+        }
+      ],
+      "ownerPolicy": {
+        "editableByRequester": false,
+        "editableByApprover": false,
+        "mandatory": false
+      },
+      "teamPolicy": {
+        "editableByRequester": false,
+        "editableByApprover": false,
+        "mandatory": false
+      },
+      "contactEmailPolicy": {
+        "mandatory": false,
+        "editableByRequester": true,
+        "editableByApprover": false
+      }
+    },
+    "renewalPeriod": "1000 days"
+  },
+  {
+    "_id": {
+      "$oid": "653f9b6f2a00003000bf69fa"
+    },
+    "module": "webra",
+    "name": "webra-renew-10d",
+    "enabled": true,
+    "pkiConnector": "integrated-clientserver",
+    "authorizationLevels": {
+      "revoke": {
+        "accessLevel": "authorized"
+      },
+      "requestRevoke": {
+        "accessLevel": "authorized"
+      },
+      "approveRevoke": {
+        "accessLevel": "authorized"
+      },
+      "search": {
+        "accessLevel": "authorized"
+      },
+      "update": {
+        "accessLevel": "authorized"
+      },
+      "requestUpdate": {
+        "accessLevel": "authorized"
+      },
+      "approveUpdate": {
+        "accessLevel": "authorized"
+      },
+      "enroll": {
+        "accessLevel": "authorized"
+      },
+      "enrollApi": {
+        "accessLevel": "authorized"
+      },
+      "requestEnroll": {
+        "accessLevel": "authorized"
+      },
+      "approveEnroll": {
+        "accessLevel": "authorized"
+      },
+      "recover": {
+        "accessLevel": "authorized"
+      },
+      "recoverApi": {
+        "accessLevel": "authorized"
+      },
+      "requestRecover": {
+        "accessLevel": "authorized"
+      },
+      "approveRecover": {
+        "accessLevel": "authorized"
+      },
+      "migrate": {
+        "accessLevel": "authorized"
+      },
+      "requestMigrate": {
+        "accessLevel": "authorized"
+      },
+      "approveMigrate": {
+        "accessLevel": "authorized"
+      },
+      "renew": {
+        "accessLevel": "authorized"
+      },
+      "renewApi": {
+        "accessLevel": "authorized"
+      },
+      "requestRenew": {
+        "accessLevel": "authorized"
+      },
+      "approveRenew": {
+        "accessLevel": "authorized"
+      },
+      "auditRequest": {
+        "accessLevel": "authorized"
+      }
+    },
+    "requestsPolicy": {
+      "enroll": "7 days",
+      "revoke": "7 days",
+      "update": "7 days",
+      "migrate": "7 days",
+      "renew": "7 days"
+    },
+    "cryptoPolicy": {
+      "centralized": true,
+      "decentralized": true,
+      "escrow": false,
+      "defaultKeyType": "rsa-3072",
+      "preferredEnrollmentMode": "decentralized",
+      "p12passwordMode": "random",
+      "p12storeEncryptionType": "DES_AVERAGE",
+      "showP12PasswordOnEnroll": false,
+      "showP12OnEnroll": false,
+      "showP12PasswordOnRecover": false,
+      "showP12OnRecover": false
+    },
+    "selfPermissions": {
+      "selfUpdate": false,
+      "selfRevoke": false,
+      "selfRenew": true,
+      "selfPopRenew": true,
+      "selfPopRevoke": false,
+      "selfPopUpdate": false,
+      "selfRecover": false
+    },
+    "displayName": [],
+    "description": [],
+    "csrDataMapping": {},
+    "triggers": {
+      "onEnroll": [],
+      "onRevoke": [],
+      "onRenew": []
+    },
+    "certificateTemplate": {
+      "subject": [
+        {
+          "type": "CN",
+          "mandatory": true,
+          "editableByRequester": true,
+          "editableByApprover": true
+        }
+      ],
+      "ownerPolicy": {
+        "editableByRequester": false,
+        "editableByApprover": false,
+        "mandatory": false
+      },
+      "teamPolicy": {
+        "editableByRequester": false,
+        "editableByApprover": false,
+        "mandatory": false
+      },
+      "contactEmailPolicy": {
+        "mandatory": false,
+        "editableByRequester": true,
+        "editableByApprover": false
+      }
+    },
+    "renewalPeriod": "365 days"
+  },
+  {
+    "_id": {
+      "$oid": "655c8df02a00002d007f1e61"
+    },
+    "module": "webra",
+    "name": "webra_bulk_metadata",
+    "enabled": true,
+    "pkiConnector": "integrated-clientserver",
+    "authorizationLevels": {
+      "revoke": {
+        "accessLevel": "authorized"
+      },
+      "requestRevoke": {
+        "accessLevel": "authorized"
+      },
+      "approveRevoke": {
+        "accessLevel": "authorized"
+      },
+      "search": {
+        "accessLevel": "authorized"
+      },
+      "update": {
+        "accessLevel": "authorized"
+      },
+      "requestUpdate": {
+        "accessLevel": "authorized"
+      },
+      "approveUpdate": {
+        "accessLevel": "authorized"
+      },
+      "enroll": {
+        "accessLevel": "authorized"
+      },
+      "enrollApi": {
+        "accessLevel": "authorized"
+      },
+      "requestEnroll": {
+        "accessLevel": "authorized"
+      },
+      "approveEnroll": {
+        "accessLevel": "authorized"
+      },
+      "recover": {
+        "accessLevel": "authorized"
+      },
+      "recoverApi": {
+        "accessLevel": "authorized"
+      },
+      "requestRecover": {
+        "accessLevel": "authorized"
+      },
+      "approveRecover": {
+        "accessLevel": "authorized"
+      },
+      "migrate": {
+        "accessLevel": "authorized"
+      },
+      "requestMigrate": {
+        "accessLevel": "authorized"
+      },
+      "approveMigrate": {
+        "accessLevel": "authorized"
+      },
+      "renew": {
+        "accessLevel": "authorized"
+      },
+      "renewApi": {
+        "accessLevel": "authorized"
+      },
+      "requestRenew": {
+        "accessLevel": "authorized"
+      },
+      "approveRenew": {
+        "accessLevel": "authorized"
+      },
+      "auditRequest": {
+        "accessLevel": "authorized"
+      }
+    },
+    "requestsPolicy": {
+      "enroll": "7 days",
+      "revoke": "7 days",
+      "update": "7 days",
+      "migrate": "7 days",
+      "renew": "7 days"
+    },
+    "cryptoPolicy": {
+      "centralized": true,
+      "decentralized": false,
+      "escrow": false,
+      "defaultKeyType": "rsa-3072",
+      "p12passwordMode": "random",
+      "p12storeEncryptionType": "DES_AVERAGE",
+      "showP12PasswordOnEnroll": false,
+      "showP12OnEnroll": false,
+      "showP12PasswordOnRecover": false,
+      "showP12OnRecover": false
+    },
+    "selfPermissions": {
+      "selfUpdate": false,
+      "selfRevoke": false,
+      "selfRenew": false,
+      "selfPopRenew": false,
+      "selfPopRevoke": false,
+      "selfPopUpdate": false,
+      "selfRecover": false
+    },
+    "displayName": [],
+    "description": [],
+    "csrDataMapping": {},
+    "triggers": {
+      "onEnroll": [],
+      "onRevoke": [],
+      "onRenew": []
+    },
+    "certificateTemplate": {
+      "subject": [
+        {
+          "type": "CN",
+          "mandatory": true,
+          "editableByRequester": true,
+          "editableByApprover": false
+        }
+      ],
+      "ownerPolicy": {
+        "editableByRequester": true,
+        "editableByApprover": true,
+        "mandatory": true
+      },
+      "teamPolicy": {
+        "editableByRequester": true,
+        "editableByApprover": true,
+        "mandatory": true
+      },
+      "metadataPolicies": [
+        {
+          "metadata": "pki_connector",
+          "editableByRequester": true,
+          "editableByApprover": false
+        },
+        {
+          "metadata": "certeurope_id",
+          "editableByRequester": true,
+          "editableByApprover": false
+        }
+      ],
+      "labels": [
+        {
+          "label": "label",
+          "mandatory": true,
+          "editableByRequester": true,
+          "editableByApprover": true
+        }
+      ],
+      "contactEmailPolicy": {
+        "mandatory": true,
+        "editableByRequester": true,
+        "editableByApprover": true
+      }
+    }
+  }
+]

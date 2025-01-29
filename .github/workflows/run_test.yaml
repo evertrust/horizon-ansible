@@ -4,6 +4,22 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        scenario:
+          - horizon-version: 2.5.10
+            horizon-db: 2.5
+            mongo-version: 7.0.12
+          - horizon-version: 2.6.9
+            horizon-db: 2.6
+            mongo-version: 7.0.12
+          - horizon-version: 2.7.1
+            horizon-db: 2.7
+            mongo-version: 7.0.12
+      max-parallel: 1
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -17,9 +33,39 @@ jobs:
         pip install -r requirements.txt
         pip install ansible
 
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+      
+    - name: Install Docker Compose
+      run: |
+        sudo curl -L "https://github.com/docker/compose/releases/download/$(curl -s https://api.github.com/repos/docker/compose/releases/latest | jq -r .tag_name)/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+        sudo chmod +x /usr/local/bin/docker-compose
+
+    - name: Create .env file
+      run: |
+        echo "LICENSE='${{ secrets.LICENSE }}'" > .env
+        echo "MONGO_VERSION=${{ matrix.scenario.mongo-version }}" >> .env
+        echo "HORIZON_DB=${{ matrix.scenario.horizon-db }}" >> .env
+        echo "HORIZON_VERSION=${{ matrix.scenario.horizon-version }}" >> .env
+        
+    - name: Run docker-compose
+      run: | 
+        docker-compose -f tests/ci.docker-compose.yml --env-file .env up -d --build
+
+    - name: Get Nginx container IP
+      run: |
+        CONTAINER_ID=$(docker-compose -f tests/ci.docker-compose.yml ps -q nginx)
+        CONTAINER_IP=$(docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $CONTAINER_ID)
+        echo "NGINX_IP=$CONTAINER_IP" >> $GITHUB_ENV
+
     - name: Set integration_config.yml
-      run: >-
-        echo "[endpoint: ${{ secrets.HORIZON_ENDPOINT }}, x_api_id: ${{ secrets.HORIZON_API_ID }}, x_api_key: ${{ secrets.HORIZON_API_KEY }}]" >> tests/integration/integration_config.yml
+      run: |
+        echo endpoint: https://$NGINX_IP
+        echo "[endpoint: https://$NGINX_IP, x_api_id: administrator, x_api_key: kVQF8XWPbrSTSx32QFhZUMbU, ca_bundle: False]" >> tests/integration/integration_config.yml
 
     - name: Run tests
       run: make test
+
+    - name: Close Containers
+      run: |
+        docker-compose -f tests/ci.docker-compose.yml down

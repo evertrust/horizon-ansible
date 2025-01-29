@@ -1,0 +1,33 @@
+[{
+  "_id": {
+    "$oid": "64d3a6b72a0000340017594c"
+  },
+  "identifier": "administrator",
+  "permissions": [
+    {
+      "value": "configuration:*"
+    },
+    {
+      "value": "discovery:*"
+    },
+    {
+      "value": "lifecycle:*"
+    }
+  ]
+},
+{
+  "_id": {
+    "$oid": "64d3adb12a00003300175978"
+  },
+  "identifier": "evtqa",
+  "permissions": [
+    {
+      "value": "lifecycle:*"
+    },
+    {
+      "value": "discovery:*"
+    }
+  ],
+  "roles": [],
+  "teams": []
+}]
