@@ -86,7 +86,7 @@
   assert: 
     that:
       - error2 is failed
-      - "'Invalid key type' in error2.msg"
+      - "'Unknown algorithm' in error2.msg"
 
 
 - name: Test centralize enrollment with unexistant label

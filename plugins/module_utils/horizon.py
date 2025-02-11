@@ -14,10 +14,12 @@ from ansible.errors import AnsibleError
 from ansible_collections.evertrust.horizon.plugins.module_utils.horizon_crypto import HorizonCrypto
 from ansible_collections.evertrust.horizon.plugins.module_utils.horizon_errors import HorizonError
 from ansible.utils.display import Display
+from packaging.version import parse as parse_version
 
 
 class Horizon:
     REQUEST_SUBMIT_URL = "/api/v1/requests/submit"
+    REQUEST_CANCEL_URL = "/api/v1/requests/cancel"
     REQUEST_TEMPLATE_URL = "/api/v1/requests/template"
     CERTIFICATES_SHOW_URL = "/api/v1/certificates/"
     CERTIFICATES_SEARCH_URL = "/api/v1/certificates/search"
@@ -52,7 +54,7 @@ class Horizon:
         elif x_api_id is not None and x_api_key is not None:
             self.headers = {"x-api-id": str(x_api_id), "x-api-key": str(x_api_key)}
 
-        elif private_key is None: # Authorizing missin authent parameters for pop request
+        elif private_key is None: # Authorizing missing authent parameters for pop request
             raise AnsibleError("Please inform authentication parameters : 'x_api_id' and 'x_api_key' or 'client_cert' and 'client_key'.")
 
     def enroll(self, profile, template, mode=None, csr=None, password=None, key_type=None, labels=None, metadata=None,
@@ -81,7 +83,7 @@ class Horizon:
         if metadata is None:
             metadata = {}
     
-        csr = self.__load_file_or_string(csr)
+        csr = self.load_file_or_string(csr)
 
         if mode == "decentralized":
             if csr is None:
@@ -134,14 +136,21 @@ class Horizon:
 
         return self.post(self.REQUEST_SUBMIT_URL, json)
 
-    def recover(self, certificate_pem, password):
+    def recover(self, certificate_pem, password, version):
         """
         Recover a certificate
         :type certificate_pem: Union[str,dict]
         :type password: str
         :rtype: dict
         """
-        profile = self.certificate(certificate_pem)["profile"]
+        cert_infos = self.certificate(certificate_pem, version)
+        if isinstance(cert_infos, dict):
+            profile = cert_infos["profile"]
+        elif isinstance(cert_infos, list):
+            profile = cert_infos[0]["profile"]
+        else:
+            raise AnsibleError("Unknown format of certificate infos")
+        
         template = self.get_template(profile, "recover", "webra")
         password = self.check_password_policy(password, template)
 
@@ -151,23 +160,27 @@ class Horizon:
             "password": {
                 "value": password,
             },
-            "certificatePem": self.__load_file_or_string(certificate_pem)
+            "certificatePem": self.load_file_or_string(certificate_pem)
         }
 
         return self.post(self.REQUEST_SUBMIT_URL, json)
 
-    def renew(self, certificate_pem, certificate_id, password=None, csr=None, private_key=None):
+    def renew(self, certificate_pem, certificate_id, password=None, csr=None, private_key=None, mode=None):
         """
         Renew a certificate
         :type certificate_pem: Union[str,dict]
         :type certificate_id: str
         :rtype: dict
         """
-        csr = self.__load_file_or_string(csr)
-        cert = self.__load_file_or_string(certificate_pem)
+        csr = self.load_file_or_string(csr)
+        cert = self.load_file_or_string(certificate_pem)
         if private_key is not None:
-            key = self.__load_file_or_string(private_key)
+            key = self.load_file_or_string(private_key)
             self.set_jwt_headers(cert, key)
+
+        if mode == "decentralized":
+            if csr is None:
+                raise AnsibleError("You must specify a CSR when using decentralized enrollment")
 
         json = {
             "module": "webra",
@@ -192,9 +205,9 @@ class Horizon:
         :type revocation_reason: str
         :rtype: dict
         """
-        cert = self.__load_file_or_string(certificate_pem)
+        cert = self.load_file_or_string(certificate_pem)
         if private_key is not None:
-            key = self.__load_file_or_string(private_key)
+            key = self.load_file_or_string(private_key)
             self.set_jwt_headers(cert, key)
 
         # Duplication of value is to support older API versions
@@ -225,9 +238,9 @@ class Horizon:
         if labels is None:
             labels = {}
 
-        cert = self.__load_file_or_string(certificate_pem)
+        cert = self.load_file_or_string(certificate_pem)
         if private_key is not None:
-            key = self.__load_file_or_string(private_key)
+            key = self.load_file_or_string(private_key)
             self.set_jwt_headers(cert, key)
 
         json = {
@@ -261,12 +274,12 @@ class Horizon:
             "workflow": "import",
             "profile": profile,
             "template": {
-                "privateKey": self.__load_file_or_string(private_key),
+                "privateKey": self.load_file_or_string(private_key),
                 "metadata": self.__set_metadata(metadata),
                 "labels": self.__set_labels(labels)
             },
             "certificateId": certificate_id,
-            "certificatePem": self.__load_file_or_string(certificate_pem)
+            "certificatePem": self.load_file_or_string(certificate_pem)
         }
 
         if owner is not None:
@@ -335,7 +348,7 @@ class Horizon:
 
         json = {
             "campaign": campaign,
-            "certificate": self.__load_file_or_string(certificate_pem),
+            "certificate": self.load_file_or_string(certificate_pem),
             "hostDiscoveryData": {
                 "ip": ip,
                 "hostnames": hostnames,
@@ -347,15 +360,15 @@ class Horizon:
 
         return self.post(self.DISCOVERY_FEED_URL, json)
 
-    def certificate(self, certificate_pem, fields=None):
+    def certificate(self, certificate_pem, version, fields=None):
         """
         Retrieve a certificate's attributes
         :type certificate_pem: Union[str,dict]
         :type fields: list
         :rtype: dict
         """
-        pem = self.__load_file_or_string(certificate_pem)
-        pem = urllib.parse.quote(pem, safe='')
+        pem = self.load_file_or_string(certificate_pem)
+        pem = urllib.parse.quote(str(pem), safe='')
 
         response = self.get(self.CERTIFICATES_SHOW_URL + pem)
 
@@ -363,7 +376,7 @@ class Horizon:
             fields = []
             for value in response:
                 fields.append(value)
-        return self.__format_response(response, fields)
+        return self.__format_response(response, fields, version)
 
     def chain(self, certificate_pem):
         """
@@ -371,7 +384,7 @@ class Horizon:
         :type certificate_pem: Union[str,dict]
         :rtype: str
         """
-        pem = self.__load_file_or_string(certificate_pem)
+        pem = self.load_file_or_string(certificate_pem)
         pem = urllib.parse.quote(pem, safe='')
         return self.get(self.RFC5280_TC_URL + pem)
 
@@ -530,7 +543,10 @@ class Horizon:
         # Check args returned by the API
         self.__get_warnings(kwargs, content=content)
 
-        if response.ok:
+        if "status" in content and content["status"] == "pending":
+            self.cancel_request(content["_id"], content["workflow"])
+            raise AnsibleError(message=f"Request has been canceled. User '{ content['requester'] }' doesn't have the rights to perform a '{ content['workflow'] }' request on profile '{ content['profile'] }'.")
+        elif response.ok:
             return content
 
         if 'message' in content:
@@ -549,6 +565,15 @@ class Horizon:
             error_code = response.status_code
 
         raise HorizonError(message=error_message, code=error_code, detail=error_detail, response=response)
+
+    def cancel_request(self, request_id, workflow):
+        json = {
+            "_id": request_id,
+            "module": "webra",
+            "workflow": workflow
+        }
+
+        return self.post(self.REQUEST_CANCEL_URL, json)
 
     @staticmethod
     def __set_labels(labels):
@@ -703,7 +728,7 @@ class Horizon:
             raise AnsibleError(f'The mode: {mode} is not available.')
 
     @staticmethod
-    def __format_response(response, fields):
+    def __format_response(response, fields, version):
         """
         :param response: an answer from the API
         :param fields: list of fields
@@ -743,11 +768,15 @@ class Horizon:
             elif field in response:
                     result[field] = response[field]
 
-
-        return result
+        # Check ansible version to return the correct format
+        parsed_version = parse_version(version)
+        if parsed_version < parse_version("2.18.0"):
+            return result
+        else:
+            return [result]
 
     @staticmethod
-    def __load_file_or_string(content):
+    def load_file_or_string(content):
         """
         Opens a certificate if a path is given
         :param content:
@@ -781,7 +810,6 @@ class Horizon:
             if 'template' in args['json'] and 'certificate' in content:
                 for arg in args['json']['template']:
                     if arg not in content['certificate'] and arg not in exception_list:
-                        #TODO: Write a better message for the warning.
                         Display().warning('The value "%s" has not been returned by the API' % (arg))
                         warning = True
 
