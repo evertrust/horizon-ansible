@@ -26,7 +26,11 @@ class ActionModule(HorizonAction):
             content = self._get_content()
 
             if "mode" in content:
-                should_generate_csr = content["mode"] == "decentralized" and content['csr'] is None and content["private_key"] is not None
+                is_decentralized = content["mode"] == "decentralized"
+                has_no_csr = content.get("csr") is None
+                has_private_key = content.get("private_key") is not None
+
+                should_generate_csr = is_decentralized and has_no_csr and has_private_key
 
             if content["mode"] == "centralized" and content["csr"] is not None:
                 raise AnsibleError("Parameter csr cannot be used in centralized mode.")
@@ -59,7 +63,7 @@ class ActionModule(HorizonAction):
                 result["p12_password"] = response["password"]["value"]
                 result["key"] = HorizonCrypto.get_key_from_p12(response["pkcs12"]["value"],
                                                                response["password"]["value"])
-            
+
         except HorizonError as e:
             raise AnsibleError(e.full_message)
 
