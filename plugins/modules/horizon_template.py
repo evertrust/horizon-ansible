@@ -81,7 +81,7 @@ capabilites:
       description: Whether this profile will escrow the certificate private keys.
       type: bool
       returned: Always
-    p12passwordPolicy:  
+    p12passwordPolicy:
       description: Password policy for the P12 file.
       type: string
       returned: If present
@@ -113,16 +113,16 @@ subject:
   description: List of DN elements that will be used to build the certificate's Distinguished Name.
   type: list
   returned: If present
-  contains: 
-    element: 
+  contains:
+    element:
       description: The element type and index.
       type: string
       returned: Always
-    type: 
+    type:
       description: The formatted element type.
       type: string
       returned: If present
-    value: 
+    value:
       description: The element value.
       type: string
       returned: If present
@@ -130,11 +130,11 @@ subject:
       description: Computation rule input will be evaluated and will override all other inputs.
       type: string
       returned: If present
-    mandatory: 
+    mandatory:
       description: Whether the field is mandatory or not.
       type: bool
       returned: If present
-    editable: 
+    editable:
       description: Whether the field is editable or not for the currently authenticated user.
       type: bool
       returned: If present
@@ -147,11 +147,11 @@ sans:
   type: list
   returned: If present
   contains:
-    type: 
+    type:
       description: SAN type.
       type: string
       returned: Always
-    value: 
+    value:
       description: SAN value.
       type: list
       elements: string
@@ -160,7 +160,7 @@ sans:
       description: Computation rule input will be evaluated and will override all other inputs.
       type: string
       returned: If present
-    editable: 
+    editable:
       description: Whether the field is editable or not for the currently authenticated user.
       type: bool
       returned: If present
@@ -193,7 +193,7 @@ extensions:
       description: Computation rule input will be evaluated and will override all other inputs.
       type: string
       returned: If present
-    editable: 
+    editable:
       description: Whether the extension element is editable by the requester.
       type: bool
       returned: If present
@@ -201,7 +201,7 @@ extensions:
       description: The regular expression to validate the extension element.
       type: string
       returned: If present
-    mandatory: 
+    mandatory:
       description: Whether the extension element is mandatory to submit this request.
       type: bool
       returned: If present
@@ -209,39 +209,39 @@ labels:
   description: List of labels used internally to tag and group certificates.
   type: list
   returned: If present
-  contains: 
+  contains:
     label:
       description: The name of the label.
       type: string
       returned: Always
     displayName:
-      desciption: The display name of the label element.
+      description: The display name of the label element.
       type: list
       elements: string
       returned: If present
-      contains: 
-        lang: 
+      contains:
+        lang:
           description: The ISO 3166-1 (2-letters) code of the language used for the value.
           type: string
-          return: Always
-        value: 
+          returned: Always
+        value:
           description: The localized value.
           type: string
-          return Always
+          returned: Always
     description:
       description: The description of the label element.
       type: list
       elements: string
       returned: If present
-      contains: 
-        lang: 
+      contains:
+        lang:
           description: The ISO 3166-1 (2-letters) code of the language used for the value.
           type: string
-          return: Always
-        value: 
+          returned: Always
+        value:
           description: The localized value.
           type: string
-          return Always
+          returned: Always
     value:
       description: The value of the label element.
       type: string
@@ -250,11 +250,11 @@ labels:
       description: The computation rule of the label element.
       type: string
       returned: If present
-    mandatory: 
+    mandatory:
       description: Whether the label element is mandatory to submit this request.
       type: bool
       returned: If present
-    editable: 
+    editable:
       description: Whether the label is editable.
       type: bool
       returned: If present
@@ -283,11 +283,11 @@ contactEmail:
       description: Computation rule input will be evaluated and will override all other inputs.
       type: string
       returned: If present
-    editable: 
+    editable:
       description: Whether the contact email is editable by the requester.
       type: bool
       returned: If present
-    mandatory: 
+    mandatory:
       description: Whether the contact email is mandatory to submit this request.
       type: bool
       returned: If present
@@ -305,33 +305,33 @@ contactEmail:
       type: list
       elements: string
       returned: If present
-      contains: 
-        lang: 
+      contains:
+        lang:
           description: The ISO 3166-1 (2-letters) code of the language used for the value.
           type: string
-          return: Always
-        value: 
+          returned: Always
+        value:
           description: The localized value.
           type: string
-          return Always
-owner:  
+          returned: Always
+owner:
   description: Information about the certificate's owner and how to edit it.
   type: dict
   returned: If present
-  contains:  
+  contains:
     value:
       description: The value of the owner element. This should be a principal identifier.
       type: string
       returned: If present
-   computationRule:
+    computationRule:
       description: Computation rule input will be evaluated and will override all other inputs.
       type: string
       returned: If present
-    editable: 
+    editable:
       description: Whether the owner element is editable by the requester.
       type: bool
       returned: If present
-    mandatory: 
+    mandatory:
       description: Whether the owner element is mandatory to submit this request.
       type: bool
       returned: If present
@@ -340,33 +340,33 @@ owner:
       type: list
       elements: string
       returned: If present
-      contains: 
-        lang: 
+      contains:
+        lang:
           description: The ISO 3166-1 (2-letters) code of the language used for the value.
           type: string
-          return: Always
-        value: 
+          returned: Always
+        value:
           description: The localized value.
           type: string
-          return Always
+          returned: Always
 team:
   description: Information about the certificate's team and how to edit it.
   type: dict
   returned: If present
-  contains:  
+  contains:
     value:
       description: The value of the team element. This should be a team identifier.
       type: string
       returned: If present
-   computationRule:
+    computationRule:
       description: Computation rule input will be evaluated and will override all other inputs.
       type: string
       returned: If present
-    editable: 
+    editable:
       description: Whether the team element is editable by the requester.
       type: bool
       returned: If present
-    mandatory: 
+    mandatory:
       description: Whether the team element is mandatory to submit this request.
       type: bool
       returned: If present
@@ -375,20 +375,20 @@ team:
       type: list
       elements: string
       returned: If present
-      contains: 
-        lang: 
+      contains:
+        lang:
           description: The ISO 3166-1 (2-letters) code of the language used for the value.
           type: string
-          return: Always
-        value: 
+          returned: Always
+        value:
           description: The localized value.
           type: string
-          return Always
+          returned: Always
 passwordPolicy:
   description: The password policy that will be used to generate the certificate's PKCS#12 password.
   type: dict
   returned: If present
-  contains: 
+  contains:
     _id:
       description: The internal ID of the password policy.
       type: string
@@ -429,20 +429,20 @@ revocationReason:
   description: The reason for revoking the certificate
   type: string
   returned: If present (revocation only)
-metadata: 
+metadata:
   description: Information about the certificate's metadata and how to edit them.
-  type list:
+  type: list
   returned: If present
-  contains: 
+  contains:
     metadata:
       description: Technical metadata related to the certificate.
       type: string
       returned: Always
     value:
-      description: The value of the metadata element
+      description: The value of the metadata element.
       type: string
       returned: If present
-    editable: 
+    editable:
       description: Whether the metadata element is editable by the requester.
       type: bool
       returned: If present
@@ -451,3 +451,4 @@ passwordMode:
   type: string
   returned: If present (recover only)
 '''
+
