@@ -1,67 +1,69 @@
-on: 
+name: build_doc
+
+on:
   workflow_dispatch:
   push:
     tags:
       - '*'
 
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
 jobs:
   # Build job
-  build: 
-    runs-on: ${{ vars.RUNS_ON }}
+  build:
+    runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
-      
-    - name: Install Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.9'
-        cache: 'pip' # caching pip dependencies
-        
-    - name: Install dependencies
-      run: pip install ansible antsibull-docs sphinx sphinx-ansible-theme
-    
-    - name: Init collection
-      run: ansible-galaxy collection install .
+      - uses: actions/checkout@v4
 
-    - name: Build ansible docs with antsibull-doc
-      run: antsibull-docs sphinx-init --use-current --squash-hierarchy --dest-dir=docs/ --project "Horizon Ansible" --copyright "2023, Evertrust" --title "Horizon Ansible Documentation" evertrust.horizon
+      - name: Install Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.9'
+          cache: 'pip'
 
-    - name: Install requirements
-      run: pip install -r ./docs/requirements.txt
+      - name: Install dependencies
+        run: pip install ansible antsibull-docs sphinx sphinx-ansible-theme
 
-    - name: Add custom script to reformat doc
-      run: sed -i 's/\(sphinx-build.*\)/python reformat.py || python3 reformat.py\n\1/' docs/build.sh
+      - name: Init collection
+        run: ansible-galaxy collection install .
 
-    - name: Build with sphinx
-      run: ./docs/build.sh
+      - name: Build ansible docs with antsibull-docs
+        run: >
+          antsibull-docs sphinx-init --use-current --squash-hierarchy
+          --dest-dir=docs/ --project "Horizon Ansible"
+          --title "Horizon Ansible Documentation" evertrust.horizon
 
-    - name: Configure Pages
-      uses: actions/configure-pages@v3
+      - name: Install requirements
+        run: pip install -r ./docs/requirements.txt
 
-    - name: Upload artifact
-      uses: actions/upload-pages-artifact@v1
-      with:
-        # Upload entire repository
-        path: ./docs/build/html
+      - name: Add custom script to reformat doc
+        run: sed -i 's/\(sphinx-build.*\)/python reformat.py || python3 reformat.py\n\1/' docs/build.sh
+
+      - name: Build with sphinx
+        run: ./docs/build.sh
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./docs/build/html
 
   # Deployment job
   deploy:
-     # Add a dependency to the build job
     needs: build
-
-    # Grant GITHUB_TOKEN the permissions required to make a Pages deployment
+    runs-on: ubuntu-latest
     permissions:
-      pages: write      # to deploy to Pages
-      id-token: write   # to verify the deployment originates from an appropriate source
-
-    # Deploy to the github-pages environment
+      pages: write
+      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-
-    # Specify runner + deployment step
-    runs-on: ubuntu-latest
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v1
+        uses: actions/deploy-pages@v4
