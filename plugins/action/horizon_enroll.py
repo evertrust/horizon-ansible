@@ -25,7 +25,7 @@ class ActionModule(HorizonAction):
             client = self._get_client()
             content = self._get_content()
 
-            if content["subject"] == None:
+            if content["subject"] is None:
                 raise AnsibleError("The subject parameter is mandatory.")
 
             template = client.get_template(content["profile"], "enroll", "webra")
@@ -35,7 +35,7 @@ class ActionModule(HorizonAction):
                 if "passwordPolicy" in template["template"]:
                     password_policy = template["template"]["passwordPolicy"]
                 password = client.get_password(password_policy)
-            
+
             if "key_type" in content and content["key_type"] is not None:
                 key_type = content['key_type']
             elif "capabilities" in template["template"] and "defaultKeyType" in template["template"]["capabilities"]:
@@ -56,7 +56,7 @@ class ActionModule(HorizonAction):
                     content['csr'] = csr
                 except Exception as e:
                     raise AnsibleError(e)
-                
+
             response = client.enroll(**content, template=template)
 
             if "certificate" in response:

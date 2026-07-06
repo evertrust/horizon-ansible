@@ -3,7 +3,6 @@
 
 # Standard base includes and define this as a metaclass of type
 from __future__ import (absolute_import, division, print_function)
-from re import M
 
 __metaclass__ = type
 
