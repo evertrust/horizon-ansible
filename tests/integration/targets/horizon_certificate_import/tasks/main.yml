@@ -15,13 +15,14 @@
     provider: selfsigned
 
 - name: Import certificate and key by files
+  no_log: true
   evertrust.horizon.horizon_import:
     endpoint: "{{ endpoint }}"
     x_api_id: "{{ x_api_id }}"
     x_api_key: "{{ x_api_key }}"
 
     profile: "Ansible"
-    certificate_pem: 
+    certificate_pem:
       src: /tmp/importcertandkey.pem
     private_key:
       src: /tmp/importcertandkey.key
@@ -44,17 +45,19 @@
     provider: selfsigned
 
 - name: feed the certificate
+  no_log: true
   evertrust.horizon.horizon_feed:
     endpoint: "{{ endpoint }}"
     x_api_id: "{{ x_api_id }}"
     x_api_key: "{{ x_api_key }}"
 
-    certificate_pem: 
+    certificate_pem:
       src: /tmp/importkey.pem
     campaign: "Ansible"
     ip: 0.0.0.1
 
 - name: Import a key by a file
+  no_log: true
   evertrust.horizon.horizon_import:
     endpoint: "{{ endpoint }}"
     x_api_id: "{{ x_api_id }}"

@@ -2,18 +2,18 @@
   become: yes
   tasks:
   - name: Updating APT cache
-    apt: update_cache=yes  
-  
+    apt: update_cache=yes
+
   - name: Installing apache
-    apt: 
-      name: apache2 
+    apt:
+      name: apache2
       state: latest
 
   - name: Enabling the SSL module
     command: "a2enmod ssl"
     become: true
     become_user: root
-  
+
   - name: Get webra enroll template
     evertrust.horizon.horizon_template:
       endpoint: "{{ horizon_endpoint }}"
@@ -36,7 +36,7 @@
       path: /tmp/ansible_csr
       privatekey_path: "{{ privatekey.filename }}"
     register: csr
-  
+
   - name: Enrolling a certificate on Horizon for domain {{ domain }}
     evertrust.horizon.horizon_enroll:
       endpoint: "{{ horizon_endpoint }}"
@@ -48,7 +48,7 @@
       subject:
         cn.1: "{{ domain }}"
       sans:
-        dnsname: 
+        dnsname:
           - "{{ domain }}"
           - "www.{{ domain }}"
       labels:
@@ -74,7 +74,7 @@
       mode: '0775'
       owner: "www-data"
       group: "www-data"
-    
+
   - name: Uploading the {{ domain }} private key
     copy:
       content: "{{ privatekey.privatekey }}"
