@@ -26,6 +26,8 @@ jobs:
 
       - name: Install dependencies
         run: pip install ansible antsibull-docs sphinx sphinx-ansible-theme
+      - name: Configure mise-en-place
+        uses: jdx/mise-action@e6a8b3978addb5a52f2b4cd9d91eafa7f0ab959d # v4.2.0
 
       - name: Init collection
         run: ansible-galaxy collection install .

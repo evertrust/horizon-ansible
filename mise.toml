@@ -1,0 +1,77 @@
+[tools]
+uv = "0.11.28"
+
+[env]
+_.python.venv = { path = ".venv", create = true }
+
+[settings]
+experimental = true
+python.uv_venv_auto = "create|source"
+
+[deps.install_requirements]
+auto = true
+sources = ["requirements.txt"]
+outputs = [".venv/.requirements.installed"]
+run = """
+uv pip install --upgrade pip
+uv pip install -r requirements.txt
+uv pip install ansible
+touch .venv/.requirements.installed
+"""
+
+[tasks.build]
+description = "Build artifact"
+depends = [ "clean" ]
+run = "ansible-galaxy collection build --output-path=build/"
+
+[tasks.install]
+description = "Install the built collection artifact"
+depends = [ "build" ]
+run = """
+set -eu
+
+set -- build/*.tar.gz
+if [ "$#" -ne 1 ] || [ ! -f "$1" ]; then
+  echo "Expected exactly one collection artifact in build/, got $#" >&2
+  exit 1
+fi
+
+echo "$1"
+ansible-galaxy collection install "$1" --force
+"""
+
+[tasks.clean]
+description = "Clean build artifacts"
+run = "rm -f build/*.tar.gz"
+
+[tasks.publish]
+description = "Build and publish build artifact to Ansible Galaxy"
+run = """
+set -eu
+
+: "${ANSIBLE_GALAXY_API_TOKEN:?ANSIBLE_GALAXY_API_TOKEN is required}"
+
+token_file="$(mktemp)"
+trap 'rm -f "$token_file"' EXIT
+chmod 600 "$token_file"
+printf 'token: %s\n' "$ANSIBLE_GALAXY_API_TOKEN" > "$token_file"
+
+export ANSIBLE_GALAXY_TOKEN_PATH="$token_file"
+
+set -- build/*.tar.gz
+if [ "$#" -ne 1 ]; then
+  echo "Expected exactly one collection artifact in build/, got $#" >&2
+  exit 1
+fi
+
+ansible-galaxy collection publish "$1"
+"""
+
+[tasks.test]
+description = "CI Tests for the run_test.yaml workflow"
+depends = [ "install"]
+run = """
+cd ~/.ansible/collections/ansible_collections/evertrust/horizon && \
+ansible-test "integration" && \
+ansible-test "units"
+"""

@@ -16,10 +16,12 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
         pip install ansible
+    - name: Configure mise-en-place
+      uses: jdx/mise-action@e6a8b3978addb5a52f2b4cd9d91eafa7f0ab959d # v4.2.0
 
     - name: Set integration_config.yml
       run: >-
         echo "[endpoint: ${{ secrets.HORIZON_ENDPOINT }}, x_api_id: ${{ secrets.HORIZON_API_ID }}, x_api_key: ${{ secrets.HORIZON_API_KEY }}]" >> tests/integration/integration_config.yml
 
     - name: Run tests
-      run: make test
+      run: mise run test
