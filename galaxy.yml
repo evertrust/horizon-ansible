@@ -20,3 +20,5 @@ build_ignore:
   - .idea
   - venv
   - docs/html
+  - integration_config.yml
+  - '*.tar.gz'
