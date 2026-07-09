@@ -1,3 +1,4 @@
+---
 on:
   workflow_dispatch:
 
@@ -6,15 +7,16 @@ permissions:
 
 jobs:
   publish:
-    runs-on: ${{ vars.RUNS_ON }}
-    env:
-      ANSIBLE_GALAXY_API_TOKEN: ${{ secrets.ANSIBLE_GALAXY_API_TOKEN }}
+    runs-on: runs-on=${{ github.run_id }}/runner=evertrust
     steps:
+      - name: Configure Runs-On
+        uses: runs-on/action@4e5f72399b6b17f2e79c511c1b38a315a64d22dc # v2.2.0
+
       - name: Setup ansible
         run: sudo apt-get update && sudo apt-get install -y ansible
 
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           submodules: true
           fetch-depth: 0

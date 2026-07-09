@@ -1,3 +1,4 @@
+---
 name: Trivy scan
 
 on:
@@ -9,21 +10,30 @@ jobs:
   trivy:
     runs-on: runs-on=${{ github.run_id }}/runner=evertrust
     permissions:
-      contents: write
+      contents: read
       id-token: write
 
     steps:
       - name: Configure Runs-On
-        uses: runs-on/action@v2
+        uses: runs-on/action@4e5f72399b6b17f2e79c511c1b38a315a64d22dc # v2.2.0
 
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - name: Configure checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
 
       - name: Setup Trivy
-        uses: aquasecurity/setup-trivy@v0.2.3
+        uses: aquasecurity/setup-trivy@3fb12ec12f41e471780db15c232d5dd185dcb514 # v0.2.3
+
+      - name: Run Trivy scan
+        run: trivy fs --severity CRITICAL,HIGH --format json --output trivy-horizon-ansible.json --vex repo .
+
+      - name: Upload Trivy artifact
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        if: always()
+        with:
+          path: trivy-horizon-ansible.json
 
       - name: Fetch secrets via Vault
-        uses: hashicorp/vault-action@v2
+        uses: hashicorp/vault-action@9c2d817b85b9fff56bcab21cb74b485aee9e9d73 # v2.8.1
         with:
           url: ${{ vars.VAULT_ADDR }}
           method: ${{ vars.VAULT_AUTH_METHOD }}
@@ -33,15 +43,6 @@ jobs:
             ci/data/repositories/evertrust/horizon-ansible/linear  LINEAR_LABEL_IDS    |   LINEAR_LABEL_IDS   ;
             ci/data/repositories/evertrust/horizon-ansible/linear  LINEAR_TEAM_ID   |   LINEAR_TEAM_ID  ;
             ci/data/repositories/evertrust/horizon-ansible/linear  LINEAR_TODO_STATUS   |   LINEAR_TODO_STATUS  ;
-
-      - name: Run Trivy scan
-        run: trivy fs --severity CRITICAL,HIGH --format json --output trivy-horizon-ansible.json --vex repo .
-
-      - name: Upload Trivy artifact
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          path: trivy-horizon-ansible.json
 
       - name: Upload Vulnerabilities to Linear
         if: always()
