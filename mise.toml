@@ -19,6 +19,40 @@ uv pip install ansible
 touch .venv/.requirements.installed
 """
 
+[tasks.install_init_deps_doc]
+description = "Quick mise command to install dependencies"
+run = """
+uv pip install antsibull-docs sphinx sphinx-ansible-theme && \
+ansible-galaxy collection install .
+"""
+
+[tasks.docs_init]
+description = "Build collection documentation"
+run = """
+set -eu
+
+: "${ANSIBLE_GALAXY_API_TOKEN:?ANSIBLE_GALAXY_API_TOKEN is required}"
+
+token_file="$(mktemp)"
+trap 'rm -f "$token_file"' EXIT
+chmod 600 "$token_file"
+printf 'token: %s\n' "$ANSIBLE_GALAXY_API_TOKEN" > "$token_file"
+
+export ANSIBLE_GALAXY_TOKEN_PATH="$token_file"
+
+antsibull-docs sphinx-init --use-current --squash-hierarchy \
+  --dest-dir=docs/ --project "Horizon Ansible" \
+  --title "Horizon Ansible Documentation" evertrust.horizon
+"""
+
+[tasks.docs_build]
+description = "Add custom script to reformat doc & build with sphinx"
+run = """
+uv pip install -r ./docs/requirements.txt
+sed -i 's/\\(sphinx-build.*\\)/python reformat.py || python3 reformat.py\\n\\1/' docs/build.sh
+./docs/build.sh
+"""
+
 [tasks.build]
 description = "Build artifact"
 depends = [ "clean" ]

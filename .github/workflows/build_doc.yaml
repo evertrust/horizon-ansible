@@ -8,8 +8,8 @@ on:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
+  pages: read
+  id-token: read
 
 jobs:
   # Build job
@@ -24,28 +24,19 @@ jobs:
           python-version: '3.9'
           cache: 'pip'
 
-      - name: Install dependencies
-        run: pip install ansible antsibull-docs sphinx sphinx-ansible-theme
       - name: Configure mise-en-place
         uses: jdx/mise-action@e6a8b3978addb5a52f2b4cd9d91eafa7f0ab959d # v4.2.0
 
-      - name: Init collection
-        run: ansible-galaxy collection install .
+      - name: Install dependencies
+        run: mise run install_init_deps_doc
 
       - name: Build ansible docs with antsibull-docs
-        run: >
-          antsibull-docs sphinx-init --use-current --squash-hierarchy
-          --dest-dir=docs/ --project "Horizon Ansible"
-          --title "Horizon Ansible Documentation" evertrust.horizon
-
-      - name: Install requirements
-        run: pip install -r ./docs/requirements.txt
-
-      - name: Add custom script to reformat doc
-        run: sed -i 's/\(sphinx-build.*\)/python reformat.py || python3 reformat.py\n\1/' docs/build.sh
+        run: mise run docs_init
+        env:
+          ANSIBLE_GALAXY_API_TOKEN: ${{ secrets.ANSIBLE_GALAXY_API_TOKEN }}
 
       - name: Build with sphinx
-        run: ./docs/build.sh
+        run: mise run docs_build
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
