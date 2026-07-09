@@ -9,8 +9,6 @@ on:
 
 permissions:
   contents: read
-  pages: read
-  id-token: read
 
 jobs:
   # Build job
