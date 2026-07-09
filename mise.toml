@@ -40,6 +40,10 @@ echo "$1"
 ansible-galaxy collection install "$1" --force
 """
 
+[tasks.release_check]
+description = "Build, install, and test before publishing"
+depends = ["test"]
+
 [tasks.clean]
 description = "Clean build artifacts"
 run = "rm -f build/*.tar.gz"
@@ -59,7 +63,7 @@ printf 'token: %s\n' "$ANSIBLE_GALAXY_API_TOKEN" > "$token_file"
 export ANSIBLE_GALAXY_TOKEN_PATH="$token_file"
 
 set -- build/*.tar.gz
-if [ "$#" -ne 1 ]; then
+if [ "$#" -ne 1 ] || [ ! -f "$1" ]; then
   echo "Expected exactly one collection artifact in build/, got $#" >&2
   exit 1
 fi

@@ -1,8 +1,9 @@
 on:
   workflow_dispatch:
-  push:
-      tags:
-        - '*'
+
+permissions:
+  contents: read
+
 jobs:
   publish:
     runs-on: ${{ vars.RUNS_ON }}
@@ -11,7 +12,7 @@ jobs:
     steps:
       - name: Setup ansible
         run: sudo apt-get update && sudo apt-get install -y ansible
-        
+
       - name: Checkout code
         uses: actions/checkout@v4
         with:
@@ -22,7 +23,7 @@ jobs:
         uses: jdx/mise-action@e6a8b3978addb5a52f2b4cd9d91eafa7f0ab959d # v4.2.0
 
       - name: Release check
-        run: mise run build
+        run: mise run release_check
 
       - name: Publish collection
         run: mise run publish
