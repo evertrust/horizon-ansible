@@ -533,7 +533,7 @@ class Horizon:
                 response = requests.request(method, uri, cert=self.cert, verify=self.bundle, headers=self.headers, **kwargs)
 
         except requests.exceptions.SSLError:
-            raise AnsibleError("Got an SSL error try using the 'ca_bundle' paramater")
+            raise AnsibleError("Got an SSL error try using the 'ca_bundle' parameter")
 
         if 'Content-Type' in response.headers and response.headers['Content-Type'] in ['application/json', 'application/problem+json']:
             content = response.json()
