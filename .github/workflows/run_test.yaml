@@ -3,7 +3,8 @@ on:
   push:
     branches:
       - main
-
+permissions:
+  contents: read
 jobs:
   test:
     runs-on: runs-on=${{ github.run_id }}/runner=evertrust
