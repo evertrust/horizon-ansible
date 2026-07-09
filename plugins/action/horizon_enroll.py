@@ -77,4 +77,4 @@ class ActionModule(HorizonAction):
         except HorizonError as e:
             raise AnsibleError(e.full_message)
 
-        return result
+        return self._protect_result(result)
