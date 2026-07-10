@@ -8,12 +8,15 @@ on:
 
 jobs:
   vulnerability_scan:
-    runs-on: ubuntu-latest
+    runs-on: runs-on=${{ github.run_id }}/runner=evertrust
     timeout-minutes: 30
     permissions:
       contents: read
 # syft & gryp
     steps:
+      - name: Configure Runs-On
+        uses: runs-on/action@4e5f72399b6b17f2e79c511c1b38a315a64d22dc # v2.2.0
+
       - name: Configure checkout
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
@@ -33,7 +36,6 @@ jobs:
         with:
           sbom: horizon-ansible-sbom.spdx.json
           severity-cutoff: high
-          fail-build: false
           output-format: sarif
           output-file: grype-horizon-ansible.sarif
 
