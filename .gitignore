@@ -138,3 +138,6 @@ dmypy.json
 .DS_Store
 
 .idea/
+
+# Local review tracking
+to-fix.md
