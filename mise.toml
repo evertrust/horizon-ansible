@@ -66,8 +66,8 @@ ansible-galaxy collection install "$1" --force
 """
 
 [tasks.release_check]
-description = "Build, install, and test before publishing"
-depends = ["test"]
+description = "Build, install and test before publishing"
+depends = [ "test" ]
 
 [tasks.clean]
 description = "Clean build artifacts"
@@ -97,8 +97,16 @@ ansible-galaxy collection publish "$1"
 """
 
 [tasks.test]
-description = "CI Tests for the run_test.yaml workflow"
-depends = [ "install" ]
+description = "Build, install, and run all tests"
+depends = [" install" ]
+run = [
+  { task = "_unit_test" },
+  { task = "_integration_test" },
+]
+
+[tasks._integration_test]
+description = "Run integration tests against Horizon"
+hide = true
 run = """
 set -eu
 
@@ -132,5 +140,23 @@ PY
 
 cd "$collection_dir"
 ansible-test integration
+"""
+
+[tasks.integration_test]
+description = "Build, install, and run integration tests"
+depends = [ "install" ]
+run = [{ task = "_integration_test" }]
+
+[tasks._unit_test]
+description = "Run unit tests without integration credentials"
+hide = true
+run = """
+set -eu
+cd "$HOME/.ansible/collections/ansible_collections/evertrust/horizon"
 ansible-test units
 """
+
+[tasks.unit_test]
+description = "Build, install, and run unit tests"
+depends = [ "install" ]
+run = [{ task = "_unit_test" }]
