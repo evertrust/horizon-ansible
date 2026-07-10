@@ -7,7 +7,7 @@ Documentation tasks are managed with `mise`.
 mise run install_init_deps_doc
 ```
 
-Generate the Sphinx project with an Ansible Galaxy token:
+Generate the Sphinx project from the locally installed collection:
 
 ```shell
 mise run docs_init
