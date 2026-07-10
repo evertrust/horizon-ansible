@@ -22,17 +22,9 @@ jobs:
     - name: Configure mise-en-place
       uses: jdx/mise-action@e6a8b3978addb5a52f2b4cd9d91eafa7f0ab959d # v4.2.0
 
-    - name: Set integration_config.yml
-      run: |
-        cat > tests/integration/integration_config.yml << EOF
-        endpoint: "$HORIZON_ENDPOINT"
-        x_api_id: "$HORIZON_API_ID"
-        x_api_key: "$HORIZON_API_KEY"
-        EOF
+    - name: Run tests
+      run: mise run test
       env:
         HORIZON_ENDPOINT: ${{ secrets.HORIZON_ENDPOINT }}
         HORIZON_API_ID: ${{ secrets.HORIZON_API_ID }}
         HORIZON_API_KEY: ${{ secrets.HORIZON_API_KEY }}
-
-    - name: Run tests
-      run: mise run test

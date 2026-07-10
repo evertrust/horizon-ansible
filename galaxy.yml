@@ -20,5 +20,12 @@ build_ignore:
   - .idea
   - venv
   - docs/html
-  - integration_config.yml
+  - tests/integration/integration_config.yml
+  - tests/integration/integration_config.yml.template
   - '*.tar.gz'
+  - .venv
+  - .github
+  - build
+  - docs/build
+  - .pytest_cache
+  - to-fix*.md

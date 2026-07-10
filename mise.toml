@@ -98,9 +98,39 @@ ansible-galaxy collection publish "$1"
 
 [tasks.test]
 description = "CI Tests for the run_test.yaml workflow"
-depends = [ "install"]
+depends = [ "install" ]
 run = """
-cd ~/.ansible/collections/ansible_collections/evertrust/horizon && \
-ansible-test "integration" && \
-ansible-test "units"
+set -eu
+
+: "${HORIZON_ENDPOINT:?HORIZON_ENDPOINT is required}"
+: "${HORIZON_API_ID:?HORIZON_API_ID is required}"
+: "${HORIZON_API_KEY:?HORIZON_API_KEY is required}"
+
+collection_dir="$HOME/.ansible/collections/ansible_collections/evertrust/horizon"
+config_path="$collection_dir/tests/integration/integration_config.yml"
+
+umask 077
+rm -f "$config_path"
+trap 'rm -f "$config_path"' EXIT HUP INT TERM
+
+python - "$config_path" <<'PY'
+import json
+import os
+import sys
+
+with open(sys.argv[1], "x", encoding="utf-8") as config:
+    json.dump(
+        {
+            "endpoint": os.environ["HORIZON_ENDPOINT"],
+            "x_api_id": os.environ["HORIZON_API_ID"],
+            "x_api_key": os.environ["HORIZON_API_KEY"],
+        },
+        config,
+    )
+    config.write("\\n")
+PY
+
+cd "$collection_dir"
+ansible-test integration
+ansible-test units
 """
