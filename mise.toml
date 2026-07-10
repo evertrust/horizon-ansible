@@ -74,7 +74,7 @@ description = "Clean build artifacts"
 run = "rm -f build/*.tar.gz"
 
 [tasks.publish]
-description = "Build and publish build artifact to Ansible Galaxy"
+description = "Publish build artifact to Ansible Galaxy"
 run = """
 set -eu
 
