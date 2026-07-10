@@ -3,10 +3,15 @@ on:
   push:
     branches:
       - main
-permissions:
-  contents: read
+  pull_request:
+    branches:
+      - main
 jobs:
-  test:
+  integration:
+    needs: unit
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    permissions:
+      contents: read
     runs-on: runs-on=${{ github.run_id }}/runner=evertrust
     steps:
     - name: Configure Runs-On
@@ -17,14 +22,32 @@ jobs:
       with:
         persist-credentials: false
         submodules: true
-        fetch-depth: 0
 
     - name: Configure mise-en-place
       uses: jdx/mise-action@e6a8b3978addb5a52f2b4cd9d91eafa7f0ab959d # v4.2.0
 
-    - name: Run tests
-      run: mise run test
+    - name: Run integration tests
+      run: mise run integration_test
       env:
         HORIZON_ENDPOINT: ${{ secrets.HORIZON_ENDPOINT }}
         HORIZON_API_ID: ${{ secrets.HORIZON_API_ID }}
         HORIZON_API_KEY: ${{ secrets.HORIZON_API_KEY }}
+
+  unit:
+    runs-on: runs-on=${{ github.run_id }}/runner=evertrust
+    permissions:
+      contents: read
+    steps:
+      - name: Configure Runs-On
+        uses: runs-on/action@4e5f72399b6b17f2e79c511c1b38a315a64d22dc # v2.2.0
+
+      - name: Checkout code
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          persist-credentials: false
+
+      - name: Configure mise-en-place
+        uses: jdx/mise-action@e6a8b3978addb5a52f2b4cd9d91eafa7f0ab959d # v4.2.0
+
+      - name: Run unit tests
+        run: mise run unit_test
