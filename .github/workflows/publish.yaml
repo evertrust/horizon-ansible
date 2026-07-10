@@ -27,6 +27,10 @@ jobs:
 
       - name: Release check
         run: mise run release_check
+        env:
+          HORIZON_ENDPOINT: ${{ secrets.HORIZON_ENDPOINT }}
+          HORIZON_API_ID: ${{ secrets.HORIZON_API_ID }}
+          HORIZON_API_KEY: ${{ secrets.HORIZON_API_KEY }}
 
       - name: Publish collection
         run: mise run publish
