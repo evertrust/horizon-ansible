@@ -1,19 +1,7 @@
 # Contributing
 
 ### Documentation
-Documentation tasks are managed with `mise`.
-
-```shell
-mise run install_init_deps_doc
-```
-
-Generate the Sphinx project from the locally installed collection:
-
-```shell
-mise run docs_init
-```
-
-Then build the HTML documentation:
+Generate and build the documentation with `mise`:
 
 ```shell
 mise run docs_build

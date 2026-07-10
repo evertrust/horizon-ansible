@@ -31,13 +31,7 @@ jobs:
       - name: Configure mise-en-place
         uses: jdx/mise-action@e6a8b3978addb5a52f2b4cd9d91eafa7f0ab959d # v4.2.0
 
-      - name: Install dependencies
-        run: mise run install_init_deps_doc
-
-      - name: Build ansible docs with antsibull-docs
-        run: mise run docs_init
-
-      - name: Build with sphinx
+      - name: Generate and build documentation
         run: mise run docs_build
 
       - name: Configure Pages

@@ -22,12 +22,15 @@ touch .venv/.requirements.installed
 [tasks.install_init_deps_doc]
 description = "Quick mise command to install dependencies"
 run = """
-uv pip install antsibull-docs sphinx sphinx-ansible-theme && \
-ansible-galaxy collection install .
+set -eu
+
+uv pip install antsibull-docs sphinx sphinx-ansible-theme
+ansible-galaxy collection install . --force
 """
 
 [tasks.docs_init]
 description = "Build collection documentation"
+depends = ["install_init_deps_doc"]
 run = """
 set -eu
 
@@ -37,11 +40,26 @@ antsibull-docs sphinx-init --use-current --squash-hierarchy \
 """
 
 [tasks.docs_build]
-description = "Add custom script to reformat doc & build with sphinx"
+description = "Generate, reformat, and build the collection documentation"
+depends = ["docs_init"]
 run = """
+set -eu
+
 uv pip install -r ./docs/requirements.txt
-sed -i 's/\\(sphinx-build.*\\)/python reformat.py || python3 reformat.py\\n\\1/' docs/build.sh
-./docs/build.sh
+
+cd docs
+mkdir -p rst
+chmod og-w rst
+antsibull-docs \
+  --config-file antsibull-docs.cfg \
+  collection \
+  --cleanup everything \
+  --use-current \
+  --squash-hierarchy \
+  --dest-dir rst \
+  evertrust.horizon
+python reformat.py
+sphinx-build -M html rst build -c . -W --keep-going
 """
 
 [tasks.build]
