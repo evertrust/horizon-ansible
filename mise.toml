@@ -31,15 +31,6 @@ description = "Build collection documentation"
 run = """
 set -eu
 
-: "${ANSIBLE_GALAXY_API_TOKEN:?ANSIBLE_GALAXY_API_TOKEN is required}"
-
-token_file="$(mktemp)"
-trap 'rm -f "$token_file"' EXIT
-chmod 600 "$token_file"
-printf 'token: %s\n' "$ANSIBLE_GALAXY_API_TOKEN" > "$token_file"
-
-export ANSIBLE_GALAXY_TOKEN_PATH="$token_file"
-
 antsibull-docs sphinx-init --use-current --squash-hierarchy \
   --dest-dir=docs/ --project "Horizon Ansible" \
   --title "Horizon Ansible Documentation" evertrust.horizon

@@ -20,6 +20,8 @@ jobs:
 
       - name: Configure checkout
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          persist-credentials: false
 
       - name: Configure mise-en-place
         uses: jdx/mise-action@e6a8b3978addb5a52f2b4cd9d91eafa7f0ab959d # v4.2.0
@@ -29,8 +31,6 @@ jobs:
 
       - name: Build ansible docs with antsibull-docs
         run: mise run docs_init
-        env:
-          ANSIBLE_GALAXY_API_TOKEN: ${{ secrets.ANSIBLE_GALAXY_API_TOKEN }}
 
       - name: Build with sphinx
         run: mise run docs_build

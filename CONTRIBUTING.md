@@ -10,7 +10,7 @@ mise run install_init_deps_doc
 Generate the Sphinx project with an Ansible Galaxy token:
 
 ```shell
-ANSIBLE_GALAXY_API_TOKEN="<token>" mise run docs_init
+mise run docs_init
 ```
 
 Then build the HTML documentation:
