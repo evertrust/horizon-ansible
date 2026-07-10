@@ -4,7 +4,7 @@
 from __future__ import (absolute_import, division, print_function)
 
 from ansible_collections.evertrust.horizon.plugins.module_utils.horizon import Horizon
-from ansible_collections.evertrust.horizon.plugins.module_utils.horizon_errors import HorizonError
+from ansible_collections.evertrust.horizon.plugins.module_utils.horizon_errors import HorizonError, redact_horizon_error
 
 from ansible.plugins.lookup import LookupBase
 from ansible.utils.display import Display
@@ -320,13 +320,15 @@ display = Display()
 class LookupModule(LookupBase):
 
     def run(self, terms, variables=None, **kwargs):
+        auth = self._get_auth(kwargs)
+
         try:
-            client = Horizon(**self._get_auth(kwargs))
+            client = Horizon(**auth)
             content = self._get_content(kwargs)
             result = client.certificate(**content, version=ansible_version)
 
-        except HorizonError as e:
-            raise AnsibleLookupError(e.full_message)
+        except HorizonError as error:
+            raise AnsibleLookupError(redact_horizon_error(error, auth))
 
         return result
 

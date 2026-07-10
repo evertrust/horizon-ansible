@@ -18,8 +18,10 @@ class ModuleDocFragment(object):
         type: str
       x_api_key:
         description:
-          - Horizon password
-          - Required if you use credentials authentication
+          - Secret API key used for Horizon credential authentication.
+          - Required if you use credentials authentication.
+          - Store this value with Ansible Vault.
+          - Tasks containing lookup expressions with this value should use C(no_log=true).
         required: false
         type: str
       client_cert:
@@ -30,8 +32,9 @@ class ModuleDocFragment(object):
         type: path
       client_key:
         description:
-          - Path of a client certificate's key.
-          - Required if you use certificate based authentication
+          - Path to the private key used for client-certificate authentication.
+          - Required if you use certificate based authentication.
+          - Restrict access to the key and inventory configuration files.
         required: false
         type: path
       endpoint:
