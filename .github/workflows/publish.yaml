@@ -8,6 +8,7 @@ permissions:
 jobs:
   publish:
     runs-on: runs-on=${{ github.run_id }}/runner=evertrust
+    timeout-minutes: 45
     steps:
       - name: Configure Runs-On
         uses: runs-on/action@4e5f72399b6b17f2e79c511c1b38a315a64d22dc # v2.2.0
