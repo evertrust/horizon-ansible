@@ -9,7 +9,6 @@ on:
 jobs:
   integration:
     needs: unit
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     permissions:
       contents: read
     runs-on: runs-on=${{ github.run_id }}/runner=evertrust
