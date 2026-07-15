@@ -1,5 +1,7 @@
 [tools]
 uv = "0.11.28"
+"aqua:anchore/grype" = "0.112.0"
+"aqua:anchore/syft" = "1.44.0"
 
 [env]
 _.python.venv = { path = ".venv", create = true }
@@ -7,6 +9,49 @@ _.python.venv = { path = ".venv", create = true }
 [settings]
 experimental = true
 python.uv_venv_auto = "create|source"
+
+[tasks.sbom]
+description = "Generate a Syft JSON SBOM for a filesystem path or container image"
+usage = '''
+arg "<source>" help="Filesystem path or container image reference to scan"
+flag "-o --output <file>" help="SBOM output file" default="horizon-ansible-sbom.syft.json"
+'''
+run = '''
+#!/usr/bin/env bash
+set -euo pipefail
+
+syft scan "${usage_source:?}" -o json > "${usage_output:?}"
+'''
+
+[tasks."scan:sbom"]
+description = "Scan vulnerabilities from a Syft JSON SBOM using Grype"
+usage = '''
+arg "<sbom>" help="Syft JSON SBOM file to scan"
+flag "--fail-on <severity>" help="Fail when vulnerability severity is at least this level" default="high"
+'''
+run = '''
+#!/usr/bin/env bash
+set -euo pipefail
+
+grype "sbom:${usage_sbom:?}" --by-cve --fail-on "${usage_fail_on:?}"
+'''
+
+[tasks."scan:sbom-vex"]
+description = "Scan vulnerabilities from a Syft JSON SBOM using Grype and an OpenVEX document"
+usage = '''
+arg "<sbom>" help="Syft JSON SBOM file to scan"
+flag "-o --output <file>" help="Grype JSON output file" default="grype-horizon-ansible-vex.json"
+flag "--vex <file>" help="OpenVEX document to apply" default="/home/runner/.vex/openvex.json"
+flag "--fail-on <severity>" help="Fail when vulnerability severity is at least this level" default="high"
+'''
+run = '''
+#!/usr/bin/env bash
+set -euo pipefail
+
+grype "sbom:${usage_sbom:?}" --by-cve --vex "${usage_vex:?}" --fail-on "${usage_fail_on:?}" \
+  -o "json=${usage_output:?}" \
+  -o table --show-suppressed
+'''
 
 [deps.install_requirements]
 auto = true
