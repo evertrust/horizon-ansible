@@ -15,9 +15,9 @@ HORIZON_LICENSE_PATH=/path/to/licence.txt mise run container_integration_test
 ```
 
 CI follows the Horizon SDK workflow's infrastructure setup: it reads the Quay
-credentials from `ci/data/repositories/evertrust/horizon-python-sdk/quay` and
+credentials from `ci/data/repositories/evertrust/horizon-ansible/quay` and
 the `licence` field from
-`ci/data/repositories/evertrust/horizon-python-sdk/horizon`. It logs in to
+`ci/data/repositories/evertrust/horizon-ansible/horizon`. It logs in to
 `quay.io` before pulling the images, writes the licence to a temporary
 mode-restricted file, and removes it after the run. Ansible and Horizon logs
 are retained as workflow artifacts. The runner audits request-level warnings

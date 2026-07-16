@@ -35,9 +35,9 @@ jobs:
         method: ${{ vars.VAULT_AUTH_METHOD }}
         path: ${{ vars.VAULT_AUTH_PATH }}
         secrets: |
-          ci/data/repositories/evertrust/horizon-python-sdk/quay username | QUAY_USER ;
-          ci/data/repositories/evertrust/horizon-python-sdk/quay password | QUAY_TOKEN ;
-          ci/data/repositories/evertrust/horizon-python-sdk/horizon licence | HORIZON_LICENCE ;
+          ci/data/repositories/evertrust/horizon-ansible/quay username | QUAY_USER ;
+          ci/data/repositories/evertrust/horizon-ansible/quay password | QUAY_TOKEN ;
+          ci/data/repositories/evertrust/horizon-ansible/horizon licence | HORIZON_LICENCE ;
 
     - name: Log in to Quay registry
       uses: docker/login-action@465a07811f14bebb1938fbed4728c6a1ff8901fc # v2.2.0
