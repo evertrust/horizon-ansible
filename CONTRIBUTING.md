@@ -1,5 +1,28 @@
 # Contributing
 
+### Licensed integration tests
+
+The container integration suite tests the current handwritten Horizon client
+against Horizon 2.8.10, 2.9.4, and 2.10.3. The generated Horizon SDK is a
+test-only dependency used to provision and verify each isolated Horizon
+container; the Ansible collection does not use it for lifecycle requests on
+this branch.
+
+Run the same suite locally with:
+
+```shell
+HORIZON_LICENSE_PATH=/path/to/licence.txt mise run container_integration_test
+```
+
+CI follows the Horizon SDK workflow's infrastructure setup: it reads the Quay
+credentials from `ci/data/repositories/evertrust/horizon-python-sdk/quay` and
+the `licence` field from
+`ci/data/repositories/evertrust/horizon-python-sdk/horizon`. It logs in to
+`quay.io` before pulling the images, writes the licence to a temporary
+mode-restricted file, and removes it after the run. Ansible and Horizon logs
+are retained as workflow artifacts. The runner audits request-level warnings
+and failures before considering an image successful.
+
 ### Documentation
 Generate and build the documentation with `mise`:
 
