@@ -11,7 +11,7 @@ jobs:
     needs: unit
     permissions:
       contents: read
-    runs-on: runs-on=${{ github.run_id }}/runner=evertrust
+    runs-on: runs-on=${{ github.run_id }}/runner=evertrust/ssh=true
     timeout-minutes: 30
     steps:
     - name: Configure Runs-On
