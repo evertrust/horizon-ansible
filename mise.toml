@@ -1,5 +1,6 @@
 [tools]
 uv = "0.11.28"
+python = "3.10"
 "aqua:anchore/grype" = "0.112.0"
 "aqua:anchore/syft" = "1.44.0"
 
@@ -209,6 +210,27 @@ ansible-test integration
 description = "Build, install, and run integration tests"
 depends = [ "install" ]
 run = [{ task = "_integration_test" }]
+
+[tasks.container_integration_test]
+description = "Test the handwritten client against licensed Horizon 2.8, 2.9, and 2.10 containers"
+depends = ["build"]
+run = """
+set -eu
+
+: "${HORIZON_LICENSE_PATH:?HORIZON_LICENSE_PATH is required}"
+uv pip install -r tests/integration/requirements.txt
+uv pip check
+
+set -- build/*.tar.gz
+if [ "$#" -ne 1 ] || [ ! -f "$1" ]; then
+  echo "Expected exactly one collection artifact in build/, got $#" >&2
+  exit 1
+fi
+
+python tests/integration/run_horizon_matrix.py \
+  --license "$HORIZON_LICENSE_PATH" \
+  --artifact "$1"
+"""
 
 [tasks._unit_test]
 description = "Run unit tests without integration credentials"
