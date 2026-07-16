@@ -8,12 +8,13 @@ on:
       - main
 jobs:
   integration:
+    name: Licensed Horizon containers (handwritten client)
     needs: unit
     permissions:
       contents: read
       id-token: write
     runs-on: runs-on=${{ github.run_id }}/runner=evertrust
-    timeout-minutes: 30
+    timeout-minutes: 60
     steps:
     - name: Configure Runs-On
       uses: runs-on/action@4e5f72399b6b17f2e79c511c1b38a315a64d22dc # v2.2.0
@@ -27,23 +28,49 @@ jobs:
     - name: Configure mise-en-place
       uses: jdx/mise-action@e6a8b3978addb5a52f2b4cd9d91eafa7f0ab959d # v4.2.0
 
-    - name: Fetch secrets via Vault
+    - name: Fetch Horizon test infrastructure secrets via Vault
       uses: hashicorp/vault-action@9c2d817b85b9fff56bcab21cb74b485aee9e9d73 # v2.8.1
       with:
         url: ${{ vars.VAULT_ADDR }}
         method: ${{ vars.VAULT_AUTH_METHOD }}
         path: ${{ vars.VAULT_AUTH_PATH }}
         secrets: |
-          ci/data/repositories/evertrust/horizon-ansible/horizon endpoint | HORIZON_ENDPOINT ;
-          ci/data/repositories/evertrust/horizon-ansible/horizon api_id | HORIZON_API_ID ;
-          ci/data/repositories/evertrust/horizon-ansible/horizon api_key | HORIZON_API_KEY ;
+          ci/data/repositories/evertrust/horizon-python-sdk/quay username | QUAY_USER ;
+          ci/data/repositories/evertrust/horizon-python-sdk/quay password | QUAY_TOKEN ;
+          ci/data/repositories/evertrust/horizon-python-sdk/horizon licence | HORIZON_LICENCE ;
 
-    - name: Run integration tests
-      run: mise run integration_test
+    - name: Log in to Quay registry
+      uses: docker/login-action@465a07811f14bebb1938fbed4728c6a1ff8901fc # v2.2.0
+      with:
+        registry: quay.io
+        username: ${{ env.QUAY_USER }}
+        password: ${{ env.QUAY_TOKEN }}
+
+    - name: Materialize Horizon licence
+      shell: bash
       env:
-        HORIZON_ENDPOINT: ${{ env.HORIZON_ENDPOINT }}
-        HORIZON_API_ID: ${{ env.HORIZON_API_ID }}
-        HORIZON_API_KEY: ${{ env.HORIZON_API_KEY }}
+        HORIZON_LICENCE: ${{ env.HORIZON_LICENCE }}
+      run: |
+        set -euo pipefail
+        license_path="$RUNNER_TEMP/horizon-license.txt"
+        umask 077
+        printf '%s' "$HORIZON_LICENCE" > "$license_path"
+        echo "HORIZON_LICENSE_PATH=$license_path" >> "$GITHUB_ENV"
+
+    - name: Run licensed container integration tests
+      run: mise run container_integration_test
+
+    - name: Upload Ansible and Horizon logs
+      if: always()
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+      with:
+        name: horizon-handwritten-integration-logs
+        path: tests/output/*.log
+        if-no-files-found: warn
+
+    - name: Remove Horizon licence
+      if: always()
+      run: rm -f "$RUNNER_TEMP/horizon-license.txt"
 
   unit:
     runs-on: runs-on=${{ github.run_id }}/runner=evertrust
