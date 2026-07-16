@@ -14,8 +14,8 @@ Run the same suite locally with:
 HORIZON_LICENSE_PATH=/path/to/licence.txt mise run container_integration_test
 ```
 
-Older releases are tested manually when needed by overriding both
-`HORIZON_VERSION` and the digest-pinned `HORIZON_IMAGE`.
+Older releases are tested manually when needed by overriding
+`HORIZON_VERSION`.
 
 CI follows the Horizon SDK workflow's infrastructure setup: it reads the Quay
 credentials from `ci/data/repositories/evertrust/horizon-ansible/quay` and

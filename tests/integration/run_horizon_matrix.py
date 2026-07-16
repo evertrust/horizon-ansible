@@ -601,11 +601,6 @@ def parse_args():
         help="Horizon version used to label the run",
     )
     parser.add_argument(
-        "--image",
-        required=True,
-        help="Fully qualified Horizon container image",
-    )
-    parser.add_argument(
         "--artifact",
         type=Path,
         help="Use an existing collection artifact instead of building one in temporary storage",
@@ -620,11 +615,7 @@ def main():
     license_path = Path(args.license).expanduser().resolve()
     if not license_path.is_file():
         raise SystemExit("The Horizon license path is not a file")
-    if (":%s@" % args.version) not in args.image:
-        raise SystemExit(
-            "The Horizon image tag does not match --version %s: %s"
-            % (args.version, args.image)
-        )
+    image = "quay.io/evertrust/horizon:%s" % args.version
     source_root = Path(__file__).resolve().parents[2]
     environment = os.environ.copy()
     run_id = uuid4().hex[:12]
@@ -647,11 +638,11 @@ def main():
             % horizon.__version__
         )
         print("MongoDB image: %s" % MONGODB_IMAGE)
-        print("Running Horizon %s (%s)" % (args.version, args.image), flush=True)
+        print("Running Horizon %s (%s)" % (args.version, image), flush=True)
         try:
             return_code, log_path = run_version(
                 args.version,
-                args.image,
+                image,
                 license_path,
                 application_path,
                 collection_root,
