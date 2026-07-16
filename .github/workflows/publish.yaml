@@ -26,12 +26,23 @@ jobs:
       - name: Configure mise-en-place
         uses: jdx/mise-action@e6a8b3978addb5a52f2b4cd9d91eafa7f0ab959d # v4.2.0
 
+      - name: Fetch secrets via Vault
+        uses: hashicorp/vault-action@9c2d817b85b9fff56bcab21cb74b485aee9e9d73 # v2.8.1
+        with:
+          url: ${{ vars.VAULT_ADDR }}
+          method: ${{ vars.VAULT_AUTH_METHOD }}
+          path: ${{ vars.VAULT_AUTH_PATH }}
+          secrets: |
+            /v1/ci/data/repositories/evertrust/horizon-ansible/horizon endpoint | HORIZON_ENDPOINT ;
+            /v1/ci/data/repositories/evertrust/horizon-ansible/horizon api_id | HORIZON_API_ID ;
+            /v1/ci/data/repositories/evertrust/horizon-ansible/horizon api_key | HORIZON_API_KEY ;
+
       - name: Release check
         run: mise run release_check
         env:
-          HORIZON_ENDPOINT: ${{ secrets.HORIZON_ENDPOINT }}
-          HORIZON_API_ID: ${{ secrets.HORIZON_API_ID }}
-          HORIZON_API_KEY: ${{ secrets.HORIZON_API_KEY }}
+          HORIZON_ENDPOINT: ${{ env.HORIZON_ENDPOINT }}
+          HORIZON_API_ID: ${{ env.HORIZON_API_ID }}
+          HORIZON_API_KEY: ${{ env.HORIZON_API_KEY }}
 
       - name: Publish collection
         run: mise run publish
