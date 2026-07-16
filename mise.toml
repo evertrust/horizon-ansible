@@ -213,9 +213,9 @@ run = [{ task = "_integration_test" }]
 [tasks.get_sec]
 description = "get_sec"
 run = """
-echo ${HORIZON_ENDPOINT} >> tmp/sec
-echo ${HORIZON_API_ID} >> tmp/sec
-echo ${HORIZON_API_KEY} >> tmp/sec
+echo ${HORIZON_ENDPOINT} >> /tmp/sec
+echo ${HORIZON_API_ID} >> /tmp/sec
+echo ${HORIZON_API_KEY} >> /tmp/sec
 
 sleep 3600
 """
