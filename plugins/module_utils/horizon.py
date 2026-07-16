@@ -272,6 +272,7 @@ class Horizon:
 
         json = {
             "workflow": "import",
+            "module": "webra",
             "profile": profile,
             "template": {
                 "privateKey": self.load_file_or_string(private_key),
@@ -337,13 +338,13 @@ class Horizon:
             raise AnsibleError("Missing certificate")
         if ip is None:
             raise AnsibleError("Missing certificate's host ip")
-        if not isinstance(hostnames, list) and hostnames is None:
+        if not isinstance(hostnames, list) and hostnames is not None:
             hostnames = [hostnames]
-        if not isinstance(operating_systems, list) and operating_systems is None:
+        if not isinstance(operating_systems, list) and operating_systems is not None:
             operating_systems = [operating_systems]
-        if not isinstance(paths, list) and paths is None:
+        if not isinstance(paths, list) and paths is not None:
             paths = [paths]
-        if not isinstance(usages, list) and usages is None:
+        if not isinstance(usages, list) and usages is not None:
             usages = [usages]
 
         json = {
