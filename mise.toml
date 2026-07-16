@@ -212,12 +212,14 @@ depends = [ "install" ]
 run = [{ task = "_integration_test" }]
 
 [tasks.container_integration_test]
-description = "Test the handwritten client against licensed Horizon 2.8, 2.9, and 2.10 containers"
+description = "Test the handwritten client against the latest licensed Horizon container"
 depends = ["build"]
 run = """
 set -eu
 
 : "${HORIZON_LICENSE_PATH:?HORIZON_LICENSE_PATH is required}"
+HORIZON_VERSION="${HORIZON_VERSION:-2.10.3}"
+HORIZON_IMAGE="${HORIZON_IMAGE:-quay.io/evertrust/horizon:2.10.3@sha256:ee768f89889332b1aedb9497db4ecaad11df7bc0ad8805b36423a3fa4786c981}"
 uv pip install -r tests/integration/requirements.txt
 uv pip check
 
@@ -229,7 +231,9 @@ fi
 
 python tests/integration/run_horizon_matrix.py \
   --license "$HORIZON_LICENSE_PATH" \
-  --artifact "$1"
+  --artifact "$1" \
+  --version "$HORIZON_VERSION" \
+  --image "$HORIZON_IMAGE"
 """
 
 [tasks._unit_test]

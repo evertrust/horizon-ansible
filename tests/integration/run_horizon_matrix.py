@@ -1,4 +1,4 @@
-"""Test the handwritten Horizon client against licensed Horizon releases.
+"""Test the handwritten Horizon client against a licensed Horizon release.
 
 The generated SDK is used only to provision and verify isolated server-side
 fixtures.  The installed Ansible collection continues to execute its current
@@ -35,21 +35,6 @@ from testcontainers.core.network import Network
 MONGODB_IMAGE = (
     "mongo:8.2.10@sha256:1286be0f98b0da2575280a7a07e50446dfd707d683fd8e51937526b6e3c65fd9"
 )
-HORIZON_IMAGES = {
-    "2.8.10": (
-        "quay.io/evertrust/horizon:2.8.10@"
-        "sha256:d9181a2e9b372ac7e2955cc29142db1711084deeca86c415229e06cd42e11eec"
-    ),
-    "2.9.4": (
-        "quay.io/evertrust/horizon:2.9.4@"
-        "sha256:a1c79cea6183092e31033054cb46d88aa808d2f87458ff82cf4527a5b3b50fec"
-    ),
-    "2.10.3": (
-        "quay.io/evertrust/horizon:2.10.3@"
-        "sha256:ee768f89889332b1aedb9497db4ecaad11df7bc0ad8805b36423a3fa4786c981"
-    ),
-}
-DEFAULT_IMAGES = tuple(HORIZON_IMAGES)
 ADMIN_API_ID = "administrator"
 ADMIN_API_KEY = "sample_password"
 APPLICATION_SECRET = "This-is-a-long-string-used-for-1"
@@ -101,8 +86,15 @@ class MongoDB:
 
 
 class HorizonServer:
-    def __init__(self, version, network, mongodb_uri, license_path, application_path):
-        self.container = DockerContainer(HORIZON_IMAGES[version]).with_exposed_ports(9000)
+    def __init__(
+        self,
+        image,
+        network,
+        mongodb_uri,
+        license_path,
+        application_path,
+    ):
+        self.container = DockerContainer(image).with_exposed_ports(9000)
         self.container.with_volume_mapping(str(license_path), "/horizon/license.txt", "ro")
         self.container.with_volume_mapping(str(application_path), "/opt/horizon/etc/application.conf", "ro")
         environment = {
@@ -514,7 +506,16 @@ def audit_horizon_log(path):
     )
 
 
-def run_version(version, license_path, application_path, collection_root, source_root, environment, run_id):
+def run_version(
+    version,
+    image,
+    license_path,
+    application_path,
+    collection_root,
+    source_root,
+    environment,
+    run_id,
+):
     network = mongodb = server = None
     result = None
     audit_error = None
@@ -522,13 +523,19 @@ def run_version(version, license_path, application_path, collection_root, source
     collection = collection_root / "ansible_collections/evertrust/horizon"
     config_path = collection / "tests/integration/integration_config.yml"
     log_prefix = "horizon-handwritten-image-%s-%s" % (version, run_id)
-    log_path = source_root / "tests/output" / ("%s-matrix.log" % log_prefix)
+    log_path = source_root / "tests/output" / ("%s-ansible.log" % log_prefix)
     server_log_path = source_root / "tests/output" / ("%s-server.log" % log_prefix)
     log_path.parent.mkdir(parents=True, exist_ok=True)
     try:
         network = Network().create()
         mongodb = MongoDB(network)
-        server = HorizonServer(version, network, mongodb.in_network_uri, license_path, application_path)
+        server = HorizonServer(
+            image,
+            network,
+            mongodb.in_network_uri,
+            license_path,
+            application_path,
+        )
         provision_horizon(server.endpoint)
         config_path.write_text(
             json.dumps({
@@ -589,11 +596,14 @@ def parse_args():
         help="Path to a Horizon license (or set HORIZON_LICENSE_PATH)",
     )
     parser.add_argument(
-        "--images",
-        nargs="+",
-        default=DEFAULT_IMAGES,
-        choices=DEFAULT_IMAGES,
-        metavar="VERSION",
+        "--version",
+        required=True,
+        help="Horizon version used to label the run",
+    )
+    parser.add_argument(
+        "--image",
+        required=True,
+        help="Fully qualified Horizon container image",
     )
     parser.add_argument(
         "--artifact",
@@ -610,11 +620,15 @@ def main():
     license_path = Path(args.license).expanduser().resolve()
     if not license_path.is_file():
         raise SystemExit("The Horizon license path is not a file")
+    if (":%s@" % args.version) not in args.image:
+        raise SystemExit(
+            "The Horizon image tag does not match --version %s: %s"
+            % (args.version, args.image)
+        )
     source_root = Path(__file__).resolve().parents[2]
     environment = os.environ.copy()
-    failures = []
     run_id = uuid4().hex[:12]
-    with tempfile.TemporaryDirectory(prefix="horizon-matrix-") as directory:
+    with tempfile.TemporaryDirectory(prefix="horizon-integration-") as directory:
         work_root = Path(directory)
         application_path = work_root / "application.conf"
         application_path.write_text("play.http.session.secure = false\n", encoding="utf-8")
@@ -627,36 +641,36 @@ def main():
             environment,
             artifact=args.artifact,
         )
-        print("Built one matrix artifact: %s" % artifact.name)
+        print("Built integration artifact: %s" % artifact.name)
         print(
             "Provisioning-only SDK: Anto-test-hrz %s (collection uses handwritten HTTP)"
             % horizon.__version__
         )
         print("MongoDB image: %s" % MONGODB_IMAGE)
-        for version in args.images:
-            print("Running Horizon %s (%s)" % (version, HORIZON_IMAGES[version]), flush=True)
-            try:
-                return_code, log_path = run_version(
-                    version,
-                    license_path,
-                    application_path,
-                    collection_root,
-                    source_root,
-                    environment,
-                    run_id,
-                )
-            except Exception as exception:
-                failures.append(version)
-                print("FAIL Horizon %s during fixture setup (%s)" % (version, type(exception).__name__))
-                traceback.print_exc()
-                continue
-            if return_code == 0:
-                print("PASS Horizon %s" % version)
-            else:
-                failures.append(version)
-                print("FAIL Horizon %s; see %s" % (version, log_path))
-    if failures:
-        raise SystemExit("Horizon matrix failed: %s" % ", ".join(failures))
+        print("Running Horizon %s (%s)" % (args.version, args.image), flush=True)
+        try:
+            return_code, log_path = run_version(
+                args.version,
+                args.image,
+                license_path,
+                application_path,
+                collection_root,
+                source_root,
+                environment,
+                run_id,
+            )
+        except Exception as exception:
+            print(
+                "FAIL Horizon %s during fixture setup (%s)"
+                % (args.version, type(exception).__name__)
+            )
+            traceback.print_exc()
+            raise SystemExit(
+                "Horizon integration failed: %s" % args.version
+            ) from exception
+        if return_code != 0:
+            raise SystemExit("FAIL Horizon %s; see %s" % (args.version, log_path))
+        print("PASS Horizon %s" % args.version)
 
 
 if __name__ == "__main__":

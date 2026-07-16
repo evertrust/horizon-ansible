@@ -3,16 +3,19 @@
 ### Licensed integration tests
 
 The container integration suite tests the current handwritten Horizon client
-against Horizon 2.8.10, 2.9.4, and 2.10.3. The generated Horizon SDK is a
-test-only dependency used to provision and verify each isolated Horizon
-container; the Ansible collection does not use it for lifecycle requests on
-this branch.
+against the latest configured Horizon release (currently 2.10.3). The
+generated Horizon SDK is a test-only dependency used to provision and verify
+the isolated Horizon container; the Ansible collection does not use it for
+lifecycle requests on this branch.
 
 Run the same suite locally with:
 
 ```shell
 HORIZON_LICENSE_PATH=/path/to/licence.txt mise run container_integration_test
 ```
+
+Older releases are tested manually when needed by overriding both
+`HORIZON_VERSION` and the digest-pinned `HORIZON_IMAGE`.
 
 CI follows the Horizon SDK workflow's infrastructure setup: it reads the Quay
 credentials from `ci/data/repositories/evertrust/horizon-ansible/quay` and

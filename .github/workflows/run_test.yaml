@@ -8,7 +8,7 @@ on:
       - main
 jobs:
   integration:
-    name: Licensed Horizon containers (handwritten client)
+    name: Latest licensed Horizon container (handwritten client)
     needs: unit
     permissions:
       contents: read
