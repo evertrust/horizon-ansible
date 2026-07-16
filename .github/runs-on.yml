@@ -1,4 +1,4 @@
 ---
 _extends: .github-private
-admin:
+admins:
   - Anto-22
