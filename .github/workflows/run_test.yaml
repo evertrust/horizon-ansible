@@ -33,9 +33,9 @@ jobs:
         method: ${{ vars.VAULT_AUTH_METHOD }}
         path: ${{ vars.VAULT_AUTH_PATH }}
         secrets: |
-          /v1/ci/data/repositories/evertrust/horizon-ansible/horizon endpoint | HORIZON_ENDPOINT ;
-          /v1/ci/data/repositories/evertrust/horizon-ansible/horizon api_id | HORIZON_API_ID ;
-          /v1/ci/data/repositories/evertrust/horizon-ansible/horizon api_key | HORIZON_API_KEY ;
+          ci/data/repositories/evertrust/horizon-ansible/horizon endpoint | HORIZON_ENDPOINT ;
+          ci/data/repositories/evertrust/horizon-ansible/horizon api_id | HORIZON_API_ID ;
+          ci/data/repositories/evertrust/horizon-ansible/horizon api_key | HORIZON_API_KEY ;
 
     - name: Run integration tests
       run: mise run integration_test
