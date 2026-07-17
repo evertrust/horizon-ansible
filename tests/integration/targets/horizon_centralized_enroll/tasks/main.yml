@@ -1,4 +1,4 @@
-- name: Test centralize enrollment without problems
+- name: Enroll a centralized certificate with policy fields
   no_log: true
   evertrust.horizon.horizon_enroll:
 
@@ -25,12 +25,31 @@
 
     team: "TeamA"
 
-  register: data
+  register: centralized_enroll_result
 
-- copy: content="{{ data.certificate.certificate }}" dest="/tmp/PEM.pem"
-- copy: content="{{ data.key }}" dest="/tmp/KEY.key"
+- name: Read the centralized certificate back from Horizon
+  no_log: true
+  ansible.builtin.set_fact:
+    centralized_certificate_lookup: >-
+      {{ lookup('evertrust.horizon.horizon_lookup', endpoint=endpoint,
+                x_api_id=x_api_id, x_api_key=x_api_key,
+                certificate_pem=centralized_enroll_result.certificate.certificate,
+                fields=['profile', 'team', 'labels'], wantlist=True) }}
 
-- name: Test centralize enrollment with unidentified profile
+- name: Verify centralized enrollment profile, team, and labels
+  vars:
+    centralized_certificate: >-
+      {{ centralized_certificate_lookup
+         if centralized_certificate_lookup is mapping
+         else centralized_certificate_lookup[0] }}
+  ansible.builtin.assert:
+    that:
+      - centralized_certificate.profile == "Ansible"
+      - centralized_certificate.team == "TeamA"
+      - centralized_certificate.labels['label-1'] == "test"
+      - centralized_certificate.labels['label-2'] == "ansible"
+
+- name: Enroll with an unknown profile
   no_log: true
   evertrust.horizon.horizon_enroll:
 
@@ -51,17 +70,16 @@
       label-2: "ansible"
 
   ignore_errors: true
-  register: error1
+  register: unknown_profile_result
 
-# Check error
-- name: Check error1
-  assert:
+- name: Verify an unknown profile is rejected
+  ansible.builtin.assert:
     that:
-      - error1 is failed
-      - "'Profile does not exist or is disabled' in error1.msg"
+      - unknown_profile_result is failed
+      - "'Profile does not exist or is disabled' in unknown_profile_result.msg"
 
 
-- name: Test centralize enrollment with wrong key_type
+- name: Enroll with an unsupported key type
   no_log: true
   evertrust.horizon.horizon_enroll:
 
@@ -82,17 +100,16 @@
       label-2: "ansible"
 
   ignore_errors: true
-  register: error2
+  register: unsupported_key_type_result
 
-# Check error
-- name: Check error2
-  assert:
+- name: Verify an unsupported key type is rejected
+  ansible.builtin.assert:
     that:
-      - error2 is failed
-      - "'Unknown algorithm' in error2.msg"
+      - unsupported_key_type_result is failed
+      - "'Unknown algorithm' in unsupported_key_type_result.msg"
 
 
-- name: Test centralize enrollment with unexistant label
+- name: Enroll with an unknown label
   no_log: true
   evertrust.horizon.horizon_enroll:
 
@@ -109,17 +126,16 @@
     sans:
       dnsname: "TestCIWithUnexistantLabel"
     labels:
-      unexistantLabel: "test"
+      unknown-label: "test"
       label-1: "test"
       label-2: "ansible"
 
   ignore_errors: true
-  register: error3
+  register: unknown_label_result
 
-# Check error
-- name: Check error3
-  assert:
+- name: Verify an unknown label is rejected
+  ansible.builtin.assert:
     that:
-      - error3 is failed
-      - "'Label element' in error3.msg"
-      - "'is not authorized' in error3.msg"
+      - unknown_label_result is failed
+      - "'Label element' in unknown_label_result.msg"
+      - "'is not authorized' in unknown_label_result.msg"

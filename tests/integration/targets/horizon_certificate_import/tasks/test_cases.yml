@@ -1,0 +1,107 @@
+- name: Create a private key for certificate-and-key import
+  no_log: true
+  delegate_to: localhost
+  community.crypto.openssl_privatekey:
+    path: "{{ import_test_directory.path }}/certificate-and-key.key"
+    mode: "0600"
+
+- name: Create a CSR for certificate-and-key import
+  no_log: true
+  delegate_to: localhost
+  community.crypto.openssl_csr_pipe:
+    privatekey_path: "{{ import_test_directory.path }}/certificate-and-key.key"
+    common_name: test-import
+  register: certificate_and_key_csr
+
+- name: Create a self-signed certificate for certificate-and-key import
+  delegate_to: localhost
+  community.crypto.x509_certificate:
+    path: "{{ import_test_directory.path }}/certificate-and-key.pem"
+    csr_content: "{{ certificate_and_key_csr.csr }}"
+    privatekey_path: "{{ import_test_directory.path }}/certificate-and-key.key"
+    provider: selfsigned
+
+- name: Import a certificate and private key
+  no_log: true
+  evertrust.horizon.horizon_import:
+    endpoint: "{{ endpoint }}"
+    x_api_id: "{{ x_api_id }}"
+    x_api_key: "{{ x_api_key }}"
+    profile: "Ansible"
+    certificate_pem:
+      src: "{{ import_test_directory.path }}/certificate-and-key.pem"
+    private_key:
+      src: "{{ import_test_directory.path }}/certificate-and-key.key"
+  register: certificate_and_key_import_result
+
+- name: Verify certificate-and-key import returned certificate data
+  ansible.builtin.assert:
+    that:
+      - certificate_and_key_import_result.certificate is mapping
+      - certificate_and_key_import_result.certificate.certificate | length > 0
+
+- name: Create a private key for key-only import
+  no_log: true
+  delegate_to: localhost
+  community.crypto.openssl_privatekey:
+    path: "{{ import_test_directory.path }}/key-only.key"
+    mode: "0600"
+
+- name: Create a CSR for key-only import
+  no_log: true
+  delegate_to: localhost
+  community.crypto.openssl_csr_pipe:
+    privatekey_path: "{{ import_test_directory.path }}/key-only.key"
+    common_name: test-import-key-only
+  register: key_only_csr
+
+- name: Create a self-signed certificate for key-only import
+  delegate_to: localhost
+  community.crypto.x509_certificate:
+    path: "{{ import_test_directory.path }}/key-only.pem"
+    csr_content: "{{ key_only_csr.csr }}"
+    privatekey_path: "{{ import_test_directory.path }}/key-only.key"
+    provider: selfsigned
+
+- name: Feed the key-only import certificate to Horizon
+  no_log: true
+  evertrust.horizon.horizon_feed:
+    endpoint: "{{ endpoint }}"
+    x_api_id: "{{ x_api_id }}"
+    x_api_key: "{{ x_api_key }}"
+    certificate_pem:
+      src: "{{ import_test_directory.path }}/key-only.pem"
+    campaign: "Ansible"
+    ip: 0.0.0.1
+
+- name: Look up the key-only import certificate identifier
+  no_log: true
+  ansible.builtin.set_fact:
+    key_only_certificate_lookup: >-
+      {{ lookup('evertrust.horizon.horizon_lookup', endpoint=endpoint,
+                x_api_id=x_api_id, x_api_key=x_api_key,
+                certificate_pem={'src': import_test_directory.path + '/key-only.pem'},
+                fields=['_id'], wantlist=True) }}
+
+- name: Import a private key into an existing certificate
+  no_log: true
+  vars:
+    key_only_certificate: >-
+      {{ key_only_certificate_lookup
+         if key_only_certificate_lookup is mapping
+         else key_only_certificate_lookup[0] }}
+  evertrust.horizon.horizon_import:
+    endpoint: "{{ endpoint }}"
+    x_api_id: "{{ x_api_id }}"
+    x_api_key: "{{ x_api_key }}"
+    profile: "Ansible"
+    certificate_id: "{{ key_only_certificate._id }}"
+    private_key:
+      src: "{{ import_test_directory.path }}/key-only.key"
+  register: key_only_import_result
+
+- name: Verify key-only import returned certificate data
+  ansible.builtin.assert:
+    that:
+      - key_only_import_result.certificate is mapping
+      - key_only_import_result.certificate.certificate | length > 0
