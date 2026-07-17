@@ -1,4 +1,4 @@
+--find-links https://test.pypi.org/simple/anto-test-hrz/
+Anto-test-hrz>=2.8.0.post1,<2.11
 cryptography>=3.5.0
-pyjwt
-requests
-pytest-xdist
+PyJWT>=2.0,<3
