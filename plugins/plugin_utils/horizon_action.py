@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # -*- coding: utf-8 -*-
 
 # Standard base includes and define this as a metaclass of type
@@ -7,7 +6,7 @@ from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
 from abc import ABC
-from ansible_collections.evertrust.horizon.plugins.module_utils.horizon import Horizon
+from ansible_collections.evertrust.horizon.plugins.plugin_utils.horizon import Horizon
 from ansible.plugins.action import ActionBase
 
 
@@ -33,7 +32,10 @@ class HorizonAction(ActionBase, ABC):
         return []
 
     def _auth_args(self):
-        return ["endpoint", "x_api_id", "x_api_key", "ca_bundle", "client_cert", "client_key", "private_key"]
+        return [
+            "endpoint", "x_api_id", "x_api_key", "ca_bundle", "client_cert", "client_key", "private_key",
+            "connect_timeout", "read_timeout",
+        ]
 
     def _get_auth(self):
         auth = {}

@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # -*- coding: utf-8 -*-
 
 # Standard base includes and define this as a metaclass of type
@@ -8,24 +7,37 @@ __metaclass__ = type
 
 import base64
 import re
-import jwt
 import time
 
-from cryptography.hazmat.primitives.serialization import pkcs12, BestAvailableEncryption
-from cryptography import x509
-from cryptography.hazmat.primitives import hashes, serialization
-from cryptography.hazmat.primitives.asymmetric import rsa, ec
-from cryptography.x509.oid import NameOID
-from cryptography.hazmat.backends import default_backend
+try:
+    import jwt
+    from cryptography.hazmat.primitives.serialization import pkcs12, BestAvailableEncryption
+    from cryptography import x509
+    from cryptography.hazmat.primitives import hashes, serialization
+    from cryptography.hazmat.primitives.asymmetric import rsa, ec
+    from cryptography.x509.oid import NameOID
+    from cryptography.hazmat.backends import default_backend
+except ImportError as import_error:
+    CRYPTOGRAPHY_IMPORT_ERROR = import_error
+else:
+    CRYPTOGRAPHY_IMPORT_ERROR = None
 
 
 class HorizonCrypto:
+
+    @staticmethod
+    def _require_dependencies():
+        if CRYPTOGRAPHY_IMPORT_ERROR is not None:
+            raise ImportError(
+                "Horizon cryptographic operations require PyJWT and cryptography."
+            ) from CRYPTOGRAPHY_IMPORT_ERROR
 
     @staticmethod
     def get_p12_from_key(private_key, certificate, password):
         """
         :return: A tuple containing a base64-encoded PKCS#12 and its password
         """
+        HorizonCrypto._require_dependencies()
         if isinstance(certificate, str):
             certificate = x509.load_pem_x509_certificate(certificate.encode())
         if isinstance(private_key, str):
@@ -41,6 +53,7 @@ class HorizonCrypto:
 
     @staticmethod
     def parse_pem_certificate(pem_content):
+        HorizonCrypto._require_dependencies()
         return serialization.load_pem_public_key(pem_content)
 
     @staticmethod
@@ -50,12 +63,14 @@ class HorizonCrypto:
             :param password: the password corresponding to the certificate
             : return the public key of the PKCS12
         """
+        HorizonCrypto._require_dependencies()
         encoded_key = pkcs12.load_key_and_certificates(base64.b64decode(p12), password.encode())
 
         return HorizonCrypto.get_key_bytes(encoded_key[0])
 
     @staticmethod
     def get_key_bytes(encoded_key):
+        HorizonCrypto._require_dependencies()
         return encoded_key.private_bytes(
             encoding=serialization.Encoding.PEM,
             format=serialization.PrivateFormat.TraditionalOpenSSL,
@@ -70,13 +85,14 @@ class HorizonCrypto:
         :type private_key: RSAPrivateKey
         :rtype: str
         """
+        HorizonCrypto._require_dependencies()
         bindings = {
             "cn": NameOID.COMMON_NAME,
             "o": NameOID.ORGANIZATION_NAME,
             "c": NameOID.COUNTRY_NAME,
             "ou": NameOID.ORGANIZATIONAL_UNIT_NAME
         }
-        
+
         if "dn" in subject:
             dn = subject["dn"].replace(" ", "")
             temp_subject = {}
@@ -120,6 +136,7 @@ class HorizonCrypto:
         :type key_type: str
         :return a tuple (private key, public key)
         """
+        HorizonCrypto._require_dependencies()
         if key_type is None:
             raise Exception('A keyType is required')
 
@@ -140,6 +157,7 @@ class HorizonCrypto:
 
     @staticmethod
     def generate_jwt_token(cert, private_key, nonce=""):
+        HorizonCrypto._require_dependencies()
         # Define payload
         jwt_payload = {
             "sub": cert,
@@ -169,6 +187,7 @@ class HorizonCrypto:
 
     @staticmethod
     def get_key_type(pem_data):
+        HorizonCrypto._require_dependencies()
         if pem_data != "" and pem_data is not None:
             cert = x509.load_pem_x509_certificate(pem_data.encode('utf-8'))
             public_key = cert.public_key()
