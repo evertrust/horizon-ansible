@@ -27,11 +27,11 @@ jobs:
       - name: Generate SBOM with Syft
         run: >-
           mise run sbom .
-          -o horizon-ansible-sbom.spdx.json
+          -o horizon-ansible-sbom.syft.json
 
       - name: Scan SBOM with Grype
         run: >-
-          mise run scan:sbom horizon-ansible-sbom.spdx.json
+          mise run scan:sbom horizon-ansible-sbom.syft.json
           --fail-on high
           -o grype-horizon-ansible.sarif
 
@@ -40,5 +40,5 @@ jobs:
         if: always()
         with:
           path: |
-            horizon-ansible-sbom.spdx.json
+            horizon-ansible-sbom.syft.json
             grype-horizon-ansible.sarif
