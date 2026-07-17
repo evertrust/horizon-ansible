@@ -506,8 +506,15 @@ def audit_horizon_log(path):
     )
 
 
-def run_version(
-    version,
+def image_log_label(image):
+    """Convert a container reference into a filesystem-safe log label."""
+    return "".join(
+        character if character.isalnum() or character in ".-_" else "-"
+        for character in image
+    ).strip("-")
+
+
+def run_image(
     image,
     license_path,
     application_path,
@@ -522,7 +529,10 @@ def run_version(
     integration_started = False
     collection = collection_root / "ansible_collections/evertrust/horizon"
     config_path = collection / "tests/integration/integration_config.yml"
-    log_prefix = "horizon-handwritten-image-%s-%s" % (version, run_id)
+    log_prefix = "horizon-handwritten-image-%s-%s" % (
+        image_log_label(image),
+        run_id,
+    )
     log_path = source_root / "tests/output" / ("%s-ansible.log" % log_prefix)
     server_log_path = source_root / "tests/output" / ("%s-server.log" % log_prefix)
     log_path.parent.mkdir(parents=True, exist_ok=True)
@@ -596,9 +606,9 @@ def parse_args():
         help="Path to a Horizon license (or set HORIZON_LICENSE_PATH)",
     )
     parser.add_argument(
-        "--version",
+        "--image",
         required=True,
-        help="Horizon version used to label the run",
+        help="Fully qualified quay.io Horizon container image",
     )
     parser.add_argument(
         "--artifact",
@@ -615,7 +625,16 @@ def main():
     license_path = Path(args.license).expanduser().resolve()
     if not license_path.is_file():
         raise SystemExit("The Horizon license path is not a file")
-    image = "quay.io/evertrust/horizon:%s" % args.version
+    quay_path = args.image.removeprefix("quay.io/")
+    if (
+        not args.image.startswith("quay.io/")
+        or not quay_path
+        or quay_path.startswith("/")
+        or any(character.isspace() for character in args.image)
+    ):
+        raise SystemExit(
+            "The Horizon image must start with 'quay.io/' and contain no whitespace"
+        )
     source_root = Path(__file__).resolve().parents[2]
     environment = os.environ.copy()
     run_id = uuid4().hex[:12]
@@ -638,11 +657,10 @@ def main():
             % horizon.__version__
         )
         print("MongoDB image: %s" % MONGODB_IMAGE)
-        print("Running Horizon %s (%s)" % (args.version, image), flush=True)
+        print("Running Horizon image %s" % args.image, flush=True)
         try:
-            return_code, log_path = run_version(
-                args.version,
-                image,
+            return_code, log_path = run_image(
+                args.image,
                 license_path,
                 application_path,
                 collection_root,
@@ -652,16 +670,16 @@ def main():
             )
         except Exception as exception:
             print(
-                "FAIL Horizon %s during fixture setup (%s)"
-                % (args.version, type(exception).__name__)
+                "FAIL Horizon image %s during fixture setup (%s)"
+                % (args.image, type(exception).__name__)
             )
             traceback.print_exc()
             raise SystemExit(
-                "Horizon integration failed: %s" % args.version
+                "Horizon integration failed: %s" % args.image
             ) from exception
         if return_code != 0:
-            raise SystemExit("FAIL Horizon %s; see %s" % (args.version, log_path))
-        print("PASS Horizon %s" % args.version)
+            raise SystemExit("FAIL Horizon image %s; see %s" % (args.image, log_path))
+        print("PASS Horizon image %s" % args.image)
 
 
 if __name__ == "__main__":

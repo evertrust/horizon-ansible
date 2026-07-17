@@ -218,7 +218,7 @@ run = """
 set -eu
 
 : "${HORIZON_LICENSE_PATH:?HORIZON_LICENSE_PATH is required}"
-HORIZON_VERSION="${HORIZON_VERSION:-2.10.3}"
+HORIZON_IMAGE="${HORIZON_IMAGE:-quay.io/evertrust/horizon:2.10.3}"
 uv pip install -r tests/integration/requirements.txt
 uv pip check
 
@@ -231,7 +231,7 @@ fi
 python tests/integration/run_horizon_matrix.py \
   --license "$HORIZON_LICENSE_PATH" \
   --artifact "$1" \
-  --version "$HORIZON_VERSION"
+  --image "$HORIZON_IMAGE"
 """
 
 [tasks._unit_test]
