@@ -625,6 +625,7 @@ def main():
     license_path = Path(args.license).expanduser().resolve()
     if not license_path.is_file():
         raise SystemExit("The Horizon license path is not a file")
+    version = args.image.split("/")[-1]
     source_root = Path(__file__).resolve().parents[2]
     environment = os.environ.copy()
     run_id = uuid4().hex[:12]
@@ -647,7 +648,7 @@ def main():
             % horizon.__version__
         )
         print("MongoDB image: %s" % MONGODB_IMAGE)
-        print("Running Horizon image %s" % args.image, flush=True)
+        print("Running Horizon %s (%s)" % (version, args.image), flush=True)
         try:
             return_code, log_path = run_image(
                 args.image,
@@ -660,16 +661,16 @@ def main():
             )
         except Exception as exception:
             print(
-                "FAIL Horizon image %s during fixture setup (%s)"
-                % (args.image, type(exception).__name__)
+                "FAIL Horizon %s during fixture setup (%s)"
+                % (version, type(exception).__name__)
             )
             traceback.print_exc()
             raise SystemExit(
-                "Horizon integration failed: %s" % args.image
+                "Horizon integration failed: %s" % version
             ) from exception
         if return_code != 0:
-            raise SystemExit("FAIL Horizon image %s; see %s" % (args.image, log_path))
-        print("PASS Horizon image %s" % args.image)
+            raise SystemExit("FAIL Horizon %s; see %s" % (version, log_path))
+        print("PASS Horizon %s" % version)
 
 
 if __name__ == "__main__":
