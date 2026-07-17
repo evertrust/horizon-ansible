@@ -1,4 +1,4 @@
-- name: Decentralize enrollment
+- name: Enroll a decentralized certificate using a supplied CSR
   no_log: true
   evertrust.horizon.horizon_enroll:
 
@@ -35,8 +35,15 @@
       att/xqOGwLPrhZDgSQVtGnVFW2848ZCB4MjkvQFmF+rnqKP8DEDkjDujEPC27f/7
       UOZa8OXHqLGN6HsCwd7gcJYwAA==
       -----END CERTIFICATE REQUEST-----
+  register: supplied_csr_enroll_result
 
-- name: Decentralize enrollment without csr
+- name: Verify supplied-CSR enrollment returned certificate data
+  ansible.builtin.assert:
+    that:
+      - supplied_csr_enroll_result.certificate is mapping
+      - supplied_csr_enroll_result.certificate.certificate | length > 0
+
+- name: Enroll a decentralized certificate using a generated CSR
   no_log: true
   evertrust.horizon.horizon_enroll:
 
@@ -55,9 +62,16 @@
     labels:
       label-1: "test"
       label-2: "ansible"
+  register: generated_csr_enroll_result
 
+- name: Verify generated-CSR enrollment returned certificate and key data
+  ansible.builtin.assert:
+    that:
+      - generated_csr_enroll_result.certificate is mapping
+      - generated_csr_enroll_result.certificate.certificate | length > 0
+      - generated_csr_enroll_result.key | length > 0
 
-- name: Decentralize enrollment with wrong csr
+- name: Enroll a decentralized certificate using an invalid CSR
   no_log: true
   evertrust.horizon.horizon_enroll:
 
@@ -83,11 +97,10 @@
       -----END CERTIFICATE REQUEST-----
 
   ignore_errors: true
-  register: error1
+  register: invalid_csr_result
 
-# Check error
-- name: Check error1
-  assert:
+- name: Verify an invalid CSR is rejected
+  ansible.builtin.assert:
     that:
-      - error1 is failed
-      - "'Could not parse provided PEM' in error1.msg"
+      - invalid_csr_result is failed
+      - "'Could not parse provided PEM' in invalid_csr_result.msg"

@@ -1,15 +1,46 @@
-- name: Update a certificate by its content
+- name: Enroll an isolated certificate fixture for update tests
+  no_log: true
+  evertrust.horizon.horizon_enroll:
+    endpoint: "{{ endpoint }}"
+    x_api_id: "{{ x_api_id }}"
+    x_api_key: "{{ x_api_key }}"
+    profile: "Ansible"
+    mode: "centralized"
+    key_type: "rsa-2048"
+    subject:
+      cn.1: "IntegrationTestCI-update"
+  register: update_fixture
+
+- name: Update the isolated certificate by its content
   no_log: true
   evertrust.horizon.horizon_update:
     endpoint: "{{ endpoint }}"
     x_api_id: "{{ x_api_id }}"
     x_api_key: "{{ x_api_key }}"
-    certificate_pem:
-      src: "/tmp/PEM.pem"
+    certificate_pem: "{{ update_fixture.certificate.certificate }}"
     labels:
       label-1: "retest"
     team: "TeamB"
 
+- name: Read the updated certificate back from Horizon
+  no_log: true
+  ansible.builtin.set_fact:
+    updated_certificate_lookup: >-
+      {{ lookup('evertrust.horizon.horizon_lookup', endpoint=endpoint,
+                x_api_id=x_api_id, x_api_key=x_api_key,
+                certificate_pem=update_fixture.certificate.certificate,
+                fields=['team', 'labels'], wantlist=True) }}
+
+- name: Verify the updated team and label were persisted
+  vars:
+    updated_certificate: >-
+      {{ updated_certificate_lookup
+         if updated_certificate_lookup is mapping
+         else updated_certificate_lookup[0] }}
+  ansible.builtin.assert:
+    that:
+      - updated_certificate.team == "TeamB"
+      - updated_certificate.labels['label-1'] == "retest"
 
 - name: Update with unknown team
   no_log: true
@@ -17,53 +48,49 @@
     endpoint: "{{ endpoint }}"
     x_api_id: "{{ x_api_id }}"
     x_api_key: "{{ x_api_key }}"
-    certificate_pem:
-      src: "/tmp/PEM.pem"
+    certificate_pem: "{{ update_fixture.certificate.certificate }}"
     labels:
       label-1: "retest"
     team: "UnknownTeam"
   ignore_errors: true
-  register: error1
+  register: update_unknown_team_result
 
 # Check error
-- name: Check error1
-  assert:
+- name: Verify an unknown team is rejected
+  ansible.builtin.assert:
     that:
-      - error1 is failed
-      - "'Team' in error1.msg"
-      - "'is not authorized' in error1.msg"
+      - update_unknown_team_result is failed
+      - "'Team' in update_unknown_team_result.msg"
+      - "'is not authorized' in update_unknown_team_result.msg"
 
 
-- name: Update with unexistant label
+- name: Update with an unknown label
   no_log: true
   evertrust.horizon.horizon_update:
     endpoint: "{{ endpoint }}"
     x_api_id: "{{ x_api_id }}"
     x_api_key: "{{ x_api_key }}"
-    certificate_pem:
-      src: "/tmp/PEM.pem"
+    certificate_pem: "{{ update_fixture.certificate.certificate }}"
     labels:
-      unexistantLabel: "retest"
+      unknown-label: "retest"
     team: "TeamB"
   ignore_errors: true
-  register: error2
+  register: update_unknown_label_result
 
 # Check error
-- name: Check error2
-  assert:
+- name: Verify an unknown label is rejected
+  ansible.builtin.assert:
     that:
-      - error2 is failed
-      - "'Label element' in error2.msg"
-      - "'is not authorized' in error2.msg"
+      - update_unknown_label_result is failed
+      - "'Label element' in update_unknown_label_result.msg"
+      - "'is not authorized' in update_unknown_label_result.msg"
 
 - name: Update a certificate with pop
   no_log: true
   evertrust.horizon.horizon_update:
     endpoint: "{{ endpoint }}"
-    certificate_pem:
-      src: "/tmp/PEM.pem"
-    private_key:
-      src: "/tmp/KEY.key"
+    certificate_pem: "{{ update_fixture.certificate.certificate }}"
+    private_key: "{{ update_fixture.key }}"
     labels:
       label-1: "test"
     team: "TeamA"

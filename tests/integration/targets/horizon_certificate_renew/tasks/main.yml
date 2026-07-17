@@ -1,4 +1,4 @@
-- name: centralize enroll
+- name: Enroll a fixture for authenticated centralized renewal
   no_log: true
   evertrust.horizon.horizon_enroll:
     endpoint: "{{ endpoint }}"
@@ -9,17 +9,35 @@
     key_type: "rsa-2048"
     subject:
       cn.1: "IntegrationTestCI-certificate-to-renew"
-      o.1: "Evertrust"
-      ou.1: "R&D"
-  register: data
+  register: centralized_renew_fixture
 
-- name: Test centralized renew
+- name: Renew using authenticated centralized mode
   no_log: true
   evertrust.horizon.horizon_renew:
     endpoint: "{{ endpoint }}"
     x_api_id: "{{ x_api_id }}"
     x_api_key: "{{ x_api_key }}"
-    certificate_id: "{{ data.certificate._id }}"
+    certificate_id: "{{ centralized_renew_fixture.certificate._id }}"
+  register: centralized_renew_result
+
+- name: Verify authenticated centralized renewal returned certificate data
+  ansible.builtin.assert:
+    that:
+      - centralized_renew_result.certificate is mapping
+      - centralized_renew_result.certificate.certificate | length > 0
+
+- name: Enroll a fresh certificate for decentralized renewal
+  no_log: true
+  evertrust.horizon.horizon_enroll:
+    endpoint: "{{ endpoint }}"
+    x_api_id: "{{ x_api_id }}"
+    x_api_key: "{{ x_api_key }}"
+    profile: "Ansible"
+    mode: "centralized"
+    key_type: "rsa-2048"
+    subject:
+      cn.1: "IntegrationTestCI-certificate-to-renew"
+  register: decentralized_renew_fixture
 
 - name: Test decentralized renew
   no_log: true
@@ -27,7 +45,7 @@
     endpoint: "{{ endpoint }}"
     x_api_id: "{{ x_api_id }}"
     x_api_key: "{{ x_api_key }}"
-    certificate_id: "{{ data.certificate._id }}"
+    certificate_id: "{{ decentralized_renew_fixture.certificate._id }}"
     csr: |
         -----BEGIN CERTIFICATE REQUEST-----
         MIICfzCCAWcCAQAwOjELMAkGA1UEBhMCRlIxEjAQBgNVBAoMCUV2ZXJ0cnVzdDEX
@@ -45,21 +63,61 @@
         att/xqOGwLPrhZDgSQVtGnVFW2848ZCB4MjkvQFmF+rnqKP8DEDkjDujEPC27f/7
         UOZa8OXHqLGN6HsCwd7gcJYwAA==
         -----END CERTIFICATE REQUEST-----
+  register: decentralized_renew_result
+
+- name: Verify authenticated decentralized renewal returned certificate data
+  ansible.builtin.assert:
+    that:
+      - decentralized_renew_result.certificate is mapping
+      - decentralized_renew_result.certificate.certificate | length > 0
+
+- name: Enroll a fresh certificate for proof-of-possession renewal
+  no_log: true
+  evertrust.horizon.horizon_enroll:
+    endpoint: "{{ endpoint }}"
+    x_api_id: "{{ x_api_id }}"
+    x_api_key: "{{ x_api_key }}"
+    profile: "Ansible"
+    mode: "centralized"
+    key_type: "rsa-2048"
+    subject:
+      cn.1: "IntegrationTestCI-certificate-to-renew"
+  register: pop_renew_fixture
 
 - name: Test pop renew
   no_log: true
   evertrust.horizon.horizon_renew:
     endpoint: "{{ endpoint }}"
-    certificate_pem: "{{ data.certificate.certificate }}"
-    private_key: "{{ data.key }}"
+    certificate_pem: "{{ pop_renew_fixture.certificate.certificate }}"
+    private_key: "{{ pop_renew_fixture.key }}"
+  register: pop_renew_result
+
+- name: Verify proof-of-possession renewal returned certificate data
+  ansible.builtin.assert:
+    that:
+      - pop_renew_result.certificate is mapping
+      - pop_renew_result.certificate.certificate | length > 0
+
+- name: Enroll a fresh certificate for decentralized proof-of-possession renewal
+  no_log: true
+  evertrust.horizon.horizon_enroll:
+    endpoint: "{{ endpoint }}"
+    x_api_id: "{{ x_api_id }}"
+    x_api_key: "{{ x_api_key }}"
+    profile: "Ansible"
+    mode: "centralized"
+    key_type: "rsa-2048"
+    subject:
+      cn.1: "IntegrationTestCI-certificate-to-renew"
+  register: decentralized_pop_renew_fixture
 
 - name: Test pop renew decentralized
   no_log: true
   evertrust.horizon.horizon_renew:
     endpoint: "{{ endpoint }}"
     mode: "decentralized"
-    certificate_pem: "{{ data.certificate.certificate }}"
-    private_key: "{{ data.key }}"
+    certificate_pem: "{{ decentralized_pop_renew_fixture.certificate.certificate }}"
+    private_key: "{{ decentralized_pop_renew_fixture.key }}"
     csr: |
       -----BEGIN CERTIFICATE REQUEST-----
       MIICfzCCAWcCAQAwOjELMAkGA1UEBhMCRlIxEjAQBgNVBAoMCUV2ZXJ0cnVzdDEX
@@ -77,22 +135,70 @@
       att/xqOGwLPrhZDgSQVtGnVFW2848ZCB4MjkvQFmF+rnqKP8DEDkjDujEPC27f/7
       UOZa8OXHqLGN6HsCwd7gcJYwAA==
       -----END CERTIFICATE REQUEST-----
+  register: decentralized_pop_renew_result
+
+- name: Verify decentralized proof-of-possession renewal returned certificate data
+  ansible.builtin.assert:
+    that:
+      - decentralized_pop_renew_result.certificate is mapping
+      - decentralized_pop_renew_result.certificate.certificate | length > 0
+
+- name: Enroll a fresh certificate for centralized proof-of-possession renewal
+  no_log: true
+  evertrust.horizon.horizon_enroll:
+    endpoint: "{{ endpoint }}"
+    x_api_id: "{{ x_api_id }}"
+    x_api_key: "{{ x_api_key }}"
+    profile: "Ansible"
+    mode: "centralized"
+    key_type: "rsa-2048"
+    subject:
+      cn.1: "IntegrationTestCI-certificate-to-renew"
+  register: centralized_pop_renew_fixture
 
 - name: Test pop renew centralized
   no_log: true
   evertrust.horizon.horizon_renew:
     endpoint: "{{ endpoint }}"
     mode: "centralized"
-    certificate_pem: "{{ data.certificate.certificate }}"
-    private_key: "{{ data.key }}"
+    certificate_pem: "{{ centralized_pop_renew_fixture.certificate.certificate }}"
+    private_key: "{{ centralized_pop_renew_fixture.key }}"
+  register: centralized_pop_renew_result
+
+- name: Verify centralized proof-of-possession renewal returned certificate data
+  ansible.builtin.assert:
+    that:
+      - centralized_pop_renew_result.certificate is mapping
+      - centralized_pop_renew_result.certificate.certificate | length > 0
+
+- name: Enroll a fresh certificate for generated-CSR proof-of-possession renewal
+  no_log: true
+  evertrust.horizon.horizon_enroll:
+    endpoint: "{{ endpoint }}"
+    x_api_id: "{{ x_api_id }}"
+    x_api_key: "{{ x_api_key }}"
+    profile: "Ansible"
+    mode: "centralized"
+    key_type: "rsa-2048"
+    subject:
+      cn.1: "IntegrationTestCI-certificate-to-renew"
+  register: generated_csr_pop_renew_fixture
 
 - name: Test pop renew decentralized generate csr
   no_log: true
   evertrust.horizon.horizon_renew:
     endpoint: "{{ endpoint }}"
     mode: "decentralized"
-    certificate_pem: "{{ data.certificate.certificate }}"
-    private_key: "{{ data.key }}"
+    certificate_pem: "{{ generated_csr_pop_renew_fixture.certificate.certificate }}"
+    private_key: "{{ generated_csr_pop_renew_fixture.key }}"
+  register: generated_csr_pop_renew_result
+
+- name: Verify generated-CSR proof-of-possession renewal returned key data
+  ansible.builtin.assert:
+    that:
+      - generated_csr_pop_renew_result.certificate is mapping
+      - generated_csr_pop_renew_result.certificate.certificate | length > 0
+      - generated_csr_pop_renew_result.key | length > 0
 
 - name: Test centralized renew with csr
   no_log: true
@@ -101,7 +207,7 @@
     x_api_id: "{{ x_api_id }}"
     x_api_key: "{{ x_api_key }}"
     mode: centralized
-    certificate_id: "{{ data.certificate._id }}"
+    certificate_id: "{{ generated_csr_pop_renew_fixture.certificate._id }}"
     csr: |
         -----BEGIN CERTIFICATE REQUEST-----
         MIICfzCCAWcCAQAwOjELMAkGA1UEBhMCRlIxEjAQBgNVBAoMCUV2ZXJ0cnVzdDEX
@@ -120,14 +226,13 @@
         UOZa8OXHqLGN6HsCwd7gcJYwAA==
         -----END CERTIFICATE REQUEST-----
   ignore_errors: true
-  register: error1
+  register: centralized_renew_with_csr_result
 
-# Check error
-- name: Check error1
-  assert:
+- name: Verify centralized renewal with a CSR is rejected
+  ansible.builtin.assert:
     that:
-      - error1 is failed
-      - "'Parameter csr cannot be used in centralized mode' in error1.msg"
+      - centralized_renew_with_csr_result is failed
+      - "'Parameter csr cannot be used in centralized mode' in centralized_renew_with_csr_result.msg"
 
 - name: Test decentralized renew without csr
   no_log: true
@@ -136,16 +241,15 @@
     x_api_id: "{{ x_api_id }}"
     x_api_key: "{{ x_api_key }}"
     mode: "decentralized"
-    certificate_id: "{{ data.certificate._id }}"
+    certificate_id: "{{ generated_csr_pop_renew_fixture.certificate._id }}"
   ignore_errors: true
-  register: error2
+  register: decentralized_renew_without_csr_result
 
-# Check error
-- name: Check error2
-  assert:
+- name: Verify decentralized renewal without a CSR is rejected
+  ansible.builtin.assert:
     that:
-      - error2 is failed
-      - "'You must specify a CSR when using decentralized enrollment' in error2.msg"
+      - decentralized_renew_without_csr_result is failed
+      - "'You must specify a CSR when using decentralized enrollment' in decentralized_renew_without_csr_result.msg"
 
 
 
