@@ -1,22 +1,16 @@
-#!/usr/bin/python
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright: (c) 2025, Evertrust
+# GNU General Public License v3.0+
+# (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 # -*- coding: utf-8 -*-
 
 from __future__ import (absolute_import, division, print_function)
-
-from ansible_collections.evertrust.horizon.plugins.module_utils.horizon import Horizon
-from ansible_collections.evertrust.horizon.plugins.module_utils.horizon_errors import HorizonError, redact_horizon_error
-
-from ansible.plugins.lookup import LookupBase
-from ansible.utils.display import Display
-from ansible.errors import AnsibleLookupError
-
-from ansible import __version__ as ansible_version
 
 __metaclass__ = type
 
 # language=yaml
 DOCUMENTATION = '''
-lookup: horizon_lookup
+name: horizon_lookup
 author:
   - Evertrust R&D (@EverTrust)
 short_description: Horizon lookup plugin
@@ -50,14 +44,33 @@ vars:
     src: /pem/file/path
 
   # Sets a variable containing only one field (module)
-  with_one: "{{ lookup('evertrust.horizon.horizon_lookup', x_api_id=x_api_id, x_api_key=x_api_key, certificate_pem=my_pem, fields='module', endpoint=horizon_endpoint, wantlist=True) }}"
+  with_one: >-
+    {{ lookup('evertrust.horizon.horizon_lookup', x_api_id=x_api_id,
+              x_api_key=x_api_key, certificate_pem=my_pem, fields='module',
+              endpoint=horizon_endpoint, wantlist=True) }}
 
   # Sets a variable containing a list of fields (module, _id)
-  with_list: "{{ lookup('evertrust.horizon.horizon_lookup', x_api_id=x_api_id, x_api_key=x_api_key, certificate_pem=my_pem, fields=['module', '_id'], endpoint=horizon_endpoint, wantlist=True) }}"
+  with_list: >-
+    {{ lookup('evertrust.horizon.horizon_lookup', x_api_id=x_api_id,
+              x_api_key=x_api_key, certificate_pem=my_pem,
+              fields=['module', '_id'], endpoint=horizon_endpoint,
+              wantlist=True) }}
 
   # Sets a variable containing every certificate field.
-  without: "{{ lookup('evertrust.horizon.horizon_lookup', x_api_id=x_api_id, x_api_key=x_api_key, certificate_pem=pem_path, endpoint=horizon_endpoint, wantlist=True) }}"
+  without: >-
+    {{ lookup('evertrust.horizon.horizon_lookup', x_api_id=x_api_id,
+              x_api_key=x_api_key, certificate_pem=pem_path,
+              endpoint=horizon_endpoint, wantlist=True) }}
 """
+
+from ansible_collections.evertrust.horizon.plugins.plugin_utils.horizon import Horizon
+from ansible_collections.evertrust.horizon.plugins.plugin_utils.horizon_errors import HorizonError, redact_horizon_error
+
+from ansible.plugins.lookup import LookupBase
+from ansible.utils.display import Display
+from ansible.errors import AnsibleLookupError
+
+from ansible import __version__ as ansible_version
 
 # language=yaml
 RETURN = """
@@ -100,11 +113,11 @@ labels:
   contains:
     key:
       description: Label key
-      type: string
+      type: str
       returned: Always.
     value:
       description: Label value
-      type: string
+      type: str
       returned: Always.
 metadata:
   description: Certificate metadata.
@@ -114,11 +127,11 @@ metadata:
   contains:
     key:
       description: Metadata key
-      type: string
+      type: str
       returned: Always.
     value:
       description: Metadata value
-      type: string
+      type: str
       returned: Always.
 module:
   description: Certificate module.
@@ -178,15 +191,15 @@ thirdPartyData:
   contains:
     connector:
       description: Third party connector name.
-      type: string
+      type: str
       returned: Always.
     id:
       description: Third party object ID.
-      type: string
+      type: str
       returned: Always.
     fingerprint:
       description: Third party object fingerprint.
-      type: string
+      type: str
       returned: If present.
     pushDate:
       description: Certificate's push date in the third party (UNIX timestamp in millis).
@@ -254,7 +267,7 @@ discoveryData:
   contains:
     ip:
       description: Host IP address
-      type: string
+      type: str
       returned: Always.
     operatingSystems:
       description: Host operating systems
@@ -288,7 +301,7 @@ discoveryData:
           returned: Always.
         version:
           description: TLS version.
-          type: string
+          type: str
           returned: Always.
 crlSynchronized:
   description: True if the revocation status was reconciled from the CRL
@@ -302,7 +315,7 @@ discoveryInfo:
   contains:
     campaign:
       description: Campaign name.
-      type: string
+      type: str
       returned: Always.
     lastDiscoveryDate:
       description: Last discovery date (UNIX timestamp in millis).
@@ -333,7 +346,10 @@ class LookupModule(LookupBase):
         return result
 
     def _auth_args(self):
-        return ["endpoint", "x_api_id", "x_api_key", "ca_bundle", "client_cert", "client_key"]
+        return [
+            "endpoint", "x_api_id", "x_api_key", "ca_bundle", "client_cert", "client_key",
+            "connect_timeout", "read_timeout",
+        ]
 
     def _get_auth(self, kwargs):
         auth = {}

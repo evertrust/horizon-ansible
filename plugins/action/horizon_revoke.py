@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # -*- coding: utf-8 -*-
 
 # Standard base includes and define this as a metaclass of type
@@ -7,8 +6,8 @@ from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
 from ansible.errors import AnsibleError
-from ansible_collections.evertrust.horizon.plugins.module_utils.horizon_action import HorizonAction
-from ansible_collections.evertrust.horizon.plugins.module_utils.horizon_errors import HorizonError
+from ansible_collections.evertrust.horizon.plugins.plugin_utils.horizon_action import HorizonAction
+from ansible_collections.evertrust.horizon.plugins.plugin_utils.horizon_errors import HorizonError
 
 
 class ActionModule(HorizonAction):
@@ -19,6 +18,7 @@ class ActionModule(HorizonAction):
 
     def run(self, tmp=None, task_vars=None):
         result = super(ActionModule, self).run(tmp, task_vars)
+        skip_already_revoked = False
 
         try:
             client = self._get_client()
@@ -26,7 +26,7 @@ class ActionModule(HorizonAction):
             skip_already_revoked = bool(content.pop("skip_already_revoked"))
             response = client.revoke(**content)
 
-            if "certificate" in response:
+            if response.get("certificate") is not None:
                 result["certificate"] = response["certificate"]
                 result["chain"] = client.chain(result["certificate"]["certificate"])
 

@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # -*- coding: utf-8 -*-
 
 # Standard base includes and define this as a metaclass of type
@@ -7,9 +6,9 @@ from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
 from ansible.errors import AnsibleError
-from ansible_collections.evertrust.horizon.plugins.module_utils.horizon_action import HorizonAction
-from ansible_collections.evertrust.horizon.plugins.module_utils.horizon_crypto import HorizonCrypto
-from ansible_collections.evertrust.horizon.plugins.module_utils.horizon_errors import HorizonError
+from ansible_collections.evertrust.horizon.plugins.plugin_utils.horizon_action import HorizonAction
+from ansible_collections.evertrust.horizon.plugins.plugin_utils.horizon_crypto import HorizonCrypto
+from ansible_collections.evertrust.horizon.plugins.plugin_utils.horizon_errors import HorizonError
 
 
 class ActionModule(HorizonAction):
@@ -24,6 +23,7 @@ class ActionModule(HorizonAction):
         try:
             client = self._get_client()
             content = self._get_content()
+            should_generate_csr = False
 
             if "mode" in content:
                 is_decentralized = content["mode"] == "decentralized"
@@ -48,7 +48,7 @@ class ActionModule(HorizonAction):
 
             response = client.renew(**content)
 
-            if "certificate" in response:
+            if response.get("certificate") is not None:
                 result["certificate"] = response["certificate"]
                 result["chain"] = client.chain(result["certificate"]["certificate"])
 
@@ -58,7 +58,7 @@ class ActionModule(HorizonAction):
                     p12, p12_password = HorizonCrypto.get_p12_from_key(result["key"], result["certificate"]["certificate"], content["password"])
                     result["p12"] = p12
                     result["p12_password"] = p12_password
-            elif "pkcs12" in response.keys():
+            elif response.get("pkcs12") is not None and response.get("password") is not None:
                 result["p12"] = response["pkcs12"]["value"]
                 result["p12_password"] = response["password"]["value"]
                 result["key"] = HorizonCrypto.get_key_from_p12(response["pkcs12"]["value"],

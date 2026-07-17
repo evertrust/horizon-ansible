@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # -*- coding: utf-8 -*-
 
 # Standard base includes and define this as a metaclass of type
@@ -6,8 +5,9 @@ from __future__ import (absolute_import, division, print_function)
 
 __metaclass__ = type
 
-from ansible.errors import AnsibleAction
-from ansible_collections.evertrust.horizon.plugins.module_utils.horizon_action import HorizonAction
+from ansible.errors import AnsibleAction, AnsibleError
+from ansible_collections.evertrust.horizon.plugins.plugin_utils.horizon_action import HorizonAction
+from ansible_collections.evertrust.horizon.plugins.plugin_utils.horizon_errors import HorizonError
 
 
 class ActionModule(HorizonAction):
@@ -28,5 +28,7 @@ class ActionModule(HorizonAction):
 
         except AnsibleAction as e:
             result.update(e.result)
+        except HorizonError as e:
+            raise AnsibleError(e.full_message)
 
         return result
