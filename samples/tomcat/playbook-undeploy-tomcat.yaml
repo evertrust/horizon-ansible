@@ -12,7 +12,7 @@
       state: stopped
 
   - name: Uninstalling tomcat
-    apt: 
+    apt:
       name: tomcat9
       state: absent
       purge: yes

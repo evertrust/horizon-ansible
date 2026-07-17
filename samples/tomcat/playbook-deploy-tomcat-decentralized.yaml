@@ -2,25 +2,25 @@
   become: yes
   tasks:
   - name: Updating APT cache
-    apt: 
-      update_cache: yes   
+    apt:
+      update_cache: yes
 
   - name: Creating group "tomcat"
-    group: 
+    group:
       name: tomcat
 
   - name: Creating user "tomcat"
-    user: 
-      name: tomcat 
-      group: tomcat 
+    user:
+      name: tomcat
+      group: tomcat
       createhome: yes
     become: true
-  
+
   - name: Installing tomcat
-    apt: 
+    apt:
       name: tomcat10
       state: latest
-  
+
   - name: Get webra enroll template
     evertrust.horizon.horizon_template:
       endpoint: "{{ horizon_endpoint }}"
@@ -83,9 +83,9 @@
       content: "{{ enrolled_certificate['certificate']['certificate'] }}"
       dest: "/etc/tomcat10/ssl/{{ domain }}.crt"
       mode: '0660'
-      owner: tomcat 
+      owner: tomcat
       group: tomcat
-  
+
   - name: Building the {{ domain }} PKCS12
     openssl_pkcs12:
       action: export
@@ -106,7 +106,7 @@
       mode: '0644'
 
   - name: Uploading the tomcat configuration
-    template: 
+    template:
       src: ../templates/tomcat.server.xml.decentralized.j2
       dest: /etc/tomcat10/server.xml
 
@@ -116,7 +116,6 @@
       state: restarted
 
   - name: Waiting for the tomcat service to start
-    wait_for: 
+    wait_for:
       port: 8443
       timeout: 600
-

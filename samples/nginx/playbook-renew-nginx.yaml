@@ -25,7 +25,7 @@
       x_api_id: "{{ api_id }}"
       x_api_key: "{{ api_key }}"
       profile: "{{ current_lookup_result['profile'] }}"
-      subject: 
+      subject:
         dn: "{{ current_lookup_result['dn'] }}"
       sans: "{{ current_lookup_result['subjectAlternateNames'] }}"
       labels: "{{ current_lookup_result['labels'] }}"
@@ -37,7 +37,7 @@
       content: "{{ enrolled_certificate['certificate']['certificate'] }}"
       dest: "/etc/nginx/ssl/{{ domain }}.crt"
     when: should_renew|bool == true
-  
+
   - name: Uploading the renewed certificate private key
     copy:
       content: "{{ enrolled_certificate['key'] }}"
@@ -61,7 +61,7 @@
 
   - name: Revoking the previous certificate
     evertrust.horizon.horizon_revoke:
-      endpoint: "{{ horizon_endpoint }}" 
+      endpoint: "{{ horizon_endpoint }}"
       x_api_id: "{{ api_id }}"
       x_api_key: "{{ api_key }}"
       certificate_pem: "{{ current_certificate['stdout'] }}"
