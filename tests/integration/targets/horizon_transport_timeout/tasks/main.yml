@@ -1,0 +1,12 @@
+---
+- name: Verify bounded SDK transport timeouts
+  ansible.builtin.include_tasks: timeout.yml
+  loop:
+    - mode: connect
+      scheme: http
+      error_code: SDK-CONNECT-TIMEOUT
+    - mode: read
+      scheme: http
+      error_code: SDK-READ-TIMEOUT
+  loop_control:
+    loop_var: timeout_case

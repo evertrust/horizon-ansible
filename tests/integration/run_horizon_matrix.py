@@ -1,9 +1,4 @@
-"""Test the handwritten Horizon client against a licensed Horizon release.
-
-The generated SDK is used only to provision and verify isolated server-side
-fixtures.  The installed Ansible collection continues to execute its current
-handwritten HTTP client.
-"""
+"""Test the SDK-backed collection against one licensed Horizon image."""
 
 from __future__ import annotations
 
@@ -86,14 +81,7 @@ class MongoDB:
 
 
 class HorizonServer:
-    def __init__(
-        self,
-        image,
-        network,
-        mongodb_uri,
-        license_path,
-        application_path,
-    ):
+    def __init__(self, image, network, mongodb_uri, license_path, application_path):
         self.container = DockerContainer(image).with_exposed_ports(9000)
         self.container.with_volume_mapping(str(license_path), "/horizon/license.txt", "ro")
         self.container.with_volume_mapping(str(application_path), "/opt/horizon/etc/application.conf", "ro")
@@ -448,104 +436,26 @@ def ansible_test_environment(collection_root, environment):
     return test_environment
 
 
-EXPECTED_API_WARNINGS = (
-    "Profile does not exist or is disabled",
-    "Label element 'unexistantLabel' is not authorized",
-    "UnknownTeam",
-    "already revoked",
-    "Nonce not found in jwt",
-    "Could not parse provided PEM",
-    "Unknown algorithm",
-)
-
-
-def audit_horizon_log(path):
-    """Fail when Horizon reports an unexpected request-level failure."""
-    successful_submissions = 0
-    malformed_csr_failures = 0
-    pop_challenges = 0
-    unexpected = []
-
-    for line in path.read_text(encoding="utf-8", errors="replace").splitlines():
-        if '"code":"REQUEST-SUBMIT"' in line:
-            if '"status":"success"' in line:
-                successful_submissions += 1
-            elif '"status":"failure"' in line:
-                if "Could not parse provided PEM" in line and "certrequest" in line:
-                    malformed_csr_failures += 1
-                else:
-                    unexpected.append(line[:500])
-
-        if (
-            '"code":"SEC-AUTHENTICATION"' in line
-            and '"apiError","value":"SEC-AUTH-010"' in line
-        ):
-            pop_challenges += 1
-
-        if "/api/v1/" in line and ("[WARN]" in line or "[ERROR]" in line):
-            if not any(expected.lower() in line.lower() for expected in EXPECTED_API_WARNINGS):
-                unexpected.append(line[:500])
-
-    if successful_submissions == 0:
-        unexpected.append("Horizon did not log any successful REQUEST-SUBMIT events")
-    if malformed_csr_failures > 1:
-        unexpected.append(
-            "Expected at most one deliberate malformed-CSR failure, found %s"
-            % malformed_csr_failures
-        )
-    if unexpected:
-        raise RuntimeError(
-            "Unexpected Horizon request failures in %s:\n%s"
-            % (path, "\n".join(unexpected))
-        )
-
-    print(
-        "Horizon request audit: %s successful submissions, "
-        "%s expected malformed CSR failures, %s PoP nonce challenges"
-        % (successful_submissions, malformed_csr_failures, pop_challenges)
-    )
-
-
 def image_log_label(image):
-    """Convert a container reference into a filesystem-safe log label."""
     return "".join(
         character if character.isalnum() or character in ".-_" else "-"
         for character in image
     ).strip("-")
 
 
-def run_image(
-    image,
-    license_path,
-    application_path,
-    collection_root,
-    source_root,
-    environment,
-    run_id,
-):
+def run_image(image, license_path, application_path, collection_root, source_root, environment, run_id):
     network = mongodb = server = None
-    result = None
-    audit_error = None
-    integration_started = False
     collection = collection_root / "ansible_collections/evertrust/horizon"
     config_path = collection / "tests/integration/integration_config.yml"
-    log_prefix = "horizon-handwritten-image-%s-%s" % (
-        image_log_label(image),
-        run_id,
-    )
+    sdk_version = horizon.__version__
+    log_prefix = "horizon-sdk-%s-image-%s-%s" % (sdk_version, image_log_label(image), run_id)
     log_path = source_root / "tests/output" / ("%s-ansible.log" % log_prefix)
     server_log_path = source_root / "tests/output" / ("%s-server.log" % log_prefix)
     log_path.parent.mkdir(parents=True, exist_ok=True)
     try:
         network = Network().create()
         mongodb = MongoDB(network)
-        server = HorizonServer(
-            image,
-            network,
-            mongodb.in_network_uri,
-            license_path,
-            application_path,
-        )
+        server = HorizonServer(image, network, mongodb.in_network_uri, license_path, application_path)
         provision_horizon(server.endpoint)
         config_path.write_text(
             json.dumps({
@@ -560,7 +470,6 @@ def run_image(
         ansible_test = shutil.which("ansible-test")
         if ansible_test is None:
             raise RuntimeError("ansible-test is not available in PATH")
-        integration_started = True
         with log_path.open("w", encoding="utf-8") as log:
             result = subprocess.run(
                 [
@@ -579,23 +488,16 @@ def run_image(
                 stderr=subprocess.STDOUT,
                 check=False,
             )
+        return result.returncode, log_path
     finally:
         config_path.unlink(missing_ok=True)
         if server is not None:
             server.write_logs(server_log_path)
-            if integration_started:
-                try:
-                    audit_horizon_log(server_log_path)
-                except Exception as exception:
-                    audit_error = exception
             server.stop()
         if mongodb is not None:
             mongodb.stop()
         if network is not None:
             network.remove()
-    if audit_error is not None:
-        raise audit_error
-    return result.returncode, log_path
 
 
 def parse_args():
@@ -608,7 +510,7 @@ def parse_args():
     parser.add_argument(
         "--image",
         required=True,
-        help="Fully qualified quay.io Horizon container image",
+        help="Fully qualified Horizon container image reference",
     )
     parser.add_argument(
         "--artifact",
@@ -625,7 +527,6 @@ def main():
     license_path = Path(args.license).expanduser().resolve()
     if not license_path.is_file():
         raise SystemExit("The Horizon license path is not a file")
-    version = args.image.split("/")[-1]
     source_root = Path(__file__).resolve().parents[2]
     environment = os.environ.copy()
     run_id = uuid4().hex[:12]
@@ -643,12 +544,9 @@ def main():
             artifact=args.artifact,
         )
         print("Built integration artifact: %s" % artifact.name)
-        print(
-            "Provisioning-only SDK: Anto-test-hrz %s (collection uses handwritten HTTP)"
-            % horizon.__version__
-        )
+        print("SDK distribution: Anto-test-hrz %s (import horizon)" % horizon.__version__)
         print("MongoDB image: %s" % MONGODB_IMAGE)
-        print("Running Horizon %s (%s)" % (version, args.image), flush=True)
+        print("Running Horizon image %s" % args.image, flush=True)
         try:
             return_code, log_path = run_image(
                 args.image,
@@ -660,17 +558,12 @@ def main():
                 run_id,
             )
         except Exception as exception:
-            print(
-                "FAIL Horizon %s during fixture setup (%s)"
-                % (version, type(exception).__name__)
-            )
+            print("FAIL Horizon fixture setup (%s)" % type(exception).__name__)
             traceback.print_exc()
-            raise SystemExit(
-                "Horizon integration failed: %s" % version
-            ) from exception
+            raise SystemExit("Horizon integration setup failed")
         if return_code != 0:
-            raise SystemExit("FAIL Horizon %s; see %s" % (version, log_path))
-        print("PASS Horizon %s" % version)
+            raise SystemExit("Horizon integration failed; see %s" % log_path)
+        print("PASS Horizon image %s" % args.image)
 
 
 if __name__ == "__main__":

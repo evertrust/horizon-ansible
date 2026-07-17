@@ -1,0 +1,16 @@
+- name: Retrieve an enrollment template
+  no_log: true
+  evertrust.horizon.horizon_template:
+    endpoint: "{{ endpoint }}"
+    x_api_id: "{{ x_api_id }}"
+    x_api_key: "{{ x_api_key }}"
+    profile: "Ansible"
+    workflow: "enroll"
+  register: enrollment_template
+
+- name: Verify the enrollment template capabilities
+  ansible.builtin.assert:
+    that:
+      - enrollment_template.capabilities.centralized | bool
+      - enrollment_template.capabilities.decentralized | bool
+      - enrollment_template.capabilities.defaultKeyType == "rsa-2048"
