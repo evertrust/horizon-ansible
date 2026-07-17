@@ -1,4 +1,8 @@
 #!/usr/bin/python
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright: (c) 2025, Evertrust
+# GNU General Public License v3.0+
+# (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 # -*- coding: utf-8 -*-
 
 # This is a virtual module that is entirely implemented as an action plugin and runs on the controller
@@ -42,11 +46,13 @@ options:
       - The certificate's host hostnames.
     required: false
     type: list
+    elements: str
   operating_systems:
     description:
       - The certificate's host operating system.
     required: false
     type: list
+    elements: str
   paths:
     description:
       - The path to the certificate on the host machine.

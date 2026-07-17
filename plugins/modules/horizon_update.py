@@ -1,4 +1,8 @@
 #!/usr/bin/python
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright: (c) 2025, Evertrust
+# GNU General Public License v3.0+
+# (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 # -*- coding: utf-8 -*-
 
 # This is a virtual module that is entirely implemented as an action plugin and runs on the controller
@@ -38,30 +42,43 @@ options:
     type: dict
     suboptions:
       gs_order_id:
+        description: GlobalSign order identifier.
         type: str
       renewed_certificate_id:
+        description: Identifier of the renewed certificate.
         type: str
       metapki_id:
+        description: MetaPKI certificate identifier.
         type: str
       pki_connector:
+        description: Name of the PKI connector.
         type: str
       digicert_id:
+        description: DigiCert certificate identifier.
         type: str
       entrust_id:
+        description: Entrust certificate identifier.
         type: str
       scep_transid:
+        description: SCEP transaction identifier.
         type: str
       fcms_id:
+        description: FCMS certificate identifier.
         type: str
       previous_certificate_id:
+        description: Identifier of the previous certificate.
         type: str
       gsatlas_id:
+        description: GlobalSign Atlas certificate identifier.
         type: str
       certeurope_id:
+        description: CertEurope certificate identifier.
         type: str
       digicert_order_id:
+        description: DigiCert order identifier.
         type: str
       automation_policy:
+        description: Name of the automation policy.
         type: str
   owner:
     description: Certificate's owner.
@@ -81,7 +98,7 @@ options:
     required: false
     type: str
   contact_email:
-    description: 
+    description:
       - Certificate's contact email.
       - Default value will be the requester contact email adress.
     required: false
@@ -138,11 +155,11 @@ certificate:
       contains:
         key:
           description: The metadata name.
-          type: string
+          type: str
           returned: Always
         value:
           description: The metadata value
-          type: string
+          type: str
           returned: Always
     notAfter:
       description: The certificate's expiration date in milliseconds since the epoch.
@@ -169,12 +186,12 @@ certificate:
       type: list
       elements: dict
       returned: If specifically requested
-      contains: 
-        name: 
+      contains:
+        name:
           description: The name of the grading policy.
           type: str
           returned: always
-        grade: 
+        grade:
           description: The grade awarded by the grading policy.
           type: str
           returned: always
@@ -199,7 +216,10 @@ certificate:
       type: bool
       returned: If specifically requested
     discoveredTrusted:
-      description: If the certificate was discovered and is found to be issued by an existing trusted CA, this field will be set to true. If the certificate was discovered and is not found to be issued by an existing trusted CA, this field will be set to false. If the certificate was not discovered, this field will be null.
+      description:
+        - True if the certificate was discovered and issued by an existing trusted CA.
+        - False if the certificate was discovered but not issued by a trusted CA.
+        - Null if the certificate was not discovered.
       type: bool
       returned: If present and specifically requested
     keyType:
@@ -214,15 +234,15 @@ certificate:
       contains:
         connector:
           description: The third party connector name on which this certificate is synchronized.
-          type: string
+          type: str
           returned: Always
         id:
           description: The Id of this certificate on the third party.
-          type: string
+          type: str
           returned: Always
         fingerprint:
           description: The fingerprint of this certificate on the third party.
-          type: string
+          type: str
           returned: If present
         pushDate:
           description: The date when the certificate was pushed to this third party.
@@ -253,11 +273,15 @@ certificate:
       type: str
       returned: If present and specifically requested
     team:
-      description: The certificate's team. This is a reference to a team identifier. It will be used to determine the certificate's permissions and send notifications.
+      description:
+        - The certificate's team, as a reference to a team identifier.
+        - It determines certificate permissions and notification recipients.
       type: str
       returned: If specifically requested
     holderId:
-      description: The certificate's holder ID. This is a computed field that is used to count how many similar certificates are in use simultaneously by the same holder.
+      description:
+        - The certificate's computed holder ID.
+        - It counts similar certificates used simultaneously by the same holder.
       type: str
       returned: If specifically requested
     labels:
@@ -268,11 +292,11 @@ certificate:
       contains:
         key:
           description: The label's name.
-          type: string
+          type: str
           returned: Always
         value:
           description: The label's value.
-          type: string
+          type: str
           returned: Always
     discoveryInfo:
       description: A list of metadata containing information on how and when the certificate was discovered.
@@ -282,7 +306,7 @@ certificate:
       contains:
         campaign:
           description: The discovery campaign's name.
-          type: string
+          type: str
           returned: Always
         lastDiscoveryDate:
           description: When this certificate was discovered for the last time.
@@ -360,11 +384,11 @@ certificate:
       contains:
         key:
           description: The extension's type.
-          type: string
+          type: str
           returned: Always
         value:
           description: The extension's value.
-          type: string
+          type: str
           returned: Always
     serial:
       description: The certificate's serial number.
@@ -382,9 +406,9 @@ certificate:
       contains:
         ip:
           description: The certificate's host ip.
-          type: string
+          type: str
           returned: Always
-        sources: 
+        sources:
           description: Information on the type of discovery that discovered this certificate.
           type: list
           elements: str
@@ -421,7 +445,7 @@ certificate:
               returned: Always
             version:
               description: Protocol version used.
-              type: string
+              type: str
               returned: Always
     _id:
       description: Horizon internal ID.
