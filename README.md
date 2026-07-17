@@ -6,10 +6,12 @@ This collection includes plenty of modules to interact with Horizon instances an
 
 ### System requirements
 
-This collection requires Python 3.6 or greater. It offers compatibility with the following Horizon versions :
+This collection requires Python 3.10 or greater and `ansible-core` 2.15 or
+greater. It offers compatibility with the following Horizon versions:
 
 | Collection version | Horizon version |
 |--------------------|-----------------|
+| 1.5.1              | 2.8.x, 2.9.x, 2.10.x |
 | 1.5                | 2.2.0+          |
 | 1.4                | 2.2.0+          |
 | 1.3                | 2.2.0 - 2.4.x   |
@@ -33,9 +35,14 @@ collections:
 
 ### Dependencies
 
-Some modules require external Python dependencies (mainly the `cryptography` module), which are not installed by `ansible-galaxy`. They can be manually installed using pip:
+The collection uses the Horizon SDK distributed as `Anto-test-hrz` and
+imported in Python as `horizon`. Python dependencies are not installed by
+`ansible-galaxy`; install them with:
 
     pip install -r requirements.txt
+
+Install these dependencies in the Python environment used by the Ansible
+controller because Horizon action, lookup, and inventory plugins execute there.
 
 
 ## Documentation
