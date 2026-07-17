@@ -8,7 +8,7 @@ on:
       - main
 jobs:
   integration:
-    name: Latest licensed Horizon container (handwritten client)
+    name: Latest licensed Horizon container (SDK client)
     needs: unit
     permissions:
       contents: read
@@ -64,7 +64,7 @@ jobs:
       if: always()
       uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
       with:
-        name: horizon-handwritten-integration-logs
+        name: horizon-sdk-integration-logs
         path: tests/output/*.log
         if-no-files-found: warn
 
@@ -73,8 +73,24 @@ jobs:
       run: rm -f "$RUNNER_TEMP/horizon-license.txt"
 
   unit:
+    name: Static (${{ matrix.python }}, ${{ matrix.ansible }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - python: "3.10"
+            ansible: ansible-core==2.15.*
+          - python: "3.11"
+            ansible: ansible-core==2.17.*
+          - python: "3.12"
+            ansible: ansible-core==2.17.*
+          - python: "3.14"
+            ansible: ansible-core==2.20.*
     runs-on: runs-on=${{ github.run_id }}/runner=evertrust
-    timeout-minutes: 15
+    timeout-minutes: 20
+    env:
+      MISE_PYTHON_VERSION: ${{ matrix.python }}
+      HORIZON_ANSIBLE_SPEC: ${{ matrix.ansible }}
     permissions:
       contents: read
     steps:
@@ -89,5 +105,5 @@ jobs:
       - name: Configure mise-en-place
         uses: jdx/mise-action@e6a8b3978addb5a52f2b4cd9d91eafa7f0ab959d # v4.2.0
 
-      - name: Run unit tests
-        run: mise run unit_test
+      - name: Run unit and Ansible sanity tests
+        run: mise run static_test

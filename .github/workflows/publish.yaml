@@ -57,10 +57,7 @@ jobs:
           echo "HORIZON_LICENSE_PATH=$license_path" >> "$GITHUB_ENV"
 
       - name: Release check
-        run: |
-          set -euo pipefail
-          mise run unit_test
-          mise run container_integration_test
+        run: mise run release_check
 
       - name: Upload Ansible and Horizon logs
         if: always()
