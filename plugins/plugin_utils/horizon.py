@@ -623,84 +623,233 @@ class Horizon:
 
         return password
 
-    def post(self, path, json):
-        """
-        Issues a POST request
-        :type path: str
-        :type json: dict
-        :rtype object
-        """
-        return self.send('POST', path, json=json)
-
-    def get(self, path, data=None):
-        """
-        Issues a GET request
-        :type path: str
-        :type data: dict
-        :rtype object
-        """
-        return self.send('GET', path, data=data)
-
-    def send(self, method, path, **kwargs):
-        """
-        Issues a request to the API
-        :type method: str
-        :type path: str
-        :type kwargs: dict
-        :rtype: object
-        """
-        uri = self.endpoint + path
-        method = method.upper()
+    def _model(self, model_class, payload, sensitive_values=None):
         try:
-            response = requests.request(method, uri, cert=self.cert, verify=self.bundle, headers=self.headers, **kwargs)
-            if "Replay-Nonce" in response.headers:
-                nonce = response.headers["Replay-Nonce"]
-                valid_jwt_token = HorizonCrypto.generate_jwt_token(self.certificate, self.private_key, nonce)
-                self.headers["X-JWT-CERT-POP"] = valid_jwt_token
-                response = requests.request(method, uri, cert=self.cert, verify=self.bundle, headers=self.headers, **kwargs)
+            # model_validate keeps omitted optional fields omitted. The
+            # generated from_dict helpers eagerly set every missing key to
+            # None, which would change the collection's request payloads.
+            return model_class.model_validate(payload)
+        except Exception as exception:
+            errors = exception.errors() if callable(getattr(exception, "errors", None)) else []
+            for error in errors:
+                location = error.get("loc", ())
+                if location and location[-1] in ("keyType", "key_type"):
+                    raise AnsibleError("Unknown algorithm '%s'." % error.get("input"))
+            message = redact_sensitive_values(
+                str(exception),
+                self._sensitive_values + list(sensitive_values or []),
+            )
+            raise AnsibleError("Unable to map Ansible arguments to the Horizon SDK model: %s" % message)
 
-        except requests.exceptions.SSLError:
-            raise AnsibleError("Got an SSL error try using the 'ca_bundle' parameter")
+    def _one_of_model(self, wrapper_class, model_class, payload, sensitive_values=None):
+        model = self._model(model_class, payload, sensitive_values=sensitive_values)
+        try:
+            return wrapper_class(model)
+        except Exception as exception:
+            message = redact_sensitive_values(
+                str(exception),
+                self._sensitive_values + list(sensitive_values or []),
+            )
+            raise AnsibleError("Unable to map Ansible arguments to the Horizon SDK request: %s" % message)
 
-        if 'Content-Type' in response.headers and response.headers['Content-Type'] in ['application/json', 'application/problem+json']:
-            content = response.json()
+    def _submit(self, request, payload, pop=None, sensitive_values=None):
+        response = self._sdk_call(
+            self.request_api.request_submit,
+            request,
+            pop=pop,
+            sensitive_values=sensitive_values,
+        )
+
+        self.__get_warnings({"json": payload}, content=response)
+        if isinstance(response, dict) and response.get("status") == "pending":
+            self.cancel_request(response["_id"], response["workflow"])
+            raise AnsibleError(
+                "Request has been canceled. User '%s' doesn't have the rights to perform a '%s' request on profile '%s'."
+                % (response.get("requester"), response.get("workflow"), response.get("profile"))
+            )
+        return response
+
+    def _sdk_call(self, method, *args, **kwargs):
+        pop = kwargs.pop("pop", None)
+        sensitive_values = list(kwargs.pop("sensitive_values", None) or [])
+        call_kwargs = kwargs
+        request_timeout = call_kwargs.setdefault("_request_timeout", self._request_timeout)
+        operation = getattr(method, "__name__", None) or "SDK request"
+
+        if pop is not None:
+            certificate, private_key = pop
+            token = HorizonCrypto.generate_jwt_token(certificate, private_key, "")
+            sensitive_values.append(token)
+            call_kwargs["_headers"] = {"X-JWT-CERT-POP": token}
+
+        try:
+            return self._to_plain(method(*args, **call_kwargs))
+        except ApiException as exception:
+            nonce = self._replay_nonce(exception.headers)
+            if pop is not None and nonce is not None:
+                certificate, private_key = pop
+                token = HorizonCrypto.generate_jwt_token(certificate, private_key, nonce)
+                sensitive_values.append(token)
+                call_kwargs["_headers"] = {"X-JWT-CERT-POP": token}
+                try:
+                    return self._to_plain(method(*args, **call_kwargs))
+                except ApiException as retry_exception:
+                    raise self._translate_sdk_exception(retry_exception, sensitive_values)
+                except OpenApiException as retry_exception:
+                    message = redact_sensitive_values(
+                        str(retry_exception),
+                        self._sensitive_values + sensitive_values,
+                    )
+                    raise HorizonError(code="SDK", message=message, response=retry_exception)
+                except Exception as retry_exception:
+                    raise self._translate_transport_exception(
+                        retry_exception,
+                        operation,
+                        request_timeout,
+                        sensitive_values,
+                    )
+            raise self._translate_sdk_exception(exception, sensitive_values)
+        except OpenApiException as exception:
+            message = redact_sensitive_values(
+                str(exception),
+                self._sensitive_values + sensitive_values,
+            )
+            raise HorizonError(code="SDK", message=message, response=exception)
+        except Exception as exception:
+            raise self._translate_transport_exception(
+                exception,
+                operation,
+                request_timeout,
+                sensitive_values,
+            )
+
+    @staticmethod
+    def _normalize_timeout(name, value, default):
+        if value is None:
+            return default
+        if isinstance(value, bool):
+            raise AnsibleError("%s must be a finite number greater than zero" % name)
+        try:
+            timeout = float(value)
+        except (TypeError, ValueError):
+            raise AnsibleError("%s must be a finite number greater than zero" % name)
+        if not math.isfinite(timeout) or timeout <= 0:
+            raise AnsibleError("%s must be a finite number greater than zero" % name)
+        return timeout
+
+    def _translate_transport_exception(self, exception, operation, request_timeout, sensitive_values):
+        timeout_class = self._timeout_class(exception)
+        if timeout_class is not None:
+            if isinstance(request_timeout, tuple):
+                timeout = request_timeout[0 if timeout_class == "connect" else 1]
+            else:
+                timeout = request_timeout
+            message = "Horizon SDK operation '%s' exceeded the %s timeout of %s seconds" % (
+                operation,
+                timeout_class,
+                "%g" % timeout,
+            )
+            return HorizonError(
+                code="SDK-%s-TIMEOUT" % timeout_class.upper(),
+                message=message,
+                response=exception,
+            )
+
+        message = redact_sensitive_values(
+            str(exception),
+            self._sensitive_values + sensitive_values,
+        )
+        return HorizonError(code="SDK", message=message, response=exception)
+
+    @staticmethod
+    def _timeout_class(exception):
+        pending = [exception]
+        visited = set()
+        while pending:
+            current = pending.pop()
+            if id(current) in visited:
+                continue
+            visited.add(id(current))
+
+            if isinstance(current, ReadTimeoutError):
+                return "read"
+            # urllib3 models connection refusal and DNS errors as subclasses
+            # of ConnectTimeoutError even though no timeout occurred.
+            if isinstance(current, ConnectTimeoutError) and not isinstance(current, NewConnectionError):
+                return "connect"
+
+            for attribute in ("reason", "original_error", "__cause__", "__context__"):
+                nested = getattr(current, attribute, None)
+                if isinstance(nested, BaseException):
+                    pending.append(nested)
+        return None
+
+    @staticmethod
+    def _replay_nonce(headers):
+        if headers is None:
+            return None
+        for key, value in headers.items():
+            if key.lower() == "replay-nonce":
+                return value
+        return None
+
+    def _translate_sdk_exception(self, exception, sensitive_values):
+        if exception.status == 0 and "SSLError" in str(exception.reason):
+            raise AnsibleError("Got an SSL error try using the 'ca_bundle' paramater")
+
+        content = self._to_plain(exception.data)
+        if not isinstance(content, dict) and exception.body:
+            try:
+                content = json.loads(exception.body)
+            except (TypeError, ValueError):
+                content = exception.body
+
+        if isinstance(content, dict):
+            error_code = content.get("error", exception.status)
+            error_message = content.get("message", exception.reason)
+            error_detail = content.get("detail")
         else:
-            content = response.content.decode()
-
-        # Check args returned by the API
-        self.__get_warnings(kwargs, content=content)
-
-        if "status" in content and content["status"] == "pending":
-            self.cancel_request(content["_id"], content["workflow"])
-            raise AnsibleError(message=f"Request has been canceled. User '{ content['requester'] }' doesn't have the rights to perform a '{ content['workflow'] }' request on profile '{ content['profile'] }'.")
-        elif response.ok:
-            return content
-
-        if 'message' in content:
-            error_message = content['message']
-        else:
-            error_message = content
-
-        if 'detail' in content:
-            error_detail = content['detail']
-        else:
+            error_code = exception.status
+            error_message = content or exception.reason or "Horizon SDK request failed"
             error_detail = None
 
-        if 'error' in content:
-            error_code = content['error']
-        else:
-            error_code = response.status_code
+        values = self._sensitive_values + sensitive_values
+        error_message = redact_sensitive_values(error_message, values)
+        error_detail = redact_sensitive_values(error_detail, values)
+        return HorizonError(
+            code=error_code,
+            message=error_message,
+            detail=error_detail,
+            response=exception,
+        )
 
-        raise HorizonError(message=error_message, code=error_code, detail=error_detail, response=response)
+    @classmethod
+    def _to_plain(cls, value):
+        if isinstance(value, Enum):
+            return cls._to_plain(value.value)
+        if value is None or isinstance(value, (str, int, float, bool)):
+            return value
+        if isinstance(value, bytes):
+            return value.decode("utf-8")
+        if isinstance(value, dict):
+            return {key: cls._to_plain(item) for key, item in value.items()}
+        if isinstance(value, (list, tuple, set)):
+            return [cls._to_plain(item) for item in value]
+        if hasattr(value, "actual_instance"):
+            return cls._to_plain(value.actual_instance)
+        if hasattr(value, "to_dict") and callable(value.to_dict):
+            return cls._to_plain(value.to_dict())
+        raise AnsibleError("The Horizon SDK returned an unsupported value of type %s" % type(value).__name__)
 
     def cancel_request(self, request_id, workflow):
-        json = {
+        payload = {
             "_id": request_id,
             "module": "webra",
             "workflow": workflow
         }
 
-        return self.post(self.REQUEST_CANCEL_URL, json)
+        request = self._model(horizon_sdk.RequestCancelRequest, payload)
+        return self._sdk_call(self.request_api.request_cancel, request)
 
     @staticmethod
     def __set_labels(labels):
@@ -717,28 +866,6 @@ class Horizon:
         return my_labels
 
     @staticmethod
-    def __set_sans(sans):
-        """
-        Format SANs returned by the API
-        :param sans: a dict containing the subject alternates names of the certificate
-        :return the subject alternate names with a format readable by the API
-        """
-        my_sans = []
-
-        for element in sans:
-            if sans[element] == "" or sans[element] is None:
-                raise AnsibleError(f'The san value for {element} is not allowed.')
-
-            elif isinstance(sans[element], list):
-                for i in range(len(sans[element])):
-                    san_name = element.lower() + "." + str(i + 1)
-                    my_sans.append({"element": san_name, "value": sans[element][i]})
-
-            my_sans.append({"element": element, "value": sans[element]})
-
-        return my_sans
-
-    @staticmethod
     def __set_sans_post_2_4(sans):
         """
         Format SANs returned by the API
@@ -746,6 +873,14 @@ class Horizon:
         :return the subject alternate names with a format readable by the API
         """
         my_sans = []
+        san_type_aliases = {
+            "DNS": "DNSNAME",
+            "IP": "IPADDRESS",
+            "EMAIL": "RFC822NAME",
+            "UPN": "OTHERNAME_UPN",
+            "GUID": "OTHERNAME_GUID",
+            "RID": "REGISTERED_ID",
+        }
 
         for element in sans:
             done = False
@@ -753,12 +888,15 @@ class Horizon:
                 raise AnsibleError(f'The san value for {element} is not allowed.')
 
             elements = element.split('.')
-            element_name = elements[0]
+            element_name = san_type_aliases.get(elements[0].upper(), elements[0].upper())
             if len(elements) > 1:
-                Display().warning(f"Using sans as `{element_name}.x: value` is deprecated, we advise you to write `{element_name}: [value1, value2]`.")
+                Display().warning(
+                    f"Using sans as `{element_name}.x: value` is deprecated, "
+                    f"we advise you to write `{element_name}: [value1, value2]`."
+                )
 
             for san in my_sans:
-                if element_name.upper() == san["type"]:
+                if element_name == san["type"]:
                     san["value"].append(sans[element])
                     done = True
                 continue
@@ -767,9 +905,9 @@ class Horizon:
                 value = []
                 if isinstance(sans[element], list):
                     value = sans[element]
-                else :
+                else:
                     value.append(sans[element])
-                my_sans.append({"type": element_name.upper(), "value": value})
+                my_sans.append({"type": element_name, "value": value})
 
         return my_sans
 
@@ -783,10 +921,19 @@ class Horizon:
         serialized_metadata = []
 
         for element in metadata:
-            serialized_metadata.append({"metadata": element, "value": metadata[element]})
+            # The generated 2.8 SDK incorrectly restricts request metadata names
+            # to Horizon's built-in technical keys. Horizon profiles can expose
+            # additional names, which this collection has always accepted.
+            # Pydantic's public construction API preserves those values while
+            # the SDK still owns request serialization and transport.
+            serialized_metadata.append(
+                horizon_sdk.CertificateMetadataElement.model_construct(
+                    metadata=element,
+                    value=metadata[element],
+                )
+            )
 
         return serialized_metadata
-
 
     @staticmethod
     def __set_subject(subject, template):
@@ -869,13 +1016,13 @@ class Horizon:
         for field in fields:
             if field == "metadata":
                 metadata = {}
-                for data in response[field]:
+                for data in response.get(field) or []:
                     metadata[data['key']] = data['value']
                 result[field] = metadata
 
             elif field == "subjectAlternateNames":
                 sans = {}
-                for san in response[field]:
+                for san in response.get(field) or []:
                     san_name = san["sanType"].lower() + ".1"
                     while san_name in sans:
                         index = int(san_name[-1:])
@@ -888,12 +1035,12 @@ class Horizon:
             elif field == "labels":
                 labels = {}
                 if "labels" in response:
-                    for label in response[field]:
+                    for label in response.get(field) or []:
                         labels[label['key']] = label['value']
                     result[field] = labels
 
             elif field in response:
-                    result[field] = response[field]
+                result[field] = response[field]
 
         # Check ansible version to return the correct format
         parsed_version = parse_version(version)
@@ -947,10 +1094,8 @@ class Horizon:
         Get a password from password_policy
         :param password_policy
         """
-        return self.send('GET', "/api/v1/security/passwordpolicies/"+password_policy+"/generate")
+        return self._sdk_call(self.password_policy_api.password_policy_generate, password_policy)
 
     def set_jwt_headers(self, cert, key):
-        jwt_token = HorizonCrypto.generate_jwt_token(cert, key, "")
-        self.headers = {"X-JWT-CERT-POP": jwt_token}
-        self.certificate = cert
-        self.private_key = key
+        self._pop_certificate = cert
+        self._pop_private_key = key
