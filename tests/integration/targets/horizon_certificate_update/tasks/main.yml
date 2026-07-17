@@ -1,31 +1,33 @@
 - name: Update a certificate by its content
+  no_log: true
   evertrust.horizon.horizon_update:
     endpoint: "{{ endpoint }}"
     x_api_id: "{{ x_api_id }}"
     x_api_key: "{{ x_api_key }}"
     certificate_pem:
       src: "/tmp/PEM.pem"
-    labels: 
+    labels:
       label-1: "retest"
     team: "TeamB"
 
 
 - name: Update with unknown team
+  no_log: true
   evertrust.horizon.horizon_update:
     endpoint: "{{ endpoint }}"
     x_api_id: "{{ x_api_id }}"
     x_api_key: "{{ x_api_key }}"
     certificate_pem:
       src: "/tmp/PEM.pem"
-    labels: 
+    labels:
       label-1: "retest"
     team: "UnknownTeam"
-  ignore_errors: yes
+  ignore_errors: true
   register: error1
 
 # Check error
 - name: Check error1
-  assert: 
+  assert:
     that:
       - error1 is failed
       - "'Team' in error1.msg"
@@ -33,33 +35,35 @@
 
 
 - name: Update with unexistant label
+  no_log: true
   evertrust.horizon.horizon_update:
     endpoint: "{{ endpoint }}"
     x_api_id: "{{ x_api_id }}"
     x_api_key: "{{ x_api_key }}"
     certificate_pem:
       src: "/tmp/PEM.pem"
-    labels: 
+    labels:
       unexistantLabel: "retest"
     team: "TeamB"
-  ignore_errors: yes
+  ignore_errors: true
   register: error2
 
 # Check error
 - name: Check error2
-  assert: 
+  assert:
     that:
       - error2 is failed
       - "'Label element' in error2.msg"
       - "'is not authorized' in error2.msg"
 
 - name: Update a certificate with pop
+  no_log: true
   evertrust.horizon.horizon_update:
     endpoint: "{{ endpoint }}"
     certificate_pem:
       src: "/tmp/PEM.pem"
     private_key:
       src: "/tmp/KEY.key"
-    labels: 
+    labels:
       label-1: "test"
     team: "TeamA"

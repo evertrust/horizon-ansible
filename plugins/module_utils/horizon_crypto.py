@@ -7,20 +7,15 @@ from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
 import base64
-import secrets
 import re
 import jwt
 import time
-import hashlib
-import time
-import json
 
 from cryptography.hazmat.primitives.serialization import pkcs12, BestAvailableEncryption
 from cryptography import x509
 from cryptography.hazmat.primitives import hashes, serialization
-from cryptography.hazmat.primitives.asymmetric import rsa, ec, padding
+from cryptography.hazmat.primitives.asymmetric import rsa, ec
 from cryptography.x509.oid import NameOID
-from cryptography.hazmat.primitives.asymmetric.utils import encode_dss_signature
 from cryptography.hazmat.backends import default_backend
 
 
@@ -126,7 +121,7 @@ class HorizonCrypto:
         :return a tuple (private key, public key)
         """
         if key_type is None:
-            raise Exception(f'A keyType is required')
+            raise Exception('A keyType is required')
 
         type, bits = key_type.split('-')
 

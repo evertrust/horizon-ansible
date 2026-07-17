@@ -1,25 +1,80 @@
+---
 on:
   workflow_dispatch:
-  push:
-      tags:
-        - '*'
+
+permissions:
+  contents: read
+  id-token: write
+
 jobs:
   publish:
-    runs-on: ${{ vars.RUNS_ON }}
-    env:
-      ANSIBLE_GALAXY_API_TOKEN: ${{ secrets.ANSIBLE_GALAXY_API_TOKEN }}
+    runs-on: runs-on=${{ github.run_id }}/runner=evertrust
+    timeout-minutes: 60
     steps:
+      - name: Configure Runs-On
+        uses: runs-on/action@4e5f72399b6b17f2e79c511c1b38a315a64d22dc # v2.2.0
+
       - name: Setup ansible
         run: sudo apt-get update && sudo apt-get install -y ansible
-        
+
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
+          persist-credentials: false
           submodules: true
           fetch-depth: 0
 
-      - name: Build collection
-        run: make build
-        
+      - name: Configure mise-en-place
+        uses: jdx/mise-action@e6a8b3978addb5a52f2b4cd9d91eafa7f0ab959d # v4.2.0
+
+      - name: Fetch Horizon test infrastructure secrets via Vault
+        uses: hashicorp/vault-action@9c2d817b85b9fff56bcab21cb74b485aee9e9d73 # v2.8.1
+        with:
+          url: ${{ vars.VAULT_ADDR }}
+          method: ${{ vars.VAULT_AUTH_METHOD }}
+          path: ${{ vars.VAULT_AUTH_PATH }}
+          secrets: |
+            ci/data/repositories/evertrust/horizon-ansible/quay username | QUAY_USER ;
+            ci/data/repositories/evertrust/horizon-ansible/quay password | QUAY_TOKEN ;
+            ci/data/repositories/evertrust/horizon-ansible/horizon licence | HORIZON_LICENCE ;
+
+      - name: Log in to Quay registry
+        uses: docker/login-action@465a07811f14bebb1938fbed4728c6a1ff8901fc # v2.2.0
+        with:
+          registry: quay.io
+          username: ${{ env.QUAY_USER }}
+          password: ${{ env.QUAY_TOKEN }}
+
+      - name: Materialize Horizon licence
+        shell: bash
+        env:
+          HORIZON_LICENCE: ${{ env.HORIZON_LICENCE }}
+        run: |
+          set -euo pipefail
+          license_path="$RUNNER_TEMP/horizon-license.txt"
+          umask 077
+          printf '%s' "$HORIZON_LICENCE" > "$license_path"
+          echo "HORIZON_LICENSE_PATH=$license_path" >> "$GITHUB_ENV"
+
+      - name: Release check
+        run: |
+          set -euo pipefail
+          mise run unit_test
+          mise run container_integration_test
+
+      - name: Upload Ansible and Horizon logs
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: horizon-publish-integration-logs
+          path: tests/output/*.log
+          if-no-files-found: warn
+
+      - name: Remove Horizon licence
+        if: always()
+        run: rm -f "$RUNNER_TEMP/horizon-license.txt"
+
       - name: Publish collection
-        run: make publish
+        run: mise run publish
+        env:
+          ANSIBLE_GALAXY_API_TOKEN: ${{ secrets.ANSIBLE_GALAXY_API_TOKEN }}

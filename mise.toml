@@ -1,0 +1,249 @@
+[tools]
+uv = "0.11.28"
+python = "3.10"
+"aqua:anchore/grype" = "0.112.0"
+"aqua:anchore/syft" = "1.44.0"
+
+[env]
+_.python.venv = { path = ".venv", create = true }
+
+[settings]
+experimental = true
+python.uv_venv_auto = "create|source"
+
+[tasks.sbom]
+description = "Generate a Syft JSON SBOM for a filesystem path or container image"
+usage = '''
+arg "<source>" help="Filesystem path or container image reference to scan"
+flag "-o --output <file>" help="SBOM output file" default="horizon-ansible-sbom.syft.json"
+'''
+run = '''
+#!/usr/bin/env bash
+set -euo pipefail
+
+syft scan "${usage_source:?}" -o json > "${usage_output:?}"
+'''
+
+[tasks."scan:sbom"]
+description = "Scan vulnerabilities from a Syft JSON SBOM using Grype"
+usage = '''
+arg "<sbom>" help="Syft JSON SBOM file to scan"
+flag "--fail-on <severity>" help="Fail when vulnerability severity is at least this level" default="high"
+'''
+run = '''
+#!/usr/bin/env bash
+set -euo pipefail
+
+grype "sbom:${usage_sbom:?}" --by-cve --fail-on "${usage_fail_on:?}"
+'''
+
+[tasks."scan:sbom-vex"]
+description = "Scan vulnerabilities from a Syft JSON SBOM using Grype and an OpenVEX document"
+usage = '''
+arg "<sbom>" help="Syft JSON SBOM file to scan"
+flag "-o --output <file>" help="Grype JSON output file" default="grype-horizon-ansible-vex.json"
+flag "--vex <file>" help="OpenVEX document to apply" default="/home/runner/.vex/openvex.json"
+flag "--fail-on <severity>" help="Fail when vulnerability severity is at least this level" default="high"
+'''
+run = '''
+#!/usr/bin/env bash
+set -euo pipefail
+
+grype "sbom:${usage_sbom:?}" --by-cve --vex "${usage_vex:?}" --fail-on "${usage_fail_on:?}" \
+  -o "json=${usage_output:?}" \
+  -o table --show-suppressed
+'''
+
+[deps.install_requirements]
+auto = true
+sources = ["requirements.txt"]
+outputs = [".venv/.requirements.installed"]
+run = """
+uv pip install --upgrade pip
+uv pip install -r requirements.txt
+uv pip install ansible
+touch .venv/.requirements.installed
+"""
+
+[tasks.install_init_deps_doc]
+description = "Quick mise command to install dependencies"
+run = """
+set -eu
+
+uv pip install antsibull-docs sphinx sphinx-ansible-theme
+ansible-galaxy collection install . --force
+"""
+
+[tasks.docs_init]
+description = "Build collection documentation"
+depends = ["install_init_deps_doc"]
+run = """
+set -eu
+
+antsibull-docs sphinx-init --use-current --squash-hierarchy \
+  --dest-dir=docs/ --project "Horizon Ansible" \
+  --title "Horizon Ansible Documentation" evertrust.horizon
+"""
+
+[tasks.docs_build]
+description = "Generate, reformat, and build the collection documentation"
+depends = ["docs_init"]
+run = """
+set -eu
+
+uv pip install -r ./docs/requirements.txt
+
+cd docs
+mkdir -p rst
+chmod og-w rst
+antsibull-docs \
+  --config-file antsibull-docs.cfg \
+  collection \
+  --cleanup everything \
+  --use-current \
+  --squash-hierarchy \
+  --dest-dir rst \
+  evertrust.horizon
+python reformat.py
+sphinx-build -M html rst build -c . -W --keep-going
+"""
+
+[tasks.build]
+description = "Build artifact"
+depends = [ "clean" ]
+run = "ansible-galaxy collection build --output-path=build/"
+
+[tasks.install]
+description = "Install the built collection artifact"
+depends = [ "build" ]
+run = """
+set -eu
+
+set -- build/*.tar.gz
+if [ "$#" -ne 1 ] || [ ! -f "$1" ]; then
+  echo "Expected exactly one collection artifact in build/, got $#" >&2
+  exit 1
+fi
+
+echo "$1"
+ansible-galaxy collection install "$1" --force
+"""
+
+[tasks.release_check]
+description = "Build, install and test before publishing"
+depends = [ "test" ]
+
+[tasks.clean]
+description = "Clean build artifacts"
+run = "rm -f build/*.tar.gz"
+
+[tasks.publish]
+description = "Publish build artifact to Ansible Galaxy"
+run = """
+set -eu
+
+: "${ANSIBLE_GALAXY_API_TOKEN:?ANSIBLE_GALAXY_API_TOKEN is required}"
+
+token_file="$(mktemp)"
+trap 'rm -f "$token_file"' EXIT
+chmod 600 "$token_file"
+printf 'token: %s\n' "$ANSIBLE_GALAXY_API_TOKEN" > "$token_file"
+
+export ANSIBLE_GALAXY_TOKEN_PATH="$token_file"
+
+set -- build/*.tar.gz
+if [ "$#" -ne 1 ] || [ ! -f "$1" ]; then
+  echo "Expected exactly one collection artifact in build/, got $#" >&2
+  exit 1
+fi
+
+ansible-galaxy collection publish "$1"
+"""
+
+[tasks.test]
+description = "Build, install, and run all tests"
+depends = [" install" ]
+run = [
+  { task = "_unit_test" },
+  { task = "_integration_test" },
+]
+
+[tasks._integration_test]
+description = "Run integration tests against Horizon"
+hide = true
+run = """
+set -eu
+
+: "${HORIZON_ENDPOINT:?HORIZON_ENDPOINT is required}"
+: "${HORIZON_API_ID:?HORIZON_API_ID is required}"
+: "${HORIZON_API_KEY:?HORIZON_API_KEY is required}"
+
+collection_dir="$HOME/.ansible/collections/ansible_collections/evertrust/horizon"
+config_path="$collection_dir/tests/integration/integration_config.yml"
+
+umask 077
+rm -f "$config_path"
+trap 'rm -f "$config_path"' EXIT HUP INT TERM
+
+python - "$config_path" <<'PY'
+import json
+import os
+import sys
+
+with open(sys.argv[1], "x", encoding="utf-8") as config:
+    json.dump(
+        {
+            "endpoint": os.environ["HORIZON_ENDPOINT"],
+            "x_api_id": os.environ["HORIZON_API_ID"],
+            "x_api_key": os.environ["HORIZON_API_KEY"],
+        },
+        config,
+    )
+    config.write("\\n")
+PY
+
+cd "$collection_dir"
+ansible-test integration
+"""
+
+[tasks.integration_test]
+description = "Build, install, and run integration tests"
+depends = [ "install" ]
+run = [{ task = "_integration_test" }]
+
+[tasks.container_integration_test]
+description = "Test the handwritten client against the latest licensed Horizon container"
+depends = ["build"]
+run = """
+set -eu
+
+: "${HORIZON_LICENSE_PATH:?HORIZON_LICENSE_PATH is required}"
+HORIZON_IMAGE="${HORIZON_IMAGE:-quay.io/evertrust/horizon:2.10.3}"
+uv pip install -r tests/integration/requirements.txt
+uv pip check
+
+set -- build/*.tar.gz
+if [ "$#" -ne 1 ] || [ ! -f "$1" ]; then
+  echo "Expected exactly one collection artifact in build/, got $#" >&2
+  exit 1
+fi
+
+python tests/integration/run_horizon_matrix.py \
+  --license "$HORIZON_LICENSE_PATH" \
+  --artifact "$1" \
+  --image "$HORIZON_IMAGE"
+"""
+
+[tasks._unit_test]
+description = "Run unit tests without integration credentials"
+hide = true
+run = """
+set -eu
+cd "$HOME/.ansible/collections/ansible_collections/evertrust/horizon"
+ansible-test units --python 3.10
+"""
+
+[tasks.unit_test]
+description = "Build, install, and run unit tests"
+depends = [ "install" ]
+run = [{ task = "_unit_test" }]

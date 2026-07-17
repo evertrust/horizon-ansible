@@ -36,13 +36,13 @@ class Horizon:
         :type client_key: str
         :type ca_bundle: str
         """
-        if endpoint == None:
+        if endpoint is None:
             raise AnsibleError("Endpoint parameter is mandatory")
-        
+
         # Initialize values to avoid errors later
         if endpoint[-1] == '/':
             endpoint = endpoint[:-1]
-            
+
         self.endpoint = endpoint
         self.headers = None
         self.cert = None
@@ -82,13 +82,13 @@ class Horizon:
             labels = {}
         if metadata is None:
             metadata = {}
-    
+
         csr = self.load_file_or_string(csr)
 
         if mode == "decentralized":
             if csr is None:
                 raise AnsibleError("You must specify a CSR when using decentralized enrollment")
-        
+
         # On horizon2.4 keyTypes has been replaced by keyType.
         # I'm using this parameters to check which version of horizon we are using and send the right template to it.
         if "keyTypes" in template["template"]:
@@ -122,7 +122,7 @@ class Horizon:
             }
             if "contact_email" in metadata:
                 json["template"]["contactEmail"] = {"value": metadata["contact_email"]}
-            
+
 
         if password is not None:
             json["password"] = {}
@@ -150,7 +150,7 @@ class Horizon:
             profile = cert_infos[0]["profile"]
         else:
             raise AnsibleError("Unknown format of certificate infos")
-        
+
         template = self.get_template(profile, "recover", "webra")
         password = self.check_password_policy(password, template)
 
@@ -272,6 +272,7 @@ class Horizon:
 
         json = {
             "workflow": "import",
+            "module": "webra",
             "profile": profile,
             "template": {
                 "privateKey": self.load_file_or_string(private_key),
@@ -290,7 +291,7 @@ class Horizon:
             json["template"]["contactEmail"] = {"value": metadata["contact_email"]}
         elif contact_email is not None:
             json["template"]["contactEmail"] = {"value": contact_email}
-        
+
         return self.post(self.REQUEST_SUBMIT_URL, json)
 
     def search(self, query=None, fields=None):
@@ -331,19 +332,19 @@ class Horizon:
         :type usages: list
         :rtype: NoneType
         """
-        if campaign == None:
+        if campaign is None:
             raise AnsibleError("Missing discovery campaign")
-        if certificate_pem == None:
+        if certificate_pem is None:
             raise AnsibleError("Missing certificate")
-        if ip == None:
+        if ip is None:
             raise AnsibleError("Missing certificate's host ip")
-        if not isinstance(hostnames, list) and hostnames != None:
+        if not isinstance(hostnames, list) and hostnames is not None:
             hostnames = [hostnames]
-        if not isinstance(operating_systems, list) and operating_systems != None:
+        if not isinstance(operating_systems, list) and operating_systems is not None:
             operating_systems = [operating_systems]
-        if not isinstance(paths, list) and paths != None:
+        if not isinstance(paths, list) and paths is not None:
             paths = [paths]
-        if not isinstance(usages, list) and usages != None:
+        if not isinstance(usages, list) and usages is not None:
             usages = [usages]
 
         json = {
@@ -428,7 +429,7 @@ class Horizon:
         # Check if the password is needed and given
         if password_mode == "manual":
             if password is None:
-                message = f'A password is required. '
+                message = 'A password is required. '
                 if password_policy != -1:
                     message += f'The password has to contains between {password_policy["minChar"]} and {password_policy["maxChar"]} characters, '
                     message += f'it has to contains at least : {password_policy["minLoChar"]} lowercase letter, {password_policy["minUpChar"]} uppercase letter, '
@@ -533,9 +534,9 @@ class Horizon:
                 response = requests.request(method, uri, cert=self.cert, verify=self.bundle, headers=self.headers, **kwargs)
 
         except requests.exceptions.SSLError:
-            raise AnsibleError("Got an SSL error try using the 'ca_bundle' paramater")
-        
-        if 'Content-Type' in response.headers and response.headers['Content-Type'] in ['application/json', 'application/problem+json']: 
+            raise AnsibleError("Got an SSL error try using the 'ca_bundle' parameter")
+
+        if 'Content-Type' in response.headers and response.headers['Content-Type'] in ['application/json', 'application/problem+json']:
             content = response.json()
         else:
             content = response.content.decode()
@@ -610,7 +611,7 @@ class Horizon:
             my_sans.append({"element": element, "value": sans[element]})
 
         return my_sans
-    
+
     @staticmethod
     def __set_sans_post_2_4(sans):
         """
@@ -624,7 +625,7 @@ class Horizon:
             done = False
             if sans[element] == "" or sans[element] is None:
                 raise AnsibleError(f'The san value for {element} is not allowed.')
-            
+
             elements = element.split('.')
             element_name = elements[0]
             if len(elements) > 1:
@@ -764,7 +765,7 @@ class Horizon:
                     for label in response[field]:
                         labels[label['key']] = label['value']
                     result[field] = labels
-            
+
             elif field in response:
                     result[field] = response[field]
 
@@ -789,7 +790,7 @@ class Horizon:
                         pulled_content = file.read()
                 except Exception as e:
                     raise AnsibleError(e)
-                
+
                 return pulled_content
             else:
                 raise AnsibleError('You must specify an src attribute when passing a dict')
@@ -819,9 +820,9 @@ class Horizon:
         """
         Get a password from password_policy
         :param password_policy
-        """   
+        """
         return self.send('GET', "/api/v1/security/passwordpolicies/"+password_policy+"/generate")
-    
+
     def set_jwt_headers(self, cert, key):
         jwt_token = HorizonCrypto.generate_jwt_token(cert, key, "")
         self.headers = {"X-JWT-CERT-POP": jwt_token}

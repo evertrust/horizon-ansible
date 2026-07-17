@@ -3,7 +3,6 @@
 
 # Standard base includes and define this as a metaclass of type
 from __future__ import (absolute_import, division, print_function)
-from re import M
 
 __metaclass__ = type
 
@@ -41,4 +40,4 @@ class ActionModule(HorizonAction):
         except HorizonError as e:
             raise AnsibleError(e.full_message)
 
-        return result
+        return self._protect_result(result)

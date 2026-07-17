@@ -1,4 +1,5 @@
 - name: Test centralize enrollment without problems
+  no_log: true
   evertrust.horizon.horizon_enroll:
 
     endpoint: "{{ endpoint }}"
@@ -8,28 +9,29 @@
     profile: "Ansible"
     mode: "centralized"
     key_type: "rsa-2048"
-      
+
     subject:
       cn.1: "IntegrationTestCI"
       o.1: "Evertrust"
       ou.1: "R&D"
     sans:
-      dnsname: 
+      dnsname:
         - "AnsibleTest"
         - "dns2"
       rfc822name: "adu@evertrust.fr"
-    labels: 
+    labels:
       label-1: "test"
       label-2: "ansible"
 
     team: "TeamA"
-  
+
   register: data
 
 - copy: content="{{ data.certificate.certificate }}" dest="/tmp/PEM.pem"
 - copy: content="{{ data.key }}" dest="/tmp/KEY.key"
 
 - name: Test centralize enrollment with unidentified profile
+  no_log: true
   evertrust.horizon.horizon_enroll:
 
     endpoint: "{{ endpoint }}"
@@ -39,27 +41,28 @@
     profile: "InexistantProfile"
     mode: "centralized"
     key_type: "rsa-2048"
-        
+
     subject:
       cn.1: "TestWithoutProfile"
     sans:
       dnsname: "TestWithoutProfile"
-    labels: 
+    labels:
       label-1: "test"
       label-2: "ansible"
 
-  ignore_errors: yes
+  ignore_errors: true
   register: error1
 
 # Check error
 - name: Check error1
-  assert: 
+  assert:
     that:
       - error1 is failed
       - "'Profile does not exist or is disabled' in error1.msg"
 
 
 - name: Test centralize enrollment with wrong key_type
+  no_log: true
   evertrust.horizon.horizon_enroll:
 
     endpoint: "{{ endpoint }}"
@@ -69,27 +72,28 @@
     profile: "Ansible"
     mode: "centralized"
     key_type: "WrongKeyType-1234"
-        
+
     subject:
       cn.1: "TestWithWrongKeyType"
     sans:
       dnsname: "TestWithWrongKeyType"
-    labels: 
+    labels:
       label-1: "test"
       label-2: "ansible"
 
-  ignore_errors: yes
+  ignore_errors: true
   register: error2
 
 # Check error
 - name: Check error2
-  assert: 
+  assert:
     that:
       - error2 is failed
       - "'Unknown algorithm' in error2.msg"
 
 
 - name: Test centralize enrollment with unexistant label
+  no_log: true
   evertrust.horizon.horizon_enroll:
 
     endpoint: "{{ endpoint }}"
@@ -99,22 +103,22 @@
     profile: "Ansible"
     mode: "centralized"
     key_type: "rsa-2048"
-      
+
     subject:
       cn.1: "TestCIWithUnexistantLabel"
     sans:
       dnsname: "TestCIWithUnexistantLabel"
-    labels: 
+    labels:
       unexistantLabel: "test"
       label-1: "test"
       label-2: "ansible"
 
-  ignore_errors: yes
+  ignore_errors: true
   register: error3
 
 # Check error
 - name: Check error3
-  assert: 
+  assert:
     that:
       - error3 is failed
       - "'Label element' in error3.msg"

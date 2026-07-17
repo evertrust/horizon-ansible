@@ -8,7 +8,7 @@ action_groups:
     - horizon_revoke
     - horizon_update
     - horizon_feed
-    - horion_inventory
+    - horizon_inventory
     - horizon_lookup
     - horizon_template
     - horizon

@@ -1,3 +1,4 @@
+---
 name: build_doc
 
 on:
@@ -8,55 +9,44 @@ on:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
 
 jobs:
   # Build job
   build:
-    runs-on: ubuntu-latest
+    runs-on: runs-on=${{ github.run_id }}/runner=evertrust
+    timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
+      - name: Configure Runs-On
+        uses: runs-on/action@4e5f72399b6b17f2e79c511c1b38a315a64d22dc # v2.2.0
 
-      - name: Install Python
-        uses: actions/setup-python@v5
+      - name: Configure checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
-          python-version: '3.9'
-          cache: 'pip'
+          persist-credentials: false
 
-      - name: Install dependencies
-        run: pip install ansible antsibull-docs sphinx sphinx-ansible-theme
+      - name: Configure mise-en-place
+        uses: jdx/mise-action@e6a8b3978addb5a52f2b4cd9d91eafa7f0ab959d # v4.2.0
 
-      - name: Init collection
-        run: ansible-galaxy collection install .
-
-      - name: Build ansible docs with antsibull-docs
-        run: >
-          antsibull-docs sphinx-init --use-current --squash-hierarchy
-          --dest-dir=docs/ --project "Horizon Ansible"
-          --title "Horizon Ansible Documentation" evertrust.horizon
-
-      - name: Install requirements
-        run: pip install -r ./docs/requirements.txt
-
-      - name: Add custom script to reformat doc
-        run: sed -i 's/\(sphinx-build.*\)/python reformat.py || python3 reformat.py\n\1/' docs/build.sh
-
-      - name: Build with sphinx
-        run: ./docs/build.sh
+      - name: Generate and build documentation
+        run: mise run docs_build
 
       - name: Configure Pages
-        uses: actions/configure-pages@v5
+        uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5.0.0
 
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3.0.1
         with:
           path: ./docs/build/html
 
   # Deployment job
   deploy:
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: runs-on=${{ github.run_id }}/runner=evertrust
+    timeout-minutes: 10
     permissions:
       pages: write
       id-token: write
@@ -66,4 +56,4 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4.0.5

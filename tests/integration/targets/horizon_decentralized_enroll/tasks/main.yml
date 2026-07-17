@@ -1,4 +1,5 @@
 - name: Decentralize enrollment
+  no_log: true
   evertrust.horizon.horizon_enroll:
 
     endpoint: "{{ endpoint }}"
@@ -8,15 +9,15 @@
     profile: "Ansible"
     mode: "decentralized"
     key_type: "rsa-2048"
-      
+
     subject:
       cn.1: "IntegrationTestCIDecentralized"
     sans:
       dnsname: "AnsibleTest"
-    labels: 
+    labels:
       label-1: "test"
       label-2: "ansible"
-      
+
     csr: |
       -----BEGIN CERTIFICATE REQUEST-----
       MIICfzCCAWcCAQAwOjELMAkGA1UEBhMCRlIxEjAQBgNVBAoMCUV2ZXJ0cnVzdDEX
@@ -36,6 +37,7 @@
       -----END CERTIFICATE REQUEST-----
 
 - name: Decentralize enrollment without csr
+  no_log: true
   evertrust.horizon.horizon_enroll:
 
     endpoint: "{{ endpoint }}"
@@ -50,12 +52,13 @@
       cn.1: "IntegrationTestCIDecentralizedNoCSR"
     sans:
       dnsname: "AnsibleTest"
-    labels: 
+    labels:
       label-1: "test"
       label-2: "ansible"
 
 
 - name: Decentralize enrollment with wrong csr
+  no_log: true
   evertrust.horizon.horizon_enroll:
 
     endpoint: "{{ endpoint }}"
@@ -65,21 +68,21 @@
     profile: "Ansible"
     mode: "decentralized"
     key_type: "rsa-2048"
-      
+
     subject:
       cn.1: "IntegrationTestCI"
     sans:
       dnsname.1: "AnsibleTest"
-    labels: 
+    labels:
       label-1: "test"
       label-2: "ansible"
-      
+
     csr: |
       -----BEGIN CERTIFICATE REQUEST-----
       wrongCSR
       -----END CERTIFICATE REQUEST-----
 
-  ignore_errors: yes
+  ignore_errors: true
   register: error1
 
 # Check error

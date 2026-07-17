@@ -6,7 +6,7 @@ from __future__ import (absolute_import, division, print_function)
 from ansible.errors import AnsibleParserError, AnsibleError
 from ansible.plugins.inventory import BaseInventoryPlugin, Constructable
 from ansible_collections.evertrust.horizon.plugins.module_utils.horizon import Horizon
-from ansible_collections.evertrust.horizon.plugins.module_utils.horizon_errors import HorizonError
+from ansible_collections.evertrust.horizon.plugins.module_utils.horizon_errors import HorizonError, redact_horizon_error
 
 # language=yaml
 DOCUMENTATION = '''
@@ -155,8 +155,8 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
 
         try: 
             response = self.client.search(**content)
-        except HorizonError as e:
-            raise AnsibleError(e.full_message)
+        except HorizonError as error:
+            raise AnsibleError(redact_horizon_error(error, self._get_auth()))
 
         self._populate(response, self.config.get("hostnames"), content["fields"])
 

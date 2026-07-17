@@ -12,6 +12,22 @@ from ansible.plugins.action import ActionBase
 
 
 class HorizonAction(ActionBase, ABC):
+    SENSITIVE_ARG_NAMES = {
+        "x_api_key",
+        "client_key",
+        "private_key",
+        "password",
+    }
+
+    SENSITIVE_RESULT_NAMES = {
+        "key",
+        "p12",
+        "p12_password",
+    }
+
+    def run(self, tmp=None, task_vars=None):
+        self._mark_no_log_for_sensitive_args()
+        return super(HorizonAction, self).run(tmp, task_vars)
 
     def _args(self):
         return []
@@ -33,3 +49,17 @@ class HorizonAction(ActionBase, ABC):
 
     def _get_client(self):
         return Horizon(**self._get_auth())
+
+    def _mark_no_log_for_sensitive_args(self):
+        for arg in self.SENSITIVE_ARG_NAMES:
+            if self._task.args.get(arg) not in (None, ""):
+                self._task.no_log = True
+                return
+
+    def _protect_result(self, result):
+        if isinstance(result, dict):
+            for arg in self.SENSITIVE_RESULT_NAMES:
+                if result.get(arg) not in (None, ""):
+                    self._task.no_log = True
+                    break
+        return result
