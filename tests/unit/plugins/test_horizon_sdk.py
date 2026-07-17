@@ -297,3 +297,268 @@ class TestHorizonSDKClient(unittest.TestCase):
             _request_timeout=(10.0, 60.0),
         )
         client.request_api.request_template.assert_called_once()
+
+    def test_renew_revoke_update_and_import_request_models(self):
+        client = self.client()
+        self.prepare_submit(client)
+
+        client.renew("CERTIFICATE", "certificate-id", password=PASSWORD, csr="CSR", mode="decentralized")
+        renew = client.request_api.request_submit.call_args.args[0].to_dict()
+        self.assertEqual(renew["template"]["csr"], "CSR")
+        # SDK 2.10 adds an explicit false default; 2.8 and 2.9 omit it.
+        self.assertFalse(renew["template"].get("asynchronous", False))
+        self.assertEqual(renew["certificateId"], "certificate-id")
+
+        client.revoke("CERTIFICATE", "certificate-id", "keyCompromise")
+        revoke = client.request_api.request_submit.call_args.args[0].to_dict()
+        self.assertEqual(revoke["template"]["revocationReason"], "keyCompromise")
+
+        client.update(
+            "CERTIFICATE",
+            labels={"environment": "test"},
+            metadata={"custom_metadata": "value"},
+            owner="owner",
+            team="team",
+            contact_email="owner@example.test",
+        )
+        update = client.request_api.request_submit.call_args.args[0].to_dict()
+        self.assertEqual(update["template"]["labels"][0]["label"], "environment")
+        self.assertEqual(update["template"]["metadata"][0]["metadata"], "custom_metadata")
+
+        client.webra_import(
+            "profile",
+            "CERTIFICATE",
+            "certificate-id",
+            PRIVATE_KEY,
+            labels={},
+            metadata={},
+        )
+        imported = client.request_api.request_submit.call_args.args[0].to_dict()
+        self.assertEqual(imported["module"], "webra")
+        self.assertEqual(imported["profile"], "profile")
+        self.assertEqual(imported["template"]["privateKey"], PRIVATE_KEY)
+
+    def test_certificate_search_paginates_and_returns_plain_list(self):
+        client = self.client()
+        client.certificate_api.certificate_search = Mock(side_effect=[
+            {"results": [{"_id": "one"}], "hasMore": True},
+            {"results": [{"_id": "two"}], "hasMore": False},
+        ])
+
+        result = client.search(query="status is valid", fields=["_id"])
+
+        self.assertEqual(result, [{"_id": "one"}, {"_id": "two"}])
+        requests = [call.args[0].to_dict() for call in client.certificate_api.certificate_search.call_args_list]
+        self.assertEqual([request["pageIndex"] for request in requests], [1, 2])
+        self.assertTrue(all(request["withCount"] for request in requests))
+
+    def test_feed_uses_discovery_models_and_preserves_none_response(self):
+        client = self.client()
+        client.discovery_feed_api.discovery_feed = Mock(return_value=None)
+
+        result = client.feed(
+            campaign="campaign",
+            certificate_pem="CERTIFICATE",
+            ip="127.0.0.1",
+            hostnames=["host"],
+            operating_systems=["linux"],
+            paths=["/cert.pem"],
+            usages=["tls"],
+        )
+
+        request = client.discovery_feed_api.discovery_feed.call_args.args[0].to_dict()
+        self.assertIsNone(result)
+        self.assertEqual(request["campaign"], "campaign")
+        self.assertEqual(request["hostDiscoveryData"]["operatingSystems"], ["linux"])
+
+    def test_certificate_response_format_is_preserved_for_ansible_versions(self):
+        client = self.client()
+        client.certificate_api.certificate_get_pem = Mock(return_value=PlainSDKModel({
+            "_id": "certificate-id",
+            "metadata": [{"key": "custom", "value": "metadata"}],
+            "labels": [{"key": "environment", "value": "test"}],
+            "subjectAlternateNames": [{"sanType": "DNSNAME", "value": "example.test"}],
+        }))
+
+        old_result = client.certificate("CERTIFICATE", "2.17.0")
+        new_result = client.certificate("CERTIFICATE", "2.18.0")
+
+        expected = {
+            "_id": "certificate-id",
+            "metadata": {"custom": "metadata"},
+            "labels": {"environment": "test"},
+            "subjectAlternateNames": {"dnsname.1": "example.test"},
+        }
+        self.assertEqual(old_result, expected)
+        self.assertEqual(new_result, [expected])
+
+    def test_certificate_response_converts_null_collections(self):
+        client = self.client()
+        client.certificate_api.certificate_get_pem = Mock(return_value=PlainSDKModel({
+            "_id": "certificate-id",
+            "metadata": None,
+            "labels": None,
+            "subjectAlternateNames": None,
+        }))
+
+        result = client.certificate("CERTIFICATE", "2.17.0")
+
+        self.assertEqual(result["metadata"], {})
+        self.assertEqual(result["labels"], {})
+        self.assertEqual(result["subjectAlternateNames"], {})
+
+    def test_chain_template_password_and_cancel_use_sdk_apis(self):
+        client = self.client()
+        client.rfc5280_api.rfc5280_tc_pem = Mock(return_value=[PlainSDKModel({"pem": "CHAIN"})])
+        client.request_api.request_template = Mock(return_value=PlainSDKModel({
+            "workflow": "enroll",
+            "module": "webra",
+            "profile": "profile",
+            "template": {},
+        }))
+        client.password_policy_api.password_policy_generate = Mock(return_value="generated-password")
+        client.request_api.request_cancel = Mock(return_value=PlainSDKModel({"status": "canceled"}))
+
+        self.assertEqual(client.chain("CERTIFICATE"), [{"pem": "CHAIN"}])
+        self.assertEqual(client.get_template("profile", "enroll", "webra")["workflow"], "enroll")
+        self.assertEqual(client.get_password("Horizon-Default"), "generated-password")
+        self.assertEqual(client.cancel_request("request-id", "enroll"), {"status": "canceled"})
+
+        template_request = client.request_api.request_template.call_args.args[0].to_dict()
+        cancel_request = client.request_api.request_cancel.call_args.args[0].to_dict()
+        self.assertEqual(template_request["profile"], "profile")
+        self.assertEqual(cancel_request["_id"], "request-id")
+
+    @patch("ansible_collections.evertrust.horizon.plugins.plugin_utils.horizon.HorizonCrypto.generate_jwt_token")
+    def test_pop_retries_sdk_call_with_replay_nonce(self, generate_jwt):
+        generate_jwt.side_effect = lambda certificate, key, nonce: "token-%s" % (nonce or "initial")
+        client = self.client(x_api_id=None, x_api_key=None, private_key=PRIVATE_KEY)
+        challenge = ApiException(status=401, reason="proof required", body='{"message":"proof required"}')
+        challenge.headers = {"Replay-Nonce": "nonce-value"}
+        client.request_api.request_submit = Mock(side_effect=[
+            challenge,
+            {"workflow": "update", "module": "webra", "status": "success"},
+        ])
+
+        client.update("CERTIFICATE", private_key=PRIVATE_KEY)
+
+        calls = client.request_api.request_submit.call_args_list
+        self.assertEqual(calls[0].kwargs["_headers"]["X-JWT-CERT-POP"], "token-initial")
+        self.assertEqual(calls[1].kwargs["_headers"]["X-JWT-CERT-POP"], "token-nonce-value")
+        generate_jwt.assert_any_call("CERTIFICATE", PRIVATE_KEY, "nonce-value")
+
+    def test_sdk_exception_is_translated_and_secrets_are_redacted(self):
+        client = self.client()
+        exception = ApiException(
+            status=403,
+            reason="forbidden",
+            body=json.dumps({
+                "error": "WEBRA-TEST-001",
+                "message": "bad api key %s" % API_KEY,
+                "detail": "bad password %s" % PASSWORD,
+            }),
+        )
+        client.request_api.request_submit = Mock(side_effect=exception)
+
+        with self.assertRaises(HorizonError) as raised:
+            client.renew("CERTIFICATE", "certificate-id", password=PASSWORD, mode="centralized")
+
+        message = raised.exception.full_message
+        self.assertEqual(raised.exception.code, "WEBRA-TEST-001")
+        self.assertNotIn(API_KEY, message)
+        self.assertNotIn(PASSWORD, message)
+        self.assertIn("********", message)
+
+    def test_sdk_ssl_exception_preserves_legacy_guidance(self):
+        client = self.client()
+        client.certificate_api.certificate_get_pem = Mock(
+            side_effect=ApiException(status=0, reason="SSLError\ncertificate verify failed")
+        )
+
+        with self.assertRaisesRegex(AnsibleError, "ca_bundle"):
+            client.certificate("CERTIFICATE", "2.17.0")
+
+    def test_wrapped_connect_timeout_is_translated_with_operation_and_limit(self):
+        client = self.client(connect_timeout=2, read_timeout=30)
+        connect_timeout = ConnectTimeoutError(None, "https://horizon.example.test", "stalled %s" % API_KEY)
+        wrapped = MaxRetryError(None, "https://horizon.example.test", reason=connect_timeout)
+
+        def certificate_get_pem(*args, **kwargs):
+            raise wrapped
+
+        client.certificate_api.certificate_get_pem = certificate_get_pem
+
+        with self.assertRaises(HorizonError) as raised:
+            client.certificate("CERTIFICATE", "2.17.0")
+
+        self.assertEqual(raised.exception.code, "SDK-CONNECT-TIMEOUT")
+        self.assertIn("certificate_get_pem", raised.exception.full_message)
+        self.assertIn("connect timeout of 2 seconds", raised.exception.full_message)
+        self.assertNotIn(API_KEY, raised.exception.full_message)
+
+    def test_read_timeout_is_translated_with_operation_and_limit(self):
+        client = self.client(connect_timeout=2, read_timeout=7.5)
+
+        def certificate_get_pem(*args, **kwargs):
+            raise ReadTimeoutError(None, "https://horizon.example.test", "stalled %s" % API_KEY)
+
+        client.certificate_api.certificate_get_pem = certificate_get_pem
+
+        with self.assertRaises(HorizonError) as raised:
+            client.certificate("CERTIFICATE", "2.17.0")
+
+        self.assertEqual(raised.exception.code, "SDK-READ-TIMEOUT")
+        self.assertIn("certificate_get_pem", raised.exception.full_message)
+        self.assertIn("read timeout of 7.5 seconds", raised.exception.full_message)
+        self.assertNotIn(API_KEY, raised.exception.full_message)
+
+    def test_mutation_is_not_replayed_after_a_timeout(self):
+        client = self.client()
+        client.request_api.request_submit = Mock(
+            side_effect=ReadTimeoutError(None, "https://horizon.example.test", "stalled")
+        )
+
+        with self.assertRaises(HorizonError) as raised:
+            client.renew("CERTIFICATE", "certificate-id", mode="centralized")
+
+        self.assertEqual(raised.exception.code, "SDK-READ-TIMEOUT")
+        client.request_api.request_submit.assert_called_once()
+
+    @patch("ansible_collections.evertrust.horizon.plugins.plugin_utils.horizon.HorizonCrypto.generate_jwt_token")
+    def test_jwt_is_redacted_from_sdk_errors(self, generate_jwt):
+        generate_jwt.return_value = JWT
+        client = self.client(x_api_id=None, x_api_key=None, private_key=PRIVATE_KEY)
+        exception = ApiException(
+            status=403,
+            reason="forbidden",
+            body=json.dumps({"message": "rejected proof %s" % JWT}),
+        )
+        client.request_api.request_submit = Mock(side_effect=exception)
+
+        with self.assertRaises(HorizonError) as raised:
+            client.update("CERTIFICATE", private_key=PRIVATE_KEY)
+
+        self.assertNotIn(JWT, raised.exception.full_message)
+        self.assertIn("********", raised.exception.full_message)
+
+    def test_pending_request_is_canceled_with_sdk(self):
+        client = self.client()
+        self.prepare_submit(client, {
+            "_id": "request-id",
+            "workflow": "update",
+            "module": "webra",
+            "status": "pending",
+            "requester": "requester",
+            "profile": "profile",
+        })
+        client.request_api.request_cancel = Mock(return_value={"status": "canceled"})
+
+        with self.assertRaises(AnsibleError) as raised:
+            client.update("CERTIFICATE")
+
+        self.assertIn("Request has been canceled", str(raised.exception))
+        client.request_api.request_cancel.assert_called_once()
+
+
+if __name__ == "__main__":
+    unittest.main()
