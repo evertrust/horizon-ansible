@@ -625,16 +625,6 @@ def main():
     license_path = Path(args.license).expanduser().resolve()
     if not license_path.is_file():
         raise SystemExit("The Horizon license path is not a file")
-    quay_path = args.image.removeprefix("quay.io/")
-    if (
-        not args.image.startswith("quay.io/")
-        or not quay_path
-        or quay_path.startswith("/")
-        or any(character.isspace() for character in args.image)
-    ):
-        raise SystemExit(
-            "The Horizon image must start with 'quay.io/' and contain no whitespace"
-        )
     source_root = Path(__file__).resolve().parents[2]
     environment = os.environ.copy()
     run_id = uuid4().hex[:12]
