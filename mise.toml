@@ -56,12 +56,13 @@ grype "sbom:${usage_sbom:?}" --by-cve --vex "${usage_vex:?}" --fail-on "${usage_
 
 [deps.install_requirements]
 auto = true
-sources = ["requirements.txt"]
+sources = ["requirements.txt", "tests/unit/requirements.txt"]
 outputs = [".venv/.requirements.installed"]
 run = """
 uv pip install --upgrade pip
 uv pip install -r requirements.txt
-uv pip install ansible
+uv pip install -r tests/unit/requirements.txt
+uv pip install "${HORIZON_ANSIBLE_SPEC:-ansible-core>=2.15,<2.21}"
 touch .venv/.requirements.installed
 """
 
@@ -113,9 +114,9 @@ description = "Build artifact"
 depends = [ "clean" ]
 run = "ansible-galaxy collection build --output-path=build/"
 
-[tasks.install]
-description = "Install the built collection artifact"
-depends = [ "build" ]
+[tasks._install_artifact]
+description = "Install the single collection artifact already present in build/"
+hide = true
 run = """
 set -eu
 
@@ -129,9 +130,20 @@ echo "$1"
 ansible-galaxy collection install "$1" --force
 """
 
+[tasks.install]
+description = "Build and install the collection artifact"
+depends = [ "build" ]
+run = [{ task = "_install_artifact" }]
+
 [tasks.release_check]
-description = "Build, install and test before publishing"
-depends = [ "test" ]
+description = "Build once and run release unit and single-image Horizon tests"
+depends = ["build"]
+run = [
+  { task = "_install_artifact" },
+  { task = "_unit_test" },
+  { task = "_sanity_test" },
+  { task = "container_integration_test" },
+]
 
 [tasks.clean]
 description = "Clean build artifacts"
@@ -162,7 +174,7 @@ ansible-galaxy collection publish "$1"
 
 [tasks.test]
 description = "Build, install, and run all tests"
-depends = [" install" ]
+depends = ["install"]
 run = [
   { task = "_unit_test" },
   { task = "_integration_test" },
@@ -212,14 +224,14 @@ depends = [ "install" ]
 run = [{ task = "_integration_test" }]
 
 [tasks.container_integration_test]
-description = "Test the handwritten client against the latest licensed Horizon container"
+description = "Test the SDK-backed collection against one licensed Horizon container"
 depends = ["build"]
 run = """
 set -eu
 
 : "${HORIZON_LICENSE_PATH:?HORIZON_LICENSE_PATH is required}"
 HORIZON_IMAGE="${HORIZON_IMAGE:-quay.io/evertrust/horizon:2.10.3}"
-uv pip install -r tests/integration/requirements.txt
+uv pip install --require-hashes -r tests/integration/requirements.lock
 uv pip check
 
 set -- build/*.tar.gz
@@ -239,11 +251,45 @@ description = "Run unit tests without integration credentials"
 hide = true
 run = """
 set -eu
+if [ -n "${HORIZON_ANSIBLE_SPEC:-}" ]; then
+  uv pip install "$HORIZON_ANSIBLE_SPEC"
+fi
+python_interpreter="$VIRTUAL_ENV/bin/python"
 cd "$HOME/.ansible/collections/ansible_collections/evertrust/horizon"
-ansible-test units --python 3.10
+ansible-test units --python-interpreter "$python_interpreter"
+"""
+
+[tasks._sanity_test]
+description = "Run Ansible sanity tests against the installed collection"
+hide = true
+run = """
+set -eu
+python_version="$(python -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')"
+cd "$HOME/.ansible/collections/ansible_collections/evertrust/horizon"
+ansible-test sanity --python "$python_version" --color yes
 """
 
 [tasks.unit_test]
 description = "Build, install, and run unit tests"
 depends = [ "install" ]
 run = [{ task = "_unit_test" }]
+
+[tasks.sanity_test]
+description = "Build, install, and run Ansible sanity tests"
+depends = [ "install" ]
+run = [{ task = "_sanity_test" }]
+
+[tasks.sanity_test_artifact]
+description = "Install and sanity-test the single artifact already present in build/"
+run = [
+  { task = "_install_artifact" },
+  { task = "_sanity_test" },
+]
+
+[tasks.static_test]
+description = "Build, install, and run unit and Ansible sanity tests"
+depends = [ "install" ]
+run = [
+  { task = "_unit_test" },
+  { task = "_sanity_test" },
+]
