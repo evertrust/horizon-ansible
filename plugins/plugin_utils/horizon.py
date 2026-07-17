@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # -*- coding: utf-8 -*-
 
 from __future__ import (absolute_import, division, print_function)
@@ -7,26 +6,52 @@ __metaclass__ = type
 
 import re
 import string
-import urllib.parse
+import json
+import math
+import os
+from enum import Enum
+from urllib.parse import urlparse
+from urllib.request import getproxies, proxy_bypass
 
-import requests
 from ansible.errors import AnsibleError
-from ansible_collections.evertrust.horizon.plugins.module_utils.horizon_crypto import HorizonCrypto
-from ansible_collections.evertrust.horizon.plugins.module_utils.horizon_errors import HorizonError
+from ansible_collections.evertrust.horizon.plugins.plugin_utils.horizon_crypto import HorizonCrypto
+from ansible_collections.evertrust.horizon.plugins.plugin_utils.horizon_errors import HorizonError, redact_sensitive_values
 from ansible.utils.display import Display
-from packaging.version import parse as parse_version
+
+try:
+    from packaging.version import parse as parse_version
+except ImportError:
+    parse_version = None
+
+try:
+    import horizon as horizon_sdk
+    from horizon.exceptions import ApiException, OpenApiException
+    from urllib3.exceptions import ConnectTimeoutError, NewConnectionError, ReadTimeoutError
+except ImportError:
+    horizon_sdk = None
+
+    class ApiException(Exception):
+        pass
+
+    class OpenApiException(Exception):
+        pass
+
+    class ConnectTimeoutError(Exception):
+        pass
+
+    class NewConnectionError(ConnectTimeoutError):
+        pass
+
+    class ReadTimeoutError(Exception):
+        pass
 
 
 class Horizon:
-    REQUEST_SUBMIT_URL = "/api/v1/requests/submit"
-    REQUEST_CANCEL_URL = "/api/v1/requests/cancel"
-    REQUEST_TEMPLATE_URL = "/api/v1/requests/template"
-    CERTIFICATES_SHOW_URL = "/api/v1/certificates/"
-    CERTIFICATES_SEARCH_URL = "/api/v1/certificates/search"
-    DISCOVERY_FEED_URL = "/api/v1/discovery/feed"
-    RFC5280_TC_URL = "/api/v1/rfc5280/tc/"
+    DEFAULT_CONNECT_TIMEOUT = 10.0
+    DEFAULT_READ_TIMEOUT = 60.0
 
-    def __init__(self, endpoint=None, x_api_id=None, x_api_key=None, client_cert=None, client_key=None, ca_bundle=None, private_key=None):
+    def __init__(self, endpoint=None, x_api_id=None, x_api_key=None, client_cert=None, client_key=None, ca_bundle=None,
+                 private_key=None, connect_timeout=None, read_timeout=None):
         """
         Initialize client with endpoint and authentication parameters
         :type endpoint: str
@@ -35,27 +60,72 @@ class Horizon:
         :type client_cert: str
         :type client_key: str
         :type ca_bundle: str
+        :type connect_timeout: float
+        :type read_timeout: float
         """
-        if endpoint is None:
+        if endpoint in (None, ""):
             raise AnsibleError("Endpoint parameter is mandatory")
+
+        if horizon_sdk is None or parse_version is None:
+            raise AnsibleError(
+                "The Horizon SDK and packaging are required. "
+                "Install the collection's Python dependencies."
+            )
 
         # Initialize values to avoid errors later
         if endpoint[-1] == '/':
             endpoint = endpoint[:-1]
 
         self.endpoint = endpoint
-        self.headers = None
-        self.cert = None
-        self.bundle = ca_bundle
+        self._sensitive_values = [x_api_key, client_key, private_key]
+        self._pop_certificate = None
+        self._pop_private_key = None
+        self._request_timeout = (
+            self._normalize_timeout("connect_timeout", connect_timeout, self.DEFAULT_CONNECT_TIMEOUT),
+            self._normalize_timeout("read_timeout", read_timeout, self.DEFAULT_READ_TIMEOUT),
+        )
+
+        configuration_args = {
+            "host": endpoint,
+            "ignore_operation_servers": True,
+            "verify_ssl": True,
+            "debug": False,
+            # requests, used by the handwritten client, did not retry failed
+            # connections. urllib3 otherwise applies its own retry defaults.
+            "retries": 0,
+        }
+        endpoint_host = urlparse(endpoint).hostname
+        if endpoint_host and not proxy_bypass(endpoint_host):
+            proxies = getproxies()
+            proxy = proxies.get(urlparse(endpoint).scheme) or proxies.get("all")
+            if proxy is not None:
+                configuration_args["proxy"] = proxy
+        if ca_bundle is None:
+            ca_bundle = os.environ.get("REQUESTS_CA_BUNDLE") or os.environ.get("CURL_CA_BUNDLE")
+        if ca_bundle is not None:
+            configuration_args["ssl_ca_cert"] = ca_bundle
+
         # Complete the anthentication system
         if client_cert is not None and client_key is not None:
-            self.cert = (client_cert, client_key)
+            configuration_args["cert_file"] = client_cert
+            configuration_args["key_file"] = client_key
 
         elif x_api_id is not None and x_api_key is not None:
-            self.headers = {"x-api-id": str(x_api_id), "x-api-key": str(x_api_key)}
+            configuration_args["api_key"] = {
+                "apiId": str(x_api_id),
+                "apiKey": str(x_api_key),
+            }
 
-        elif private_key is None: # Authorizing missing authent parameters for pop request
+        elif private_key is None:  # Authorize missing authentication parameters for PoP requests.
             raise AnsibleError("Please inform authentication parameters : 'x_api_id' and 'x_api_key' or 'client_cert' and 'client_key'.")
+
+        self.configuration = horizon_sdk.Configuration(**configuration_args)
+        self.api_client = horizon_sdk.ApiClient(self.configuration)
+        self.request_api = horizon_sdk.RequestApi(self.api_client)
+        self.certificate_api = horizon_sdk.CertificateApi(self.api_client)
+        self.rfc5280_api = horizon_sdk.Rfc5280Api(self.api_client)
+        self.discovery_feed_api = horizon_sdk.DiscoveryFeedApi(self.api_client)
+        self.password_policy_api = horizon_sdk.SecurityPasswordpolicyApi(self.api_client)
 
     def enroll(self, profile, template, mode=None, csr=None, password=None, key_type=None, labels=None, metadata=None,
                sans=None, subject=None, owner=None, team=None, contact_email=None):
@@ -89,52 +159,40 @@ class Horizon:
             if csr is None:
                 raise AnsibleError("You must specify a CSR when using decentralized enrollment")
 
-        # On horizon2.4 keyTypes has been replaced by keyType.
-        # I'm using this parameters to check which version of horizon we are using and send the right template to it.
-        if "keyTypes" in template["template"]:
-            json = {
-                "workflow": "enroll",
-                "module": "webra",
-                "profile": profile,
-                "template": {
-                    "keyTypes": [key_type],
-                    "sans": self.__set_sans(sans),
-                    "subject": self.__set_subject(subject, template),
-                    "csr": csr,
-                    "labels": self.__set_labels(labels),
-                    "metadata": self.__set_metadata(metadata)
-                },
-            }
-            if contact_email is not None:
-                json["template"]["metadata"].append({"metadata": "contact_email", "value": contact_email})
-        else :
-            json = {
-                "workflow": "enroll",
-                "module": "webra",
-                "profile": profile,
-                "template": {
-                    "keyType": key_type,
-                    "sans": self.__set_sans_post_2_4(sans),
-                    "subject": self.__set_subject(subject, template),
-                    "csr": csr,
-                    "labels": self.__set_labels(labels)
-                },
-            }
-            if "contact_email" in metadata:
-                json["template"]["contactEmail"] = {"value": metadata["contact_email"]}
-
+        payload = {
+            "workflow": "enroll",
+            "module": "webra",
+            "profile": profile,
+            "template": {
+                "keyType": key_type,
+                "sans": self.__set_sans_post_2_4(sans),
+                "subject": self.__set_subject(subject, template),
+                "csr": csr,
+                "labels": self.__set_labels(labels),
+                "metadata": self.__set_metadata({
+                    key: value for key, value in metadata.items() if key != "contact_email"
+                }),
+            },
+        }
 
         if password is not None:
-            json["password"] = {}
-            json["password"]["value"] = password
+            payload["password"] = {"value": password}
         if owner is not None:
-            json["template"]["owner"] = {"value": owner}
+            payload["template"]["owner"] = {"value": owner}
         if team is not None:
-            json["template"]["team"] = {"value": team}
+            payload["template"]["team"] = {"value": team}
+        if "contact_email" in metadata:
+            payload["template"]["contactEmail"] = {"value": metadata["contact_email"]}
         if contact_email is not None:
-            json["template"]["contactEmail"] = {"value": contact_email}
+            payload["template"]["contactEmail"] = {"value": contact_email}
 
-        return self.post(self.REQUEST_SUBMIT_URL, json)
+        request = self._one_of_model(
+            horizon_sdk.RequestSubmitRequest,
+            horizon_sdk.WebRAEnrollRequestOnSubmit,
+            payload,
+            sensitive_values=[password],
+        )
+        return self._submit(request, payload, sensitive_values=[password])
 
     def recover(self, certificate_pem, password, version):
         """
@@ -154,16 +212,21 @@ class Horizon:
         template = self.get_template(profile, "recover", "webra")
         password = self.check_password_policy(password, template)
 
-        json = {
+        payload = {
             "workflow": "recover",
-            "profile": profile,
             "password": {
                 "value": password,
             },
             "certificatePem": self.load_file_or_string(certificate_pem)
         }
 
-        return self.post(self.REQUEST_SUBMIT_URL, json)
+        request = self._one_of_model(
+            horizon_sdk.RequestSubmitRequest,
+            horizon_sdk.WebRARecoverRequestOnSubmit,
+            payload,
+            sensitive_values=[password],
+        )
+        return self._submit(request, payload, sensitive_values=[password])
 
     def renew(self, certificate_pem, certificate_id, password=None, csr=None, private_key=None, mode=None):
         """
@@ -174,15 +237,16 @@ class Horizon:
         """
         csr = self.load_file_or_string(csr)
         cert = self.load_file_or_string(certificate_pem)
+        pop = None
         if private_key is not None:
             key = self.load_file_or_string(private_key)
-            self.set_jwt_headers(cert, key)
+            pop = (cert, key)
 
         if mode == "decentralized":
             if csr is None:
                 raise AnsibleError("You must specify a CSR when using decentralized enrollment")
 
-        json = {
+        payload = {
             "module": "webra",
             "workflow": "renew",
             "certificateId": certificate_id,
@@ -193,10 +257,20 @@ class Horizon:
         }
 
         if password is not None:
-            json["password"] = {}
-            json["password"]["value"] = password
+            payload["password"] = {"value": password}
 
-        return self.post(self.REQUEST_SUBMIT_URL, json)
+        request = self._one_of_model(
+            horizon_sdk.RequestSubmitRequest,
+            horizon_sdk.WebRARenewRequestOnSubmit,
+            payload,
+            sensitive_values=[password, key if private_key is not None else None],
+        )
+        return self._submit(
+            request,
+            payload,
+            pop=pop,
+            sensitive_values=[password, key if private_key is not None else None],
+        )
 
     def revoke(self, certificate_pem, certificate_id, revocation_reason, private_key=None):
         """
@@ -206,22 +280,32 @@ class Horizon:
         :rtype: dict
         """
         cert = self.load_file_or_string(certificate_pem)
+        pop = None
         if private_key is not None:
             key = self.load_file_or_string(private_key)
-            self.set_jwt_headers(cert, key)
+            pop = (cert, key)
 
-        # Duplication of value is to support older API versions
-        json = {
+        payload = {
             "workflow": "revoke",
             "certificatePem": cert,
             "certificateId": certificate_id,
-            "revocationReason": revocation_reason,
             "template": {
                 "revocationReason": revocation_reason
             }
         }
 
-        return self.post(self.REQUEST_SUBMIT_URL, json)
+        request = self._one_of_model(
+            horizon_sdk.RequestSubmitRequest,
+            horizon_sdk.WebRARevokeRequestOnSubmit,
+            payload,
+            sensitive_values=[key if private_key is not None else None],
+        )
+        return self._submit(
+            request,
+            payload,
+            pop=pop,
+            sensitive_values=[key if private_key is not None else None],
+        )
 
     def update(self, certificate_pem, labels=None, metadata=None, owner=None, team=None, contact_email=None, private_key=None):
         """
@@ -239,11 +323,12 @@ class Horizon:
             labels = {}
 
         cert = self.load_file_or_string(certificate_pem)
+        pop = None
         if private_key is not None:
             key = self.load_file_or_string(private_key)
-            self.set_jwt_headers(cert, key)
+            pop = (cert, key)
 
-        json = {
+        payload = {
             "workflow": "update",
             "certificatePem": cert,
             "template": {
@@ -253,15 +338,26 @@ class Horizon:
         }
 
         if owner is not None:
-            json["template"]["owner"] = {"value": owner}
+            payload["template"]["owner"] = {"value": owner}
         if team is not None:
-            json["template"]["team"] = {"value": team}
+            payload["template"]["team"] = {"value": team}
         if "contact_email" in metadata:
-            json["template"]["contactEmail"] = {"value": metadata["contact_email"]}
+            payload["template"]["contactEmail"] = {"value": metadata["contact_email"]}
         elif contact_email is not None:
-            json["template"]["contactEmail"] = {"value": contact_email}
+            payload["template"]["contactEmail"] = {"value": contact_email}
 
-        return self.post(self.REQUEST_SUBMIT_URL, json)
+        request = self._one_of_model(
+            horizon_sdk.RequestSubmitRequest,
+            horizon_sdk.WebRAUpdateRequestOnSubmit,
+            payload,
+            sensitive_values=[key if private_key is not None else None],
+        )
+        return self._submit(
+            request,
+            payload,
+            pop=pop,
+            sensitive_values=[key if private_key is not None else None],
+        )
 
     def webra_import(self, profile, certificate_pem, certificate_id, private_key, labels=None, metadata=None, owner=None, team=None, contact_email=None):
 
@@ -270,12 +366,13 @@ class Horizon:
         if labels is None:
             labels = {}
 
-        json = {
+        loaded_private_key = self.load_file_or_string(private_key)
+        payload = {
             "workflow": "import",
             "module": "webra",
             "profile": profile,
             "template": {
-                "privateKey": self.load_file_or_string(private_key),
+                "privateKey": loaded_private_key,
                 "metadata": self.__set_metadata(metadata),
                 "labels": self.__set_labels(labels)
             },
@@ -284,15 +381,21 @@ class Horizon:
         }
 
         if owner is not None:
-            json["template"]["owner"] = {"value": owner}
+            payload["template"]["owner"] = {"value": owner}
         if team is not None:
-            json["template"]["team"] = {"value": team}
+            payload["template"]["team"] = {"value": team}
         if "contact_email" in metadata:
-            json["template"]["contactEmail"] = {"value": metadata["contact_email"]}
+            payload["template"]["contactEmail"] = {"value": metadata["contact_email"]}
         elif contact_email is not None:
-            json["template"]["contactEmail"] = {"value": contact_email}
+            payload["template"]["contactEmail"] = {"value": contact_email}
 
-        return self.post(self.REQUEST_SUBMIT_URL, json)
+        request = self._one_of_model(
+            horizon_sdk.RequestSubmitRequest,
+            horizon_sdk.WebRAImportRequestOnSubmit,
+            payload,
+            sensitive_values=[loaded_private_key],
+        )
+        return self._submit(request, payload, sensitive_values=[loaded_private_key])
 
     def search(self, query=None, fields=None):
         """
@@ -301,22 +404,23 @@ class Horizon:
         :type fields: list
         :rtype: list
         """
-        json = {
+        payload = {
             "query": query,
             "withCount": True,
             "pageIndex": 1,
         }
         if fields is not None:
-            json["fields"] = fields
+            payload["fields"] = fields
 
         results = []
         has_more = True
         while has_more:
-            response = self.post(self.CERTIFICATES_SEARCH_URL, json)
+            request = self._model(horizon_sdk.CertificateSearchQuery, payload)
+            response = self._sdk_call(self.certificate_api.certificate_search, request)
             results.extend(response["results"])
             has_more = response["hasMore"]
             if has_more:
-                json["pageIndex"] += 1
+                payload["pageIndex"] += 1
 
         return results
 
@@ -338,16 +442,16 @@ class Horizon:
             raise AnsibleError("Missing certificate")
         if ip is None:
             raise AnsibleError("Missing certificate's host ip")
-        if not isinstance(hostnames, list) and hostnames is not None:
+        if hostnames is not None and not isinstance(hostnames, list):
             hostnames = [hostnames]
-        if not isinstance(operating_systems, list) and operating_systems is not None:
+        if operating_systems is not None and not isinstance(operating_systems, list):
             operating_systems = [operating_systems]
-        if not isinstance(paths, list) and paths is not None:
+        if paths is not None and not isinstance(paths, list):
             paths = [paths]
-        if not isinstance(usages, list) and usages is not None:
+        if usages is not None and not isinstance(usages, list):
             usages = [usages]
 
-        json = {
+        payload = {
             "campaign": campaign,
             "certificate": self.load_file_or_string(certificate_pem),
             "hostDiscoveryData": {
@@ -359,7 +463,8 @@ class Horizon:
             }
         }
 
-        return self.post(self.DISCOVERY_FEED_URL, json)
+        request = self._model(horizon_sdk.DiscoveryFeed, payload)
+        return self._sdk_call(self.discovery_feed_api.discovery_feed, request)
 
     def certificate(self, certificate_pem, version, fields=None):
         """
@@ -369,9 +474,7 @@ class Horizon:
         :rtype: dict
         """
         pem = self.load_file_or_string(certificate_pem)
-        pem = urllib.parse.quote(str(pem), safe='')
-
-        response = self.get(self.CERTIFICATES_SHOW_URL + pem)
+        response = self._sdk_call(self.certificate_api.certificate_get_pem, str(pem))
 
         if fields is None:
             fields = []
@@ -386,8 +489,7 @@ class Horizon:
         :rtype: str
         """
         pem = self.load_file_or_string(certificate_pem)
-        pem = urllib.parse.quote(pem, safe='')
-        return self.get(self.RFC5280_TC_URL + pem)
+        return self._sdk_call(self.rfc5280_api.rfc5280_tc_pem, pem)
 
     def get_template(self, profile, workflow, module=None):
         """
@@ -397,13 +499,29 @@ class Horizon:
         :type module: str
         :rtype: dict
         """
-        data = {
+        payload = {
             "module": module,
             "profile": profile,
             "workflow": workflow
         }
 
-        return self.post(self.REQUEST_TEMPLATE_URL, data)
+        model_classes = {
+            "enroll": horizon_sdk.WebRAEnrollRequestOnTemplate,
+            "recover": horizon_sdk.WebRARecoverRequestOnTemplate,
+            "renew": horizon_sdk.WebRARenewRequestOnTemplate,
+            "revoke": horizon_sdk.WebRARevokeRequestOnTemplate,
+            "update": horizon_sdk.WebRAUpdateRequestOnTemplate,
+            "import": horizon_sdk.WebRAImportRequestOnTemplate,
+        }
+        if workflow not in model_classes:
+            raise AnsibleError("Unsupported Horizon request-template workflow: %s" % workflow)
+
+        request = self._one_of_model(
+            horizon_sdk.RequestTemplateRequest,
+            model_classes[workflow],
+            payload,
+        )
+        return self._sdk_call(self.request_api.request_template, request)
 
     @staticmethod
     def check_password_policy(password, template):
@@ -421,9 +539,8 @@ class Horizon:
         else:
             password_mode = -1
 
-        if "passwordPolicy" in template["template"]:
-            password_policy = template["template"]["passwordPolicy"]
-        else:
+        password_policy = template["template"].get("passwordPolicy")
+        if not isinstance(password_policy, dict):
             password_policy = -1
 
         # Check if the password is needed and given
@@ -432,10 +549,16 @@ class Horizon:
                 message = 'A password is required. '
                 if password_policy != -1:
                     message += f'The password has to contains between {password_policy["minChar"]} and {password_policy["maxChar"]} characters, '
-                    message += f'it has to contains at least : {password_policy["minLoChar"]} lowercase letter, {password_policy["minUpChar"]} uppercase letter, '
+                    message += (
+                        f'it has to contains at least : {password_policy["minLoChar"]} lowercase letter, '
+                        f'{password_policy["minUpChar"]} uppercase letter, '
+                    )
                     message += f'{password_policy["minDiChar"]} number '
                     if "spChar" in password_policy:
-                        f'and {password_policy["minSpChar"]} symbol characters in {password_policy["spChar"]}'
+                        message += (
+                            f'and {password_policy["minSpChar"]} symbol characters in '
+                            f'{password_policy["spChar"]}'
+                        )
                 raise AnsibleError(message)
 
             # Verify if the password follow the password policy
@@ -487,7 +610,10 @@ class Horizon:
                         password) > maxChar or c_not_allowed:
                     message = f'Your password does not match the password policy {password_policy["name"]}. '
                     message += f'The password has to contains between {password_policy["minChar"]} and {password_policy["maxChar"]} characters, '
-                    message += f'it has to contains at least : {password_policy["minLoChar"]} lowercase letter, {password_policy["minUpChar"]} uppercase letter, '
+                    message += (
+                        f'it has to contains at least : {password_policy["minLoChar"]} lowercase letter, '
+                        f'{password_policy["minUpChar"]} uppercase letter, '
+                    )
                     message += f'{password_policy["minDiChar"]} number '
                     if "spChar" in password_policy:
                         message += f'and {password_policy["minSpChar"]} special characters in {password_policy["spChar"]}'
