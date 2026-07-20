@@ -12,6 +12,7 @@ from ansible.plugins.action import ActionBase
 
 class HorizonAction(ActionBase, ABC):
     MUTATES = True
+    _supports_check_mode = True
 
     SENSITIVE_ARG_NAMES = {
         "x_api_key",
