@@ -1098,13 +1098,7 @@ class Horizon:
 
             elif field in response:
                 result[field] = response[field]
-
-        # Check ansible version to return the correct format
-        parsed_version = parse_version(version)
-        if parsed_version < parse_version("2.18.0"):
-            return result
-        else:
-            return [result]
+        return [result]
 
     @staticmethod
     def load_file_or_string(content):
