@@ -145,7 +145,6 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
         super().parse(inventory, loader, path, cache=cache)
 
         self.config = self._read_config_data(path)
-        self.client = self._get_client()
 
         try:
             content = self._get_content()
@@ -156,7 +155,8 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
             )
 
         try:
-            response = self.client.search(**content)
+            with self._get_client() as client:
+                response = client.search(**content)
         except HorizonError as error:
             raise AnsibleError(redact_horizon_error(error, self._get_auth()))
 

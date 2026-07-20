@@ -29,8 +29,31 @@ class TestHorizonInventory(unittest.TestCase):
         self.assertEqual(auth["read_timeout"], 45)
 
     @patch.object(horizon_inventory.BaseInventoryPlugin, "parse")
+    def test_inventory_closes_the_client_after_success(self, base_parse):
+        client_context = MagicMock()
+        client = client_context.__enter__.return_value
+        client.search.return_value = [{"_id": "certificate-id"}]
+
+        plugin = horizon_inventory.InventoryModule()
+        plugin._read_config_data = MagicMock(return_value={})
+        plugin._get_client = MagicMock(return_value=client_context)
+        plugin._get_content = MagicMock(return_value={"fields": []})
+        plugin._populate = MagicMock()
+
+        plugin.parse(
+            inventory=MagicMock(),
+            loader=MagicMock(),
+            path="test.horizon_inventory.yml",
+            cache=False,
+        )
+
+        client.search.assert_called_once_with(fields=[])
+        client_context.__exit__.assert_called_once_with(None, None, None)
+
+    @patch.object(horizon_inventory.BaseInventoryPlugin, "parse")
     def test_inventory_error_redacts_authentication_values(self, base_parse):
-        client = MagicMock()
+        client_context = MagicMock()
+        client = client_context.__enter__.return_value
         client.search.side_effect = horizon_error()
 
         plugin = horizon_inventory.InventoryModule()
@@ -38,7 +61,7 @@ class TestHorizonInventory(unittest.TestCase):
             "x_api_key": API_KEY,
             "client_key": CLIENT_KEY,
         })
-        plugin._get_client = MagicMock(return_value=client)
+        plugin._get_client = MagicMock(return_value=client_context)
         plugin._get_content = MagicMock(return_value={})
 
         with self.assertRaises(AnsibleError) as raised:

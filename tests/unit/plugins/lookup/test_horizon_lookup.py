@@ -25,8 +25,25 @@ class TestHorizonLookup(unittest.TestCase):
         self.assertEqual(auth["read_timeout"], 45)
 
     @patch.object(horizon_lookup, "Horizon")
+    def test_lookup_closes_the_client_after_success(self, horizon):
+        client = horizon.return_value.__enter__.return_value
+        client.certificate.return_value = [{"_id": "certificate-id"}]
+        plugin = horizon_lookup.LookupModule()
+
+        result = plugin.run(
+            [],
+            endpoint="https://horizon.example.test",
+            x_api_id="test-id",
+            x_api_key=API_KEY,
+            certificate_pem="certificate",
+        )
+
+        self.assertEqual(result, [{"_id": "certificate-id"}])
+        horizon.return_value.__exit__.assert_called_once_with(None, None, None)
+
+    @patch.object(horizon_lookup, "Horizon")
     def test_lookup_error_redacts_authentication_values(self, horizon):
-        horizon.return_value.certificate.side_effect = horizon_error()
+        horizon.return_value.__enter__.return_value.certificate.side_effect = horizon_error()
         plugin = horizon_lookup.LookupModule()
 
         with self.assertRaises(AnsibleLookupError) as raised:

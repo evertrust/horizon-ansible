@@ -336,9 +336,9 @@ class LookupModule(LookupBase):
         auth = self._get_auth(kwargs)
 
         try:
-            client = Horizon(**auth)
-            content = self._get_content(kwargs)
-            result = client.certificate(**content, version=ansible_version)
+            with Horizon(**auth) as client:
+                content = self._get_content(kwargs)
+                result = client.certificate(**content, version=ansible_version)
 
         except HorizonError as error:
             raise AnsibleLookupError(redact_horizon_error(error, auth))
