@@ -19,15 +19,18 @@ class ActionModule(HorizonAction):
 
     def run(self, tmp=None, task_vars=None):
         result = super(ActionModule, self).run(tmp, task_vars)
+        if result.get("skipped"):
+            return result
 
         try:
-            client = self._get_client()
-            content = self._get_content()
-            response = client.update(**content)
+            with self._get_client() as client:
+                content = self._get_content()
+                response = client.update(**content)
 
-            if response.get("certificate") is not None:
-                result["certificate"] = response["certificate"]
-                result["chain"] = client.chain(result["certificate"]["certificate"])
+                if response.get("certificate") is not None:
+                    result["certificate"] = response["certificate"]
+                    result["chain"] = client.chain(result["certificate"]["certificate"])
+                result["changed"] = True
 
         except HorizonError as e:
             raise AnsibleError(e.full_message)

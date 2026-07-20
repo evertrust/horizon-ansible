@@ -18,13 +18,16 @@ class ActionModule(HorizonAction):
 
     def run(self, tmp=None, task_vars=None):
         result = super(ActionModule, self).run(tmp=tmp, task_vars=task_vars)
+        if result.get("skipped"):
+            return result
 
         try:
-            client = self._get_client()
-            content = self._get_content()
-            response = client.feed(**content)
+            with self._get_client() as client:
+                content = self._get_content()
+                response = client.feed(**content)
 
-            result['response'] = response
+                result['response'] = response
+                result['changed'] = True
 
         except AnsibleAction as e:
             result.update(e.result)

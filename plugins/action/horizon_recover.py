@@ -21,20 +21,23 @@ class ActionModule(HorizonAction):
 
     def run(self, tmp=None, task_vars=None):
         result = super(ActionModule, self).run(tmp, task_vars)
+        if result.get("skipped"):
+            return result
 
         try:
-            client = self._get_client()
-            content = self._get_content()
-            response = client.recover(**content, version=ansible_version)
+            with self._get_client() as client:
+                content = self._get_content()
+                response = client.recover(**content, version=ansible_version)
 
-            if response.get("certificate") is not None:
-                result["certificate"] = response["certificate"]
-                result["chain"] = client.chain(response["certificate"]["certificate"])
+                if response.get("certificate") is not None:
+                    result["certificate"] = response["certificate"]
+                    result["chain"] = client.chain(response["certificate"]["certificate"])
 
-            if response.get("pkcs12") is not None and response.get("password") is not None:
-                result["p12"] = response["pkcs12"]["value"]
-                result["p12_password"] = response["password"]["value"]
-                result["key"] = HorizonCrypto.get_key_from_p12(response["pkcs12"]["value"], response["password"]["value"])
+                if response.get("pkcs12") is not None and response.get("password") is not None:
+                    result["p12"] = response["pkcs12"]["value"]
+                    result["p12_password"] = response["password"]["value"]
+                    result["key"] = HorizonCrypto.get_key_from_p12(response["pkcs12"]["value"], response["password"]["value"])
+                result["changed"] = True
         except HorizonError as e:
             raise AnsibleError(e.full_message)
 

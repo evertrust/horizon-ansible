@@ -12,6 +12,7 @@ from ansible_collections.evertrust.horizon.plugins.plugin_utils.horizon_errors i
 
 class ActionModule(HorizonAction):
     TRANSFERS_FILES = True
+    MUTATES = False
 
     def _args(self):
         return ["profile", "workflow"]
@@ -20,11 +21,13 @@ class ActionModule(HorizonAction):
         result = super(ActionModule, self).run(tmp, task_vars)
 
         try:
-            client = self._get_client()
-            content = self._get_content()
-            response = client.get_template(**content, module="webra")
+            with self._get_client() as client:
+                content = self._get_content()
+                response = client.get_template(**content, module="webra")
 
         except HorizonError as e:
             raise AnsibleError(e.full_message)
 
-        return response["template"]
+        result.update(response["template"])
+        result["changed"] = False
+        return result

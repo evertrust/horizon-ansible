@@ -44,6 +44,18 @@ imported in Python as `horizon`. Python dependencies are not installed by
 Install these dependencies in the Python environment used by the Ansible
 controller because Horizon action, lookup, and inventory plugins execute there.
 
+### Change and check-mode behavior
+
+Successful enrollment, feed, import, recovery, renewal, revocation, and update
+actions report `changed: true`. A revocation ignored through
+`skip_already_revoked` reports `changed: false`, and template reads always
+report `changed: false`.
+
+In Ansible check mode, mutating Horizon actions do not contact Horizon. They
+return `skipped: true` with `changed: true` as a prediction that running the
+operation normally would perform a change. Template reads remain available in
+check mode.
+
 
 ## Documentation
 

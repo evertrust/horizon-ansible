@@ -11,6 +11,8 @@ from ansible.plugins.action import ActionBase
 
 
 class HorizonAction(ActionBase, ABC):
+    MUTATES = True
+
     SENSITIVE_ARG_NAMES = {
         "x_api_key",
         "client_key",
@@ -26,7 +28,15 @@ class HorizonAction(ActionBase, ABC):
 
     def run(self, tmp=None, task_vars=None):
         self._mark_no_log_for_sensitive_args()
-        return super(HorizonAction, self).run(tmp, task_vars)
+        result = super(HorizonAction, self).run(tmp, task_vars)
+        result.setdefault("changed", False)
+        if self._task.check_mode and self.MUTATES:
+            result.update({
+                "changed": True,
+                "skipped": True,
+                "msg": "Horizon mutation was not executed in check mode.",
+            })
+        return result
 
     def _args(self):
         return []
