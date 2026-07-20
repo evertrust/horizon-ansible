@@ -4,25 +4,80 @@ on:
 
 permissions:
   contents: read
-  id-token: write
 
 jobs:
-  publish:
+  build:
+    name: Build and statically verify release artifact
     runs-on: runs-on=${{ github.run_id }}/runner=evertrust
-    timeout-minutes: 60
+    timeout-minutes: 30
     steps:
       - name: Configure Runs-On
         uses: runs-on/action@4e5f72399b6b17f2e79c511c1b38a315a64d22dc # v2.2.0
-
-      - name: Setup ansible
-        run: sudo apt-get update && sudo apt-get install -y ansible
 
       - name: Checkout code
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           persist-credentials: false
-          submodules: true
-          fetch-depth: 0
+
+      - name: Configure mise-en-place
+        uses: jdx/mise-action@e6a8b3978addb5a52f2b4cd9d91eafa7f0ab959d # v4.2.0
+
+      - name: Build the release artifact once
+        run: mise run build
+
+      - name: Run unit and sanity tests against the release artifact
+        run: mise run static_test_artifact
+
+      - name: Upload the release artifact
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: horizon-collection
+          path: build/*.tar.gz
+          if-no-files-found: error
+
+  compatibility:
+    name: SDK ${{ matrix.sdk }} / Horizon ${{ matrix.horizon }}
+    needs: build
+    permissions:
+      contents: read
+      id-token: write
+    strategy:
+      fail-fast: false
+      matrix:
+        sdk:
+          - "2.8.0.post1"
+          - "2.9.0"
+          - "2.10.0.post1"
+        image:
+          - quay.io/evertrust/horizon:2.8.10@sha256:d9181a2e9b372ac7e2955cc29142db1711084deeca86c415229e06cd42e11eec
+          - quay.io/evertrust/horizon:2.9.4@sha256:a1c79cea6183092e31033054cb46d88aa808d2f87458ff82cf4527a5b3b50fec
+          - quay.io/evertrust/horizon:2.10.3@sha256:ee768f89889332b1aedb9497db4ecaad11df7bc0ad8805b36423a3fa4786c981
+        include:
+          - image: quay.io/evertrust/horizon:2.8.10@sha256:d9181a2e9b372ac7e2955cc29142db1711084deeca86c415229e06cd42e11eec
+            horizon: "2.8.10"
+          - image: quay.io/evertrust/horizon:2.9.4@sha256:a1c79cea6183092e31033054cb46d88aa808d2f87458ff82cf4527a5b3b50fec
+            horizon: "2.9.4"
+          - image: quay.io/evertrust/horizon:2.10.3@sha256:ee768f89889332b1aedb9497db4ecaad11df7bc0ad8805b36423a3fa4786c981
+            horizon: "2.10.3"
+    runs-on: runs-on=${{ github.run_id }}/runner=evertrust
+    timeout-minutes: 60
+    env:
+      HORIZON_IMAGE: ${{ matrix.image }}
+      HORIZON_SDK_VERSION: ${{ matrix.sdk }}
+    steps:
+      - name: Configure Runs-On
+        uses: runs-on/action@4e5f72399b6b17f2e79c511c1b38a315a64d22dc # v2.2.0
+
+      - name: Checkout code
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          persist-credentials: false
+
+      - name: Download the release artifact
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: horizon-collection
+          path: build
 
       - name: Configure mise-en-place
         uses: jdx/mise-action@e6a8b3978addb5a52f2b4cd9d91eafa7f0ab959d # v4.2.0
@@ -56,20 +111,50 @@ jobs:
           printf '%s' "$HORIZON_LICENCE" > "$license_path"
           echo "HORIZON_LICENSE_PATH=$license_path" >> "$GITHUB_ENV"
 
-      - name: Release check
-        run: mise run release_check
+      - name: Run licensed compatibility test
+        run: mise run container_integration_test_artifact
 
-      - name: Upload Ansible and Horizon logs
+      - name: Capture resolved Python environment
+        if: always()
+        shell: bash
+        run: |
+          mkdir -p tests/output
+          uv pip freeze > "tests/output/sdk-${HORIZON_SDK_VERSION}-horizon-${{ matrix.horizon }}-freeze.txt"
+
+      - name: Upload Ansible, Horizon, and environment logs
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: horizon-publish-integration-logs
-          path: tests/output/*.log
+          name: horizon-sdk-${{ matrix.sdk }}-horizon-${{ matrix.horizon }}-logs
+          path: tests/output/*
           if-no-files-found: warn
 
       - name: Remove Horizon licence
         if: always()
         run: rm -f "$RUNNER_TEMP/horizon-license.txt"
+
+  publish:
+    name: Publish verified artifact
+    needs: compatibility
+    runs-on: runs-on=${{ github.run_id }}/runner=evertrust
+    timeout-minutes: 15
+    steps:
+      - name: Configure Runs-On
+        uses: runs-on/action@4e5f72399b6b17f2e79c511c1b38a315a64d22dc # v2.2.0
+
+      - name: Checkout code
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          persist-credentials: false
+
+      - name: Download the verified release artifact
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: horizon-collection
+          path: build
+
+      - name: Configure mise-en-place
+        uses: jdx/mise-action@e6a8b3978addb5a52f2b4cd9d91eafa7f0ab959d # v4.2.0
 
       - name: Publish collection
         run: mise run publish
