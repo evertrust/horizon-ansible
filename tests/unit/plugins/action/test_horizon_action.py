@@ -67,6 +67,12 @@ ACTION_CASES = MUTATING_CASES + (
     (horizon_template, {"profile": "profile", "workflow": "enroll"}),
 )
 
+POP_AUTH_MODULES = (
+    horizon_renew,
+    horizon_revoke,
+    horizon_update,
+)
+
 
 class TestHorizonAction(unittest.TestCase):
 
@@ -146,12 +152,25 @@ class TestHorizonAction(unittest.TestCase):
                 self.assertIs(HorizonAction._protect_result(action, result), result)
                 self.assertTrue(action._task.no_log)
 
-    def test_only_pop_private_key_is_shared_by_authentication_and_content(self):
+    def test_private_key_is_not_a_shared_authentication_argument(self):
         authentication = set(HorizonAction._auth_args(SimpleNamespace()))
+        self.assertNotIn("private_key", authentication)
+
+    def test_pop_only_auth_is_enabled_only_for_supported_actions_with_a_key(self):
         for module in ACTION_MODULES:
             with self.subTest(module=module.__name__):
-                action = object.__new__(module.ActionModule)
-                self.assertLessEqual(authentication.intersection(action._args()), {"private_key"})
+                action = self.runnable_action(module, {"private_key": "key"})
+                authentication = action._get_auth()
+                self.assertEqual(
+                    authentication["allow_pop_only"],
+                    module in POP_AUTH_MODULES,
+                )
+
+    def test_pop_only_auth_is_disabled_without_a_private_key(self):
+        for module in POP_AUTH_MODULES:
+            with self.subTest(module=module.__name__):
+                action = self.runnable_action(module)
+                self.assertFalse(action._get_auth()["allow_pop_only"])
 
     def test_timeout_options_are_forwarded_as_authentication_configuration(self):
         action = object.__new__(HorizonAction)

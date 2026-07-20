@@ -13,6 +13,7 @@ from ansible_collections.evertrust.horizon.plugins.plugin_utils.horizon_errors i
 
 class ActionModule(HorizonAction):
     TRANSFERS_FILES = True
+    SUPPORTS_POP_AUTH = True
 
     def _args(self):
         return ['certificate_id', 'certificate_pem', 'password', 'csr', 'private_key', 'mode']

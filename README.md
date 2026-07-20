@@ -44,6 +44,18 @@ imported in Python as `horizon`. Python dependencies are not installed by
 Install these dependencies in the Python environment used by the Ansible
 controller because Horizon action, lookup, and inventory plugins execute there.
 
+### Authentication
+
+Provide either a complete API-key pair (`x_api_id` and `x_api_key`) or a
+complete mTLS pair (`client_cert` and `client_key`). Partial pairs and empty
+values are rejected locally. If both complete pairs are supplied, mTLS takes
+precedence.
+
+Renewal, revocation, and update actions may instead authenticate through proof
+of possession when they receive the certificate's `private_key`. A private key
+passed to the import action is certificate payload, not authentication, so
+import still requires a complete API-key or mTLS pair.
+
 ### Change and check-mode behavior
 
 Successful enrollment, feed, import, recovery, renewal, revocation, and update

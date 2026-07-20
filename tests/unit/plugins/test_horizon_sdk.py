@@ -205,13 +205,65 @@ class TestHorizonSDKClient(unittest.TestCase):
         self.assertEqual(client.configuration.ssl_ca_cert, "/certs/ca.pem")
         self.assertEqual(client.configuration.api_key, {})
 
-    def test_pop_only_client_does_not_require_other_authentication(self):
-        client = self.client(x_api_id=None, x_api_key=None, private_key=PRIVATE_KEY)
+    def test_pop_only_client_requires_explicit_authorization(self):
+        client = self.client(x_api_id=None, x_api_key=None, allow_pop_only=True)
         self.assertEqual(client.configuration.api_key, {})
 
     def test_missing_authentication_is_rejected(self):
         with self.assertRaises(AnsibleError):
             self.client(x_api_id=None, x_api_key=None)
+
+    def test_incomplete_authentication_pairs_are_rejected(self):
+        cases = (
+            (
+                {"x_api_id": "api-id", "x_api_key": None},
+                "'x_api_id' and 'x_api_key' must be provided together",
+            ),
+            (
+                {"x_api_id": None, "x_api_key": API_KEY},
+                "'x_api_id' and 'x_api_key' must be provided together",
+            ),
+            (
+                {
+                    "x_api_id": None,
+                    "x_api_key": None,
+                    "client_cert": "/certs/client.pem",
+                    "client_key": None,
+                },
+                "'client_cert' and 'client_key' must be provided together",
+            ),
+            (
+                {
+                    "x_api_id": None,
+                    "x_api_key": None,
+                    "client_cert": None,
+                    "client_key": "/certs/client.key",
+                },
+                "'client_cert' and 'client_key' must be provided together",
+            ),
+        )
+
+        for authentication, message in cases:
+            with self.subTest(authentication=authentication):
+                with self.assertRaisesRegex(AnsibleError, message):
+                    self.client(**authentication)
+
+    def test_empty_authentication_values_are_treated_as_missing(self):
+        with self.assertRaisesRegex(
+            AnsibleError,
+            "'x_api_id' and 'x_api_key' must be provided together",
+        ):
+            self.client(x_api_id="api-id", x_api_key="")
+
+    def test_complete_mtls_credentials_take_precedence_over_api_key(self):
+        client = self.client(
+            client_cert="/certs/client.pem",
+            client_key="/certs/client.key",
+        )
+
+        self.assertEqual(client.configuration.cert_file, "/certs/client.pem")
+        self.assertEqual(client.configuration.key_file, "/certs/client.key")
+        self.assertEqual(client.configuration.api_key, {})
 
     def test_empty_endpoint_is_rejected(self):
         with self.assertRaisesRegex(AnsibleError, "Endpoint parameter is mandatory"):
@@ -516,7 +568,7 @@ class TestHorizonSDKClient(unittest.TestCase):
     @patch("ansible_collections.evertrust.horizon.plugins.plugin_utils.horizon.HorizonCrypto.generate_jwt_token")
     def test_pop_retries_sdk_call_with_replay_nonce(self, generate_jwt):
         generate_jwt.side_effect = lambda certificate, key, nonce: "token-%s" % (nonce or "initial")
-        client = self.client(x_api_id=None, x_api_key=None, private_key=PRIVATE_KEY)
+        client = self.client(x_api_id=None, x_api_key=None, allow_pop_only=True)
         challenge = ApiException(status=401, reason="proof required", body='{"message":"proof required"}')
         challenge.headers = {"Replay-Nonce": "nonce-value"}
         client.request_api.request_submit = Mock(side_effect=[
@@ -639,7 +691,7 @@ class TestHorizonSDKClient(unittest.TestCase):
     @patch("ansible_collections.evertrust.horizon.plugins.plugin_utils.horizon.HorizonCrypto.generate_jwt_token")
     def test_jwt_is_redacted_from_sdk_errors(self, generate_jwt):
         generate_jwt.return_value = JWT
-        client = self.client(x_api_id=None, x_api_key=None, private_key=PRIVATE_KEY)
+        client = self.client(x_api_id=None, x_api_key=None, allow_pop_only=True)
         exception = ApiException(
             status=403,
             reason="forbidden",

@@ -35,7 +35,9 @@ options:
     required: false
     type: str
   private_key:
-    description: The PEM encoded private key associated to the certificate.
+    description:
+      - The PEM encoded private key associated to the certificate.
+      - Allows proof-of-possession authentication when normal API-key or mTLS authentication is absent.
     required: false
     type: str
     suboptions:

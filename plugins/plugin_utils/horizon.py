@@ -59,7 +59,7 @@ class Horizon:
     DEFAULT_READ_TIMEOUT = 60.0
 
     def __init__(self, endpoint=None, x_api_id=None, x_api_key=None, client_cert=None, client_key=None, ca_bundle=None,
-                 private_key=None, connect_timeout=None, read_timeout=None):
+                 allow_pop_only=False, connect_timeout=None, read_timeout=None):
         """
         Initialize client with endpoint and authentication parameters
         :type endpoint: str
@@ -68,6 +68,7 @@ class Horizon:
         :type client_cert: str
         :type client_key: str
         :type ca_bundle: str
+        :type allow_pop_only: bool
         :type connect_timeout: float
         :type read_timeout: float
         """
@@ -85,7 +86,7 @@ class Horizon:
             endpoint = endpoint[:-1]
 
         self.endpoint = endpoint
-        self._sensitive_values = [x_api_key, client_key, private_key]
+        self._sensitive_values = [x_api_key, client_key]
         self._request_timeout = (
             self._normalize_timeout("connect_timeout", connect_timeout, self.DEFAULT_CONNECT_TIMEOUT),
             self._normalize_timeout("read_timeout", read_timeout, self.DEFAULT_READ_TIMEOUT),
@@ -111,19 +112,35 @@ class Horizon:
         if ca_bundle is not None:
             configuration_args["ssl_ca_cert"] = ca_bundle
 
-        # Complete the anthentication system
-        if client_cert is not None and client_key is not None:
+        api_id_provided = x_api_id not in (None, "")
+        api_key_provided = x_api_key not in (None, "")
+        client_cert_provided = client_cert not in (None, "")
+        client_key_provided = client_key not in (None, "")
+
+        if api_id_provided != api_key_provided:
+            raise AnsibleError("'x_api_id' and 'x_api_key' must be provided together")
+        if client_cert_provided != client_key_provided:
+            raise AnsibleError("'client_cert' and 'client_key' must be provided together")
+        if not isinstance(allow_pop_only, bool):
+            raise AnsibleError("'allow_pop_only' must be a boolean")
+
+        # Preserve the existing authentication precedence: mTLS, then API key,
+        # then an explicitly authorized PoP-only operation.
+        if client_cert_provided:
             configuration_args["cert_file"] = client_cert
             configuration_args["key_file"] = client_key
 
-        elif x_api_id is not None and x_api_key is not None:
+        elif api_id_provided:
             configuration_args["api_key"] = {
                 "apiId": str(x_api_id),
                 "apiKey": str(x_api_key),
             }
 
-        elif private_key is None:  # Authorize missing authentication parameters for PoP requests.
-            raise AnsibleError("Please inform authentication parameters : 'x_api_id' and 'x_api_key' or 'client_cert' and 'client_key'.")
+        elif not allow_pop_only:
+            raise AnsibleError(
+                "Authentication requires 'x_api_id' and 'x_api_key' or "
+                "'client_cert' and 'client_key'"
+            )
 
         self.configuration = horizon_sdk.Configuration(**configuration_args)
         self.api_client = horizon_sdk.ApiClient(self.configuration)

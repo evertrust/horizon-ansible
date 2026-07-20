@@ -35,7 +35,9 @@ options:
         required: false
         type: path
   private_key:
-    description: The PEM encoded private key to import.
+    description:
+      - The PEM encoded private key to import.
+      - This is certificate payload and does not replace API-key or mTLS authentication.
     required: false
     type: str
     suboptions:

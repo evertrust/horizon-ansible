@@ -12,6 +12,7 @@ from ansible.plugins.action import ActionBase
 
 class HorizonAction(ActionBase, ABC):
     MUTATES = True
+    SUPPORTS_POP_AUTH = False
     _supports_check_mode = True
 
     SENSITIVE_ARG_NAMES = {
@@ -44,7 +45,7 @@ class HorizonAction(ActionBase, ABC):
 
     def _auth_args(self):
         return [
-            "endpoint", "x_api_id", "x_api_key", "ca_bundle", "client_cert", "client_key", "private_key",
+            "endpoint", "x_api_id", "x_api_key", "ca_bundle", "client_cert", "client_key",
             "connect_timeout", "read_timeout",
         ]
 
@@ -52,6 +53,10 @@ class HorizonAction(ActionBase, ABC):
         auth = {}
         for arg in self._auth_args():
             auth[arg] = self._task.args.get(arg)
+        auth["allow_pop_only"] = (
+            self.SUPPORTS_POP_AUTH
+            and self._task.args.get("private_key") not in (None, "")
+        )
         return auth
 
     def _get_content(self):
