@@ -9,6 +9,7 @@ import string
 import json
 import math
 import os
+from datetime import date, datetime
 from enum import Enum
 from urllib.parse import urlparse
 from urllib.request import getproxies, proxy_bypass
@@ -26,7 +27,8 @@ except ImportError:
 try:
     import horizon as horizon_sdk
     from horizon.exceptions import ApiException, OpenApiException
-    from urllib3.exceptions import ConnectTimeoutError, NewConnectionError, ReadTimeoutError
+    from pydantic import ValidationError
+    from urllib3.exceptions import ConnectTimeoutError, HTTPError, NewConnectionError, ReadTimeoutError
 except ImportError:
     horizon_sdk = None
 
@@ -34,6 +36,12 @@ except ImportError:
         pass
 
     class OpenApiException(Exception):
+        pass
+
+    class ValidationError(Exception):
+        pass
+
+    class HTTPError(Exception):
         pass
 
     class ConnectTimeoutError(Exception):
@@ -78,8 +86,6 @@ class Horizon:
 
         self.endpoint = endpoint
         self._sensitive_values = [x_api_key, client_key, private_key]
-        self._pop_certificate = None
-        self._pop_private_key = None
         self._request_timeout = (
             self._normalize_timeout("connect_timeout", connect_timeout, self.DEFAULT_CONNECT_TIMEOUT),
             self._normalize_timeout("read_timeout", read_timeout, self.DEFAULT_READ_TIMEOUT),
@@ -646,7 +652,7 @@ class Horizon:
             # generated from_dict helpers eagerly set every missing key to
             # None, which would change the collection's request payloads.
             return model_class.model_validate(payload)
-        except Exception as exception:
+        except ValidationError as exception:
             errors = exception.errors() if callable(getattr(exception, "errors", None)) else []
             for error in errors:
                 location = error.get("loc", ())
@@ -662,7 +668,7 @@ class Horizon:
         model = self._model(model_class, payload, sensitive_values=sensitive_values)
         try:
             return wrapper_class(model)
-        except Exception as exception:
+        except (ValidationError, ValueError) as exception:
             message = redact_sensitive_values(
                 str(exception),
                 self._sensitive_values + list(sensitive_values or []),
@@ -679,10 +685,19 @@ class Horizon:
 
         self.__get_warnings({"json": payload}, content=response)
         if isinstance(response, dict) and response.get("status") == "pending":
-            self.cancel_request(response["_id"], response["workflow"])
-            raise AnsibleError(
-                "Request has been canceled. User '%s' doesn't have the rights to perform a '%s' request on profile '%s'."
+            pending_context = (
+                "User '%s' doesn't have the rights to perform a '%s' request on profile '%s'."
                 % (response.get("requester"), response.get("workflow"), response.get("profile"))
+            )
+            try:
+                self.cancel_request(response["_id"], response["workflow"])
+            except (HorizonError, AnsibleError) as cancellation_error:
+                raise AnsibleError(
+                    "Request '%s' is pending. %s Cancellation failed: %s"
+                    % (response.get("_id"), pending_context, cancellation_error)
+                )
+            raise AnsibleError(
+                "Request has been canceled. %s" % pending_context
             )
         return response
 
@@ -718,7 +733,7 @@ class Horizon:
                         self._sensitive_values + sensitive_values,
                     )
                     raise HorizonError(code="SDK", message=message, response=retry_exception)
-                except Exception as retry_exception:
+                except HTTPError as retry_exception:
                     raise self._translate_transport_exception(
                         retry_exception,
                         operation,
@@ -732,7 +747,7 @@ class Horizon:
                 self._sensitive_values + sensitive_values,
             )
             raise HorizonError(code="SDK", message=message, response=exception)
-        except Exception as exception:
+        except HTTPError as exception:
             raise self._translate_transport_exception(
                 exception,
                 operation,
@@ -812,7 +827,11 @@ class Horizon:
 
     def _translate_sdk_exception(self, exception, sensitive_values):
         if exception.status == 0 and "SSLError" in str(exception.reason):
-            raise AnsibleError("Got an SSL error try using the 'ca_bundle' paramater")
+            return HorizonError(
+                code="SDK-SSL",
+                message="Got an SSL error; verify the 'ca_bundle' parameter",
+                response=exception,
+            )
 
         content = self._to_plain(exception.data)
         if not isinstance(content, dict) and exception.body:
@@ -846,6 +865,8 @@ class Horizon:
             return cls._to_plain(value.value)
         if value is None or isinstance(value, (str, int, float, bool)):
             return value
+        if isinstance(value, (datetime, date)):
+            return value.isoformat()
         if isinstance(value, bytes):
             return value.decode("utf-8")
         if isinstance(value, dict):
@@ -856,6 +877,8 @@ class Horizon:
             return cls._to_plain(value.actual_instance)
         if hasattr(value, "to_dict") and callable(value.to_dict):
             return cls._to_plain(value.to_dict())
+        if hasattr(value, "model_dump") and callable(value.model_dump):
+            return cls._to_plain(value.model_dump())
         raise AnsibleError("The Horizon SDK returned an unsupported value of type %s" % type(value).__name__)
 
     def cancel_request(self, request_id, workflow):
@@ -1078,7 +1101,7 @@ class Horizon:
                 try:
                     with open(content["src"], 'r') as file:
                         pulled_content = file.read()
-                except Exception as e:
+                except OSError as e:
                     raise AnsibleError(e)
 
                 return pulled_content
@@ -1112,7 +1135,3 @@ class Horizon:
         :param password_policy
         """
         return self._sdk_call(self.password_policy_api.password_policy_generate, password_policy)
-
-    def set_jwt_headers(self, cert, key):
-        self._pop_certificate = cert
-        self._pop_private_key = key

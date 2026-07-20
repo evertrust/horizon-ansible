@@ -5,8 +5,11 @@ __metaclass__ = type
 import json
 import os
 import unittest
+from datetime import date, datetime, timezone
+from enum import Enum
 from unittest.mock import Mock, patch
 
+import horizon as horizon_sdk
 from ansible.errors import AnsibleError
 from ansible_collections.evertrust.horizon.plugins.plugin_utils.horizon import Horizon
 from ansible_collections.evertrust.horizon.plugins.plugin_utils.horizon_errors import HorizonError
@@ -18,6 +21,10 @@ API_KEY = "SENTINEL_API_KEY"
 PASSWORD = "SENTINEL_PASSWORD"
 PRIVATE_KEY = "SENTINEL_PRIVATE_KEY"
 JWT = "SENTINEL_JWT"
+
+
+class SDKResponseState(Enum):
+    READY = "ready"
 
 
 class PlainSDKModel(object):
@@ -432,6 +439,58 @@ class TestHorizonSDKClient(unittest.TestCase):
         self.assertEqual(result["labels"], {})
         self.assertEqual(result["subjectAlternateNames"], {})
 
+    def test_sdk_response_types_are_converted_through_a_public_operation(self):
+        client = self.client()
+        timestamp = datetime(2026, 7, 20, 12, 30, tzinfo=timezone.utc)
+        remove_at = datetime(2026, 7, 21, 12, 30, tzinfo=timezone.utc)
+        validation_error = horizon_sdk.AdocGet401ResponseOneOf1(
+            error="SEC-AUTH-002",
+            message="Invalid credentials or principal does not exist",
+            status=401,
+            title="Invalid credentials or principal does not exist",
+            detail=None,
+        )
+        union = horizon_sdk.RequestCsv401Response(validation_error)
+        datetime_value = {
+            "status": "success",
+            "timestamp": timestamp,
+            "domain": "example.test",
+            "policy": "default",
+            "removeAt": remove_at,
+            "lastError": None,
+        }
+        if hasattr(horizon_sdk, "DCVLifecycleEvent"):
+            datetime_value = horizon_sdk.DCVLifecycleEvent(**datetime_value)
+        client.rfc5280_api.rfc5280_tc_pem = Mock(return_value={
+            "date": horizon_sdk.DateRange(
+                start=date(2026, 7, 20),
+                end=date(2026, 7, 21),
+            ),
+            "datetime": datetime_value,
+            "enum": SDKResponseState.READY,
+            "union": union,
+            "bytes": b"certificate-data",
+            "nullable": None,
+            "api_response": horizon_sdk.ApiResponse(
+                status_code=200,
+                data=None,
+                raw_data=b"raw-response",
+            ),
+        })
+
+        result = client.chain("CERTIFICATE")
+
+        self.assertEqual(result["date"], {"start": "2026-07-20", "end": "2026-07-21"})
+        self.assertEqual(result["datetime"]["timestamp"], "2026-07-20T12:30:00+00:00")
+        self.assertEqual(result["datetime"]["removeAt"], "2026-07-21T12:30:00+00:00")
+        self.assertIsNone(result["datetime"]["lastError"])
+        self.assertEqual(result["enum"], "ready")
+        self.assertEqual(result["union"]["error"], "SEC-AUTH-002")
+        self.assertEqual(result["bytes"], "certificate-data")
+        self.assertIsNone(result["nullable"])
+        self.assertEqual(result["api_response"]["raw_data"], "raw-response")
+        self.assertIsNone(result["api_response"]["data"])
+
     def test_chain_template_password_and_cancel_use_sdk_apis(self):
         client = self.client()
         client.rfc5280_api.rfc5280_tc_pem = Mock(return_value=[PlainSDKModel({"pem": "CHAIN"})])
@@ -494,14 +553,42 @@ class TestHorizonSDKClient(unittest.TestCase):
         self.assertNotIn(PASSWORD, message)
         self.assertIn("********", message)
 
-    def test_sdk_ssl_exception_preserves_legacy_guidance(self):
+    def test_sdk_ssl_exception_has_stable_code_and_correct_guidance(self):
         client = self.client()
         client.certificate_api.certificate_get_pem = Mock(
             side_effect=ApiException(status=0, reason="SSLError\ncertificate verify failed")
         )
 
-        with self.assertRaisesRegex(AnsibleError, "ca_bundle"):
+        with self.assertRaises(HorizonError) as raised:
             client.certificate("CERTIFICATE", "2.17.0")
+
+        self.assertEqual(raised.exception.code, "SDK-SSL")
+        self.assertIn("'ca_bundle' parameter", raised.exception.full_message)
+
+    def test_unexpected_sdk_programming_error_is_not_reclassified_as_transport(self):
+        client = self.client()
+        client.certificate_api.certificate_get_pem = Mock(
+            side_effect=RuntimeError("generated client defect")
+        )
+
+        with self.assertRaisesRegex(RuntimeError, "generated client defect"):
+            client.certificate("CERTIFICATE", "2.17.0")
+
+    def test_unexpected_model_validation_error_is_not_flattened(self):
+        client = self.client()
+
+        with patch.object(
+            horizon_sdk.WebRAEnrollRequestOnSubmit,
+            "model_validate",
+            side_effect=RuntimeError("generated model defect"),
+        ):
+            with self.assertRaisesRegex(RuntimeError, "generated model defect"):
+                client.enroll(
+                    profile="profile",
+                    template=self.template(),
+                    mode="centralized",
+                    subject={"cn.1": "example.test"},
+                )
 
     def test_wrapped_connect_timeout_is_translated_with_operation_and_limit(self):
         client = self.client(connect_timeout=2, read_timeout=30)
@@ -583,6 +670,35 @@ class TestHorizonSDKClient(unittest.TestCase):
 
         self.assertIn("Request has been canceled", str(raised.exception))
         client.request_api.request_cancel.assert_called_once()
+
+    def test_failed_pending_request_cancellation_preserves_request_context(self):
+        client = self.client()
+        self.prepare_submit(client, {
+            "_id": "request-id",
+            "workflow": "update",
+            "module": "webra",
+            "status": "pending",
+            "requester": "requester",
+            "profile": "profile",
+        })
+        client.request_api.request_cancel = Mock(side_effect=ApiException(
+            status=503,
+            reason="unavailable",
+            body=json.dumps({
+                "error": "CANCEL-FAILED",
+                "message": "cancellation unavailable",
+            }),
+        ))
+
+        with self.assertRaises(AnsibleError) as raised:
+            client.update("CERTIFICATE")
+
+        message = str(raised.exception)
+        self.assertIn("request-id", message)
+        self.assertIn("requester", message)
+        self.assertIn("update", message)
+        self.assertIn("profile", message)
+        self.assertIn("CANCEL-FAILED", message)
 
 
 if __name__ == "__main__":
