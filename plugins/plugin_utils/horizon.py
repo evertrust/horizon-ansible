@@ -121,11 +121,28 @@ class Horizon:
 
         self.configuration = horizon_sdk.Configuration(**configuration_args)
         self.api_client = horizon_sdk.ApiClient(self.configuration)
-        self.request_api = horizon_sdk.RequestApi(self.api_client)
-        self.certificate_api = horizon_sdk.CertificateApi(self.api_client)
-        self.rfc5280_api = horizon_sdk.Rfc5280Api(self.api_client)
-        self.discovery_feed_api = horizon_sdk.DiscoveryFeedApi(self.api_client)
-        self.password_policy_api = horizon_sdk.SecurityPasswordpolicyApi(self.api_client)
+        self._closed = False
+        try:
+            self.request_api = horizon_sdk.RequestApi(self.api_client)
+            self.certificate_api = horizon_sdk.CertificateApi(self.api_client)
+            self.rfc5280_api = horizon_sdk.Rfc5280Api(self.api_client)
+            self.discovery_feed_api = horizon_sdk.DiscoveryFeedApi(self.api_client)
+            self.password_policy_api = horizon_sdk.SecurityPasswordpolicyApi(self.api_client)
+        except Exception:
+            self.close()
+            raise
+
+    def close(self):
+        if not self._closed:
+            self.api_client.close()
+            self._closed = True
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exception_type, exception, traceback):
+        self.close()
+        return False
 
     def enroll(self, profile, template, mode=None, csr=None, password=None, key_type=None, labels=None, metadata=None,
                sans=None, subject=None, owner=None, team=None, contact_email=None):

@@ -84,6 +84,31 @@ class TestHorizonSDKClient(unittest.TestCase):
         self.assertEqual(client.configuration.retries, 0)
         self.assertEqual(client._request_timeout, (10.0, 60.0))
 
+    def test_context_manager_closes_sdk_client_once(self):
+        client = self.client()
+        client.api_client.close = Mock()
+
+        with client as entered_client:
+            self.assertIs(entered_client, client)
+
+        client.close()
+
+        client.api_client.close.assert_called_once_with()
+
+    def test_sdk_client_is_closed_when_api_initialization_fails(self):
+        api_client = Mock()
+        with patch(
+            "ansible_collections.evertrust.horizon.plugins.plugin_utils.horizon.horizon_sdk.ApiClient",
+            return_value=api_client,
+        ), patch(
+            "ansible_collections.evertrust.horizon.plugins.plugin_utils.horizon.horizon_sdk.RequestApi",
+            side_effect=RuntimeError("broken generated API"),
+        ):
+            with self.assertRaisesRegex(RuntimeError, "broken generated API"):
+                self.client()
+
+        api_client.close.assert_called_once_with()
+
     def test_timeout_options_are_normalized(self):
         client = self.client(connect_timeout="2.5", read_timeout=90)
 
