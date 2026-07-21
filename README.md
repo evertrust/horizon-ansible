@@ -35,7 +35,7 @@ collections:
 
 ### Dependencies
 
-The collection uses the Horizon SDK distributed as `Anto-test-hrz` and
+The collection uses the Horizon SDK distributed as `evertrust-horizon` and
 imported in Python as `horizon`. Python dependencies are not installed by
 `ansible-galaxy`; install them with:
 

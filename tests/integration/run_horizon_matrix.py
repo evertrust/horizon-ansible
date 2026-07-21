@@ -544,7 +544,7 @@ def main():
             artifact=args.artifact,
         )
         print("Built integration artifact: %s" % artifact.name)
-        print("SDK distribution: Anto-test-hrz %s (import horizon)" % horizon.__version__)
+        print("SDK distribution: evertrust-horizon %s (import horizon)" % horizon.__version__)
         print("MongoDB image: %s" % MONGODB_IMAGE)
         print("Running Horizon image %s" % args.image, flush=True)
         try:

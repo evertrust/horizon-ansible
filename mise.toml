@@ -238,35 +238,31 @@ set -eu
 
 : "${HORIZON_LICENSE_PATH:?HORIZON_LICENSE_PATH is required}"
 HORIZON_IMAGE="${HORIZON_IMAGE:-quay.io/evertrust/horizon:2.10.3@sha256:ee768f89889332b1aedb9497db4ecaad11df7bc0ad8805b36423a3fa4786c981}"
-HORIZON_SDK_VERSION="${HORIZON_SDK_VERSION:-2.10.0.post1}"
+HORIZON_SDK_VERSION="${HORIZON_SDK_VERSION:-2.10.0}"
 
 case "$HORIZON_SDK_VERSION" in
-  2.8.0.post1)
-    sdk_requirement='Anto-test-hrz @ https://test-files.pythonhosted.org/packages/50/05/18722c50b6e89729d463b977bbab94dd9929cca8952dba94dd8e545187b3/anto_test_hrz-2.8.0.post1-py3-none-any.whl#sha256=f8c41f73cb0c2e8f680b35a3bd424aaaf9a071250c13bb800761ecd06c8a5778'
-    ;;
-  2.9.0)
-    sdk_requirement='Anto-test-hrz @ https://files.pythonhosted.org/packages/25/b4/4abecb124d00f3f7015b87d41607765a3787bbfb9835d92a9a35405404f1/anto_test_hrz-2.9.0-py3-none-any.whl#sha256=964e3994ac8dfdd489aec072fb6e57913e957e15a69c7e4835261d76bf19b11f'
-    ;;
-  2.10.0.post1)
-    sdk_requirement='Anto-test-hrz @ https://test-files.pythonhosted.org/packages/44/ca/89926f98dab1ecc15e3151a0e3b9978df0916071bec9437b141ec4417cb0/anto_test_hrz-2.10.0.post1-py3-none-any.whl#sha256=4be5adce9e84801ac855b52a8b43dad1e18e9676ec825f761042b84dad7ab27f'
+  2.8.0|2.9.0|2.10.0)
     ;;
   *)
     echo "Unsupported HORIZON_SDK_VERSION: $HORIZON_SDK_VERSION" >&2
     exit 2
     ;;
 esac
+sdk_requirement="evertrust-horizon~=$HORIZON_SDK_VERSION"
 
 uv pip install --require-hashes -r tests/integration/requirements.lock
-uv pip install --no-deps --require-hashes "$sdk_requirement"
+uv pip install --upgrade --no-deps "$sdk_requirement"
 uv pip check
 python - "$HORIZON_SDK_VERSION" <<'PY'
 from importlib.metadata import version
 import sys
 
-installed = version("Anto-test-hrz")
-if installed != sys.argv[1]:
-    raise SystemExit("Expected Anto-test-hrz %s, found %s" % (sys.argv[1], installed))
-print("Horizon SDK: Anto-test-hrz %s" % installed)
+installed = version("evertrust-horizon")
+expected_line = ".".join(sys.argv[1].split(".")[:2])
+installed_line = ".".join(installed.split(".")[:2])
+if installed_line != expected_line:
+    raise SystemExit("Expected evertrust-horizon ~= %s, found %s" % (sys.argv[1], installed))
+print("Horizon SDK: evertrust-horizon %s" % installed)
 PY
 
 docker pull "$HORIZON_IMAGE"

@@ -10,26 +10,28 @@ mise install
 mise run static_test
 ```
 
-The Horizon SDK distribution is named `Anto-test-hrz`; its Python import name
-is `horizon`.
+The Horizon SDK distribution is named `evertrust-horizon`; its Python import
+name is `horizon`.
 
 Run the licensed single-image integration suite with:
 
 ```shell
 HORIZON_LICENSE_PATH=/path/to/licence.txt \
 HORIZON_IMAGE=quay.io/evertrust/horizon:2.10.3 \
-HORIZON_SDK_VERSION=2.10.0.post1 \
+HORIZON_SDK_VERSION=2.10.0 \
 mise run container_integration_test
 ```
 
 The test workflow can also be started manually with a fully qualified
-`quay.io` image tag or digest and one of the exact supported SDK versions.
-Manual tags are resolved and reported by digest during the run.
+`quay.io` image tag or digest and one of the supported SDK release lines.
+Each line resolves to its latest patch release. Manual tags are resolved and
+reported by digest during the run.
 
 Publication builds the collection artifact once, runs static checks against
-that artifact, and then verifies the same artifact across the exact SDK
-2.8/2.9/2.10 and pinned Horizon 2.8.10/2.9.4/2.10.3 cross-product. Publication
-cannot start unless all nine compatibility cells pass.
+that artifact, and then verifies the same artifact across the latest SDK patch
+from each 2.8/2.9/2.10 line and pinned Horizon 2.8.10/2.9.4/2.10.3
+cross-product. Publication cannot start unless all nine compatibility cells
+pass.
 
 CI follows the Horizon SDK workflow's infrastructure setup: it reads the Quay
 credentials from `ci/data/repositories/evertrust/horizon-ansible/quay` and

@@ -45,9 +45,9 @@ jobs:
       fail-fast: false
       matrix:
         sdk:
-          - "2.8.0.post1"
+          - "2.8.0"
           - "2.9.0"
-          - "2.10.0.post1"
+          - "2.10.0"
         image:
           - quay.io/evertrust/horizon:2.8.10@sha256:d9181a2e9b372ac7e2955cc29142db1711084deeca86c415229e06cd42e11eec
           - quay.io/evertrust/horizon:2.9.4@sha256:a1c79cea6183092e31033054cb46d88aa808d2f87458ff82cf4527a5b3b50fec

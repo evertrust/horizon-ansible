@@ -14,14 +14,14 @@ on:
         default: quay.io/evertrust/horizon:2.10.3
         type: string
       sdk_version:
-        description: Exact Horizon SDK version
+        description: Horizon SDK release line
         required: true
-        default: "2.10.0.post1"
+        default: "2.10.0"
         type: choice
         options:
-          - "2.8.0.post1"
+          - "2.8.0"
           - "2.9.0"
-          - "2.10.0.post1"
+          - "2.10.0"
 
 jobs:
   build:
@@ -124,7 +124,7 @@ jobs:
       - unit
     env:
       HORIZON_IMAGE: ${{ github.event_name == 'workflow_dispatch' && inputs.horizon_image || 'quay.io/evertrust/horizon:2.10.3@sha256:ee768f89889332b1aedb9497db4ecaad11df7bc0ad8805b36423a3fa4786c981' }}
-      HORIZON_SDK_VERSION: ${{ github.event_name == 'workflow_dispatch' && inputs.sdk_version || '2.10.0.post1' }}
+      HORIZON_SDK_VERSION: ${{ github.event_name == 'workflow_dispatch' && inputs.sdk_version || '2.10.0' }}
     permissions:
       contents: read
       id-token: write
