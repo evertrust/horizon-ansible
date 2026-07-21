@@ -28,6 +28,7 @@ syft scan "${usage_source:?}" -o "syft-json=${usage_output:?}"
 description = "Scan vulnerabilities from a Syft JSON SBOM using Grype"
 usage = '''
 arg "<sbom>" help="Syft JSON SBOM file to scan"
+flag "-o --output <file>" help="Grype SARIF output file" default="grype-horizon-ansible.sarif"
 flag "--fail-on <severity>" help="Fail when vulnerability severity is at least this level" default="high"
 flag "-o --output <file>" help="Grype SARIF output file" default="grype-horizon-ansible.sarif"
 '''
