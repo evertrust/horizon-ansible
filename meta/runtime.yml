@@ -1,5 +1,5 @@
 ---
-requires_ansible: '>=2.15.0'
+requires_ansible: '>=2.19.11'
 action_groups:
   horizon:
     - horizon_enroll

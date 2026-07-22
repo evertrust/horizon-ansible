@@ -2,7 +2,7 @@
 
 ### Development environment
 
-The managed environment uses Python 3.10 and supports `ansible-core` 2.15
+The managed environment uses Python 3.11 and supports `ansible-core` 2.19.11
 through 2.20. Install the runtime and test dependencies with:
 
 ```shell

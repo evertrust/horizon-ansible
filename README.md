@@ -6,8 +6,9 @@ This collection includes plenty of modules to interact with Horizon instances an
 
 ### System requirements
 
-This collection requires Python 3.10 or greater and `ansible-core` 2.15 or
-greater. It offers compatibility with the following Horizon versions:
+This collection requires Python 3.11 or greater and `ansible-core` 2.19.11 or
+greater (but earlier than 2.21). It offers compatibility with the following
+Horizon versions:
 
 | Collection version | Horizon version |
 |--------------------|-----------------|
