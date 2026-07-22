@@ -14,7 +14,8 @@
           - "{{ role_path }}/files/timeout_server.py"
           - "{{ timeout_case.mode }}"
           - "{{ timeout_server_directory.path }}/port"
-      async: 10
+          - "{{ timeout_server_directory.path }}/complete"
+      async: 60
       poll: 0
       changed_when: false
       register: timeout_server_job
@@ -52,6 +53,13 @@
           - "'certificate_get_pem' in timeout_result.msg"
 
   always:
+    - name: Signal the {{ timeout_case.mode }} timeout server to exit
+      ansible.builtin.file:
+        path: "{{ timeout_server_directory.path }}/complete"
+        state: touch
+        mode: "0600"
+      when: timeout_server_directory.path is defined
+
     - name: Wait for the {{ timeout_case.mode }} timeout server to exit
       ansible.builtin.async_status:
         jid: "{{ timeout_server_job.ansible_job_id }}"
