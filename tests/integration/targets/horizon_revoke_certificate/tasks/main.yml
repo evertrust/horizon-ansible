@@ -71,3 +71,32 @@
     that:
       - pop_revoke_result.certificate is mapping
       - pop_revoke_result.certificate.certificate | length > 0
+
+- name: Enroll a P-384 certificate fixture for proof-of-possession revocation
+  no_log: true
+  evertrust.horizon.horizon_enroll:
+    endpoint: "{{ endpoint }}"
+    x_api_id: "{{ x_api_id }}"
+    x_api_key: "{{ x_api_key }}"
+    profile: "Ansible"
+    mode: "centralized"
+    key_type: "ec-secp384r1"
+    subject:
+      cn.1: "IntegrationTestCI-revoke-pop-p384"
+  register: p384_pop_revoke_fixture
+
+- name: Revoke the P-384 certificate using proof of possession
+  no_log: true
+  evertrust.horizon.horizon_revoke:
+    endpoint: "{{ endpoint }}"
+    certificate_pem: "{{ p384_pop_revoke_fixture.certificate.certificate }}"
+    private_key: "{{ p384_pop_revoke_fixture.key }}"
+    revocation_reason: "unspecified"
+  register: p384_pop_revoke_result
+
+- name: Verify P-384 proof-of-possession revocation returned certificate data
+  ansible.builtin.assert:
+    that:
+      - p384_pop_revoke_fixture.certificate.keyType == "ec-secp384r1"
+      - p384_pop_revoke_result.certificate is mapping
+      - p384_pop_revoke_result.certificate.certificate | length > 0

@@ -5,9 +5,12 @@ __metaclass__ = type
 import datetime
 import unittest
 
+import jwt
+
 from ansible_collections.evertrust.horizon.plugins.plugin_utils.horizon_crypto import HorizonCrypto
 from cryptography import x509
 from cryptography.hazmat.primitives import hashes, serialization
+from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.x509.oid import NameOID
 
 
@@ -47,3 +50,29 @@ class TestHorizonCrypto(unittest.TestCase):
             encryption_algorithm=serialization.NoEncryption(),
         ).decode()
         self.assertEqual(expected, extracted_key)
+
+    def test_jwt_signing_algorithm_matches_elliptic_curve(self):
+        for curve, algorithm in (
+            (ec.SECP256R1(), "ES256"),
+            (ec.SECP384R1(), "ES384"),
+        ):
+            with self.subTest(curve=curve.name):
+                private_key = ec.generate_private_key(curve)
+                private_key_pem = private_key.private_bytes(
+                    encoding=serialization.Encoding.PEM,
+                    format=serialization.PrivateFormat.TraditionalOpenSSL,
+                    encryption_algorithm=serialization.NoEncryption(),
+                )
+
+                token = HorizonCrypto.generate_jwt_token(
+                    "certificate",
+                    private_key_pem,
+                )
+
+                self.assertEqual(jwt.get_unverified_header(token)["alg"], algorithm)
+                payload = jwt.decode(
+                    token,
+                    private_key.public_key(),
+                    algorithms=[algorithm],
+                )
+                self.assertEqual(payload["sub"], "certificate")

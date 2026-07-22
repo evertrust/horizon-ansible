@@ -176,7 +176,14 @@ class HorizonCrypto:
         if isinstance(key, rsa.RSAPrivateKey):
             signing_method = "RS256"
         elif isinstance(key, ec.EllipticCurvePrivateKey):
-            signing_method = "ES256"
+            signing_methods = {
+                "secp256r1": "ES256",
+                "secp384r1": "ES384",
+            }
+            try:
+                signing_method = signing_methods[key.curve.name]
+            except KeyError:
+                raise ValueError("Unsupported elliptic curve '%s'" % key.curve.name)
         else:
             raise ValueError("Unsupported key type")
 

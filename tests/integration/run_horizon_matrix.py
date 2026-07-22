@@ -296,7 +296,7 @@ def provision_horizon(endpoint):
                 centralized=True,
                 decentralized=True,
                 defaultKeyType="rsa-2048",
-                authorizedKeyTypes=["rsa-2048", "rsa-4096"],
+                authorizedKeyTypes=["rsa-2048", "rsa-4096", "ec-secp384r1"],
                 preferredEnrollmentMode="centralized",
                 escrow=True,
                 p12passwordMode="random",
