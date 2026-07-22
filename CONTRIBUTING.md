@@ -17,7 +17,7 @@ Run the licensed single-image integration suite with:
 
 ```shell
 HORIZON_LICENSE_PATH=/path/to/licence.txt \
-HORIZON_IMAGE=quay.io/evertrust/horizon:2.10.3 \
+HORIZON_IMAGE=quay.io/evertrust/horizon:2.10.4 \
 HORIZON_SDK_VERSION=2.10.0 \
 mise run container_integration_test
 ```
@@ -29,7 +29,7 @@ reported by digest during the run.
 
 Publication builds the collection artifact once, runs static checks against
 that artifact, and then verifies the same artifact across the latest SDK patch
-from each 2.8/2.9/2.10 line and pinned Horizon 2.8.10/2.9.4/2.10.3
+from each 2.8/2.9/2.10 line and pinned Horizon 2.8.10/2.9.4/2.10.4
 cross-product. Publication cannot start unless all nine compatibility cells
 pass.
 

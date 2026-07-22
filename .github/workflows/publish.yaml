@@ -53,14 +53,14 @@ jobs:
         image:
           - quay.io/evertrust/horizon:2.8.10@sha256:d9181a2e9b372ac7e2955cc29142db1711084deeca86c415229e06cd42e11eec
           - quay.io/evertrust/horizon:2.9.4@sha256:a1c79cea6183092e31033054cb46d88aa808d2f87458ff82cf4527a5b3b50fec
-          - quay.io/evertrust/horizon:2.10.3@sha256:ee768f89889332b1aedb9497db4ecaad11df7bc0ad8805b36423a3fa4786c981
+          - quay.io/evertrust/horizon:2.10.4@sha256:dc19d51551453a94fc1ef3c99b6c68f15b41f7fd19ab546f4ac184022e9aa9a9
         include:
           - image: quay.io/evertrust/horizon:2.8.10@sha256:d9181a2e9b372ac7e2955cc29142db1711084deeca86c415229e06cd42e11eec
             horizon: "2.8.10"
           - image: quay.io/evertrust/horizon:2.9.4@sha256:a1c79cea6183092e31033054cb46d88aa808d2f87458ff82cf4527a5b3b50fec
             horizon: "2.9.4"
-          - image: quay.io/evertrust/horizon:2.10.3@sha256:ee768f89889332b1aedb9497db4ecaad11df7bc0ad8805b36423a3fa4786c981
-            horizon: "2.10.3"
+          - image: quay.io/evertrust/horizon:2.10.4@sha256:dc19d51551453a94fc1ef3c99b6c68f15b41f7fd19ab546f4ac184022e9aa9a9
+            horizon: "2.10.4"
     runs-on: runs-on=${{ github.run_id }}/runner=evertrust
     timeout-minutes: 60
     env:

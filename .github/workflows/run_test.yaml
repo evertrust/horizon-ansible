@@ -13,7 +13,7 @@ on:
       horizon_image:
         description: Fully qualified quay.io Horizon image tag or digest
         required: true
-        default: quay.io/evertrust/horizon:2.10.3
+        default: quay.io/evertrust/horizon:2.10.4
         type: string
       sdk_version:
         description: Horizon SDK release line
@@ -125,7 +125,7 @@ jobs:
       - build
       - unit
     env:
-      HORIZON_IMAGE: ${{ github.event_name == 'workflow_dispatch' && inputs.horizon_image || 'quay.io/evertrust/horizon:2.10.3@sha256:ee768f89889332b1aedb9497db4ecaad11df7bc0ad8805b36423a3fa4786c981' }}
+      HORIZON_IMAGE: ${{ github.event_name == 'workflow_dispatch' && inputs.horizon_image || 'quay.io/evertrust/horizon:2.10.4@sha256:dc19d51551453a94fc1ef3c99b6c68f15b41f7fd19ab546f4ac184022e9aa9a9' }}
       HORIZON_SDK_VERSION: ${{ github.event_name == 'workflow_dispatch' && inputs.sdk_version || '2.10.0' }}
     permissions:
       contents: read
