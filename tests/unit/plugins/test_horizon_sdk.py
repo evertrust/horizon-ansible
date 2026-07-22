@@ -455,7 +455,7 @@ class TestHorizonSDKClient(unittest.TestCase):
         self.assertEqual(request["campaign"], "campaign")
         self.assertEqual(request["hostDiscoveryData"]["operatingSystems"], ["linux"])
 
-    def test_certificate_response_format_is_preserved_for_ansible_versions(self):
+    def test_certificate_response_is_a_list_for_all_ansible_versions(self):
         client = self.client()
         client.certificate_api.certificate_get_pem = Mock(return_value=PlainSDKModel({
             "_id": "certificate-id",
@@ -473,7 +473,7 @@ class TestHorizonSDKClient(unittest.TestCase):
             "labels": {"environment": "test"},
             "subjectAlternateNames": {"dnsname.1": "example.test"},
         }
-        self.assertEqual(old_result, expected)
+        self.assertEqual(old_result, [expected])
         self.assertEqual(new_result, [expected])
 
     def test_certificate_response_converts_null_collections(self):
@@ -487,9 +487,9 @@ class TestHorizonSDKClient(unittest.TestCase):
 
         result = client.certificate("CERTIFICATE", "2.17.0")
 
-        self.assertEqual(result["metadata"], {})
-        self.assertEqual(result["labels"], {})
-        self.assertEqual(result["subjectAlternateNames"], {})
+        self.assertEqual(result[0]["metadata"], {})
+        self.assertEqual(result[0]["labels"], {})
+        self.assertEqual(result[0]["subjectAlternateNames"], {})
 
     def test_sdk_response_types_are_converted_through_a_public_operation(self):
         client = self.client()
