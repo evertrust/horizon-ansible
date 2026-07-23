@@ -110,7 +110,7 @@ class HorizonCrypto:
                         temp_subject[dn_element + '.1'] = ma_val[1]
 
                 else:
-                    raise Exception('Error in the dn, some values are not understood.')
+                    raise Exception('Error in the DN, some values are not understood.')
 
             subject = temp_subject
 

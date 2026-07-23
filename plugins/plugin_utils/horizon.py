@@ -481,7 +481,7 @@ class Horizon:
         if certificate_pem is None:
             raise AnsibleError("Missing certificate")
         if ip is None:
-            raise AnsibleError("Missing certificate's host ip")
+            raise AnsibleError("Missing certificate's host IP address")
         if hostnames is not None and not isinstance(hostnames, list):
             hostnames = [hostnames]
         if operating_systems is not None and not isinstance(operating_systems, list):
@@ -1019,7 +1019,7 @@ class Horizon:
                         temp_subject[dn_element + '.1'] = ma_val[1]
 
                 else:
-                    raise AnsibleError('Error in the dn, some values are not understood.')
+                    raise AnsibleError('Error in the DN, some values are not understood.')
 
             subject = temp_subject
 
