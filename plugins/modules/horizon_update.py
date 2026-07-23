@@ -25,8 +25,8 @@ extends_documentation_fragment: evertrust.horizon.auth_options
 options:
   certificate_pem:
     description: The PEM encoded certificate to update.
-    required: false
-    type: str
+    required: true
+    type: raw
     suboptions:
       src:
         description: The path to the PEM encoded certificate to update.
@@ -86,13 +86,13 @@ options:
     type: str
   private_key:
     description:
-      - The PEM encoded private key associated to the certificate.
+      - The PEM encoded private key associated with the certificate.
       - Allows proof-of-possession authentication when normal API-key or mTLS authentication is absent.
     required: false
-    type: str
+    type: raw
     suboptions:
       src:
-        description: The path to the PEM encoded private key associated to the certificate.
+        description: The path to the PEM encoded private key associated with the certificate.
         required: false
         type: path
   team:
@@ -102,7 +102,7 @@ options:
   contact_email:
     description:
       - Certificate's contact email.
-      - Default value will be the requester contact email adress.
+      - Default value will be the requester contact email address.
     required: false
     type: str
 '''
@@ -117,7 +117,7 @@ EXAMPLES = '''
     labels:
       label1: "exampleLabel"
     contact_email: "contact.email@example.fr"
-    owner: "exempleOwner"
+    owner: "exampleOwner"
     team: "exampleTeam"
     certificate_pem: "-----BEGIN CERTIFICATE----- ... -----END CERTIFICATE-----"
 
@@ -145,101 +145,101 @@ EXAMPLES = '''
 # language=yaml
 RETURN = '''
 certificate:
-  description: The certificate that was generated for this request. This is only available after the request has been approved.
-  returned: Always
+  description: The updated certificate.
+  returned: When the update returns a certificate
   type: dict
   contains:
     metadata:
       description: The certificate's technical metadata used internally.
       type: list
       elements: dict
-      returned: If specifically requested
+      returned: If present
       contains:
         key:
           description: The metadata name.
           type: str
           returned: Always
         value:
-          description: The metadata value
+          description: The metadata value.
           type: str
           returned: Always
     notAfter:
       description: The certificate's expiration date in milliseconds since the epoch.
       type: int
-      returned: If specifically requested
+      returned: If present
     thumbprint:
       description: The certificate's thumbprint.
       type: str
-      returned: If specifically requested
+      returned: If present
     revocationDate:
       description: The certificate's revocation date in milliseconds since the epoch. This field is only present if the certificate is revoked.
       type: int
-      returned: If present and specifically requested
+      returned: If present
     certificate:
       description: The certificate's PEM-encoded content.
       type: str
-      returned: If specifically requested
+      returned: If present
     dn:
       description: The certificate's Distinguished Name.
       type: str
-      returned: If specifically requested
+      returned: If present
     grades:
       description: The certificate's grades for the enabled grading policies.
       type: list
       elements: dict
-      returned: If specifically requested
+      returned: If present
       contains:
         name:
           description: The name of the grading policy.
           type: str
-          returned: always
+          returned: Always
         grade:
           description: The grade awarded by the grading policy.
           type: str
-          returned: always
+          returned: Always
     revoked:
       description: Whether the certificate is revoked.
       type: bool
-      returned: If present and specifically requested
+      returned: If present
     issuer:
       description: The certificate's issuer Distinguished Name.
       type: str
-      returned: If specifically requested
+      returned: If present
     notBefore:
       description: The certificate's start date in milliseconds since the epoch.
       type: int
-      returned: If specifically requested
+      returned: If present
     crlSynchronized:
       description: Whether the certificate's revocation status is synchronized with a CRL.
       type: bool
-      returned: If present and specifically requested
+      returned: If present
     selfSigned:
       description: Whether the certificate is self-signed.
       type: bool
-      returned: If specifically requested
+      returned: If present
     discoveredTrusted:
       description:
         - True if the certificate was discovered and issued by an existing trusted CA.
         - False if the certificate was discovered but not issued by a trusted CA.
         - Null if the certificate was not discovered.
       type: bool
-      returned: If present and specifically requested
+      returned: If present
     keyType:
       description: The certificate's key type.
       type: str
-      returned: If specifically requested
+      returned: If present
     thirdPartyData:
       description: The certificate's information about synchronization with Horizon supported third parties.
       type: list
       elements: dict
-      returned: If present and specifically requested
+      returned: If present
       contains:
         connector:
           description: The third party connector name on which this certificate is synchronized.
           type: str
           returned: Always
         id:
-          description: The Id of this certificate on the third party.
+          description: The ID of this certificate on the third party.
           type: str
           returned: Always
         fingerprint:
@@ -257,40 +257,40 @@ certificate:
     owner:
       description: The certificate's owner. This is a reference to a local identity identifier.
       type: str
-      returned: If specifically requested
+      returned: If present
     publicKeyThumbprint:
       description: The certificate's public key thumbprint.
       type: str
-      returned: If specifically requested
+      returned: If present
     contactEmail:
       description: The certificate's contact email. It will be used to send notifications about the certificate's expiration and revocation.
       type: str
-      returned: If specifically requested
+      returned: If present
     module:
       description: The certificate's module.
       type: str
-      returned: If specifically requested
+      returned: If present
     profile:
       description: The certificate's profile.
       type: str
-      returned: If present and specifically requested
+      returned: If present
     team:
       description:
         - The certificate's team, as a reference to a team identifier.
         - It determines certificate permissions and notification recipients.
       type: str
-      returned: If specifically requested
+      returned: If present
     holderId:
       description:
         - The certificate's computed holder ID.
         - It counts similar certificates used simultaneously by the same holder.
       type: str
-      returned: If specifically requested
+      returned: If present
     labels:
       description: The certificate's labels.
       type: list
       elements: dict
-      returned: If present and specifically requested
+      returned: If present
       contains:
         key:
           description: The label's name.
@@ -304,7 +304,7 @@ certificate:
       description: A list of metadata containing information on how and when the certificate was discovered.
       type: list
       elements: dict
-      returned: If present and specifically requested
+      returned: If present
       contains:
         campaign:
           description: The discovery campaign's name.
@@ -322,21 +322,21 @@ certificate:
       description: The certificate's Subject Alternate Names.
       type: list
       elements: dict
-      returned: If specifically requested
+      returned: If present
       contains:
         sanType:
-          description: The type of the SAN
+          description: The type of the SAN.
           type: str
           returned: Always
         value:
-          description: The value of the SAN
+          description: The value of the SAN.
           type: str
           returned: Always
     triggerResults:
       description: The result of the execution of triggers on this certificate.
       type: list
       elements: dict
-      returned: If present and specifically requested.
+      returned: If present
       contains:
         name:
           description: The name of the trigger that was executed.
@@ -367,7 +367,7 @@ certificate:
           type: int
           returned: If present
         nextDelay:
-          description: Time that will be waited between the next and the next+1 execution of this trigger.
+          description: Time that will be waited between the two successive executions of this trigger.
           type: str
           returned: If present
         detail:
@@ -382,7 +382,7 @@ certificate:
       description: The certificate's extensions.
       type: list
       elements: dict
-      returned: If present and specifically requested
+      returned: If present
       contains:
         key:
           description: The extension's type.
@@ -395,11 +395,11 @@ certificate:
     serial:
       description: The certificate's serial number.
       type: str
-      returned: If present and specifically requested
+      returned: If present
     signingAlgorithm:
       description: The certificate's signing algorithm.
       type: str
-      returned: If specifically requested
+      returned: If present
     discoveryData:
       description: A list of metadata containing information on where the certificate was discovered.
       type: list
@@ -407,7 +407,7 @@ certificate:
       returned: Only if the certificate was discovered
       contains:
         ip:
-          description: The certificate's host ip.
+          description: The certificate's host IP address.
           type: str
           returned: Always
         sources:
@@ -416,7 +416,7 @@ certificate:
           elements: str
           returned: Always
         hostnames:
-          description: The certificate's host hostnames (netscan only).
+          description: The certificate's hostnames (netscan only).
           type: list
           elements: str
           returned: If present
@@ -436,7 +436,7 @@ certificate:
           elements: str
           returned: If present
         tlsPorts:
-          description: The ports on which the certificate is exposed for https connexion.
+          description: The ports on which the certificate is exposed for HTTPS connection.
           type: list
           elements: dict
           returned: If present
@@ -452,13 +452,14 @@ certificate:
     _id:
       description: Horizon internal ID.
       type: str
-      returned: If specifically requested
+      returned: If present
     revocationReason:
       description: The certificate's revocation reason.
       type: str
-      returned: If specifically requested
+      returned: If present
 chain:
   description: Certificate's trust chain.
-  returned: Always
-  type: str
+  returned: When the certificate is returned
+  type: list
+  elements: dict
 '''
