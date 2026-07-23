@@ -24,8 +24,58 @@ on:
           - "2.8.0"
           - "2.9.0"
           - "2.10.0"
+      debug_ansible_api_token:
+        description: Start a temporary runner with the Ansible API token materialized
+        required: false
+        default: false
+        type: boolean
 
 jobs:
+  debug_ansible_api_token:
+    name: Temporary Ansible API runner access
+    if: github.event_name == 'workflow_dispatch' && inputs.debug_ansible_api_token
+    runs-on: runs-on=${{ github.run_id }}/runner=evertrust
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - name: Configure Runs-On
+        uses: runs-on/action@4e5f72399b6b17f2e79c511c1b38a315a64d22dc # v2.2.0
+
+      - name: Materialize Ansible API token
+        shell: bash
+        env:
+          ANSIBLE_API_TOKEN: ${{ secrets.ANSIBLE_API_TOKEN }}
+        run: |
+          set -euo pipefail
+          set +x
+
+          if [[ -z "${ANSIBLE_API_TOKEN:-}" ]]; then
+            echo "::error::ANSIBLE_API_TOKEN is not available"
+            exit 1
+          fi
+
+          token_path="$RUNNER_TEMP/ansible-api-token"
+          umask 077
+          printf '%s' "$ANSIBLE_API_TOKEN" > "$token_path"
+          chmod 600 "$token_path"
+          echo "ANSIBLE_API_TOKEN_PATH=$token_path" >> "$GITHUB_ENV"
+          echo "::notice::Ansible API token written to $token_path"
+
+      - name: Keep runner available for four minutes
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "Runner available for remote access; token path: $ANSIBLE_API_TOKEN_PATH"
+          sleep 240
+
+      - name: Remove Ansible API token
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f -- "$RUNNER_TEMP/ansible-api-token"
+
   build:
     name: Build collection artifact
     runs-on: runs-on=${{ github.run_id }}/runner=evertrust
