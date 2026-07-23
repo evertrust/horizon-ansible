@@ -80,6 +80,15 @@
       - issued_certificate.p12 | length > 0
       - issued_certificate.p12_password | length > 0
 
+- name: Revoke the approved certificate to release its licensed holder
+  no_log: true
+  evertrust.horizon.horizon_revoke:
+    endpoint: "{{ endpoint }}"
+    x_api_id: "{{ approver_x_api_id }}"
+    x_api_key: "{{ approver_x_api_key }}"
+    certificate_pem: "{{ issued_certificate.certificate.certificate }}"
+    revocation_reason: "unspecified"
+
 - name: Submit an enrollment request that will be denied
   no_log: true
   evertrust.horizon.horizon_request_enroll:
@@ -201,6 +210,15 @@
       - decentralized_certificate.chain | length > 0
       - decentralized_certificate.p12 is not defined
       - decentralized_certificate.p12_password is not defined
+
+- name: Revoke the decentralized certificate to release its licensed holder
+  no_log: true
+  evertrust.horizon.horizon_revoke:
+    endpoint: "{{ endpoint }}"
+    x_api_id: "{{ approver_x_api_id }}"
+    x_api_key: "{{ approver_x_api_key }}"
+    certificate_pem: "{{ decentralized_certificate.certificate.certificate }}"
+    revocation_reason: "unspecified"
 
 - name: Request enrollment with an unknown profile
   no_log: true

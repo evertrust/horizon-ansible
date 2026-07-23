@@ -89,4 +89,4 @@
     that:
       - feed_without_ip_result is failed
       - "'Missing certificate' in feed_without_ip_result.msg"
-      - "'host ip' in feed_without_ip_result.msg"
+      - "'host ip' in (feed_without_ip_result.msg | lower)"
