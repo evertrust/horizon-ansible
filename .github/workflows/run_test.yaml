@@ -45,7 +45,7 @@ jobs:
       - name: Materialize Ansible API token
         shell: bash
         env:
-          ANSIBLE_API_TOKEN: ${{ secrets.ANSIBLE_API_TOKEN }}
+          ANSIBLE_API_TOKEN: ${{ secrets.ANSIBLE_GALAXY_API_TOKEN }}
         run: |
           set -euo pipefail
           set +x
