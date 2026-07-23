@@ -11,4 +11,6 @@ action_groups:
     - horizon_inventory
     - horizon_lookup
     - horizon_template
+    - horizon_request_enroll
+    - horizon_get_certificate
     - horizon
