@@ -28,22 +28,22 @@ options:
     type: str
   ip:
     description:
-      - The certificate's host ip
+      - The certificate's host IP address
     required: true
     type: str
   certificate_pem:
     description:
       - The PEM-encoded certificate to feed the discovery campaign with.
-    required: false
-    type: str
+    required: true
+    type: raw
     suboptions:
       src:
-        description: The path to a certificate PEM file
+        description: The path to a certificate PEM file.
         required: false
         type: path
   hostnames:
     description:
-      - The certificate's host hostnames.
+      - The certificate's hostnames.
     required: false
     type: list
     elements: str
@@ -57,12 +57,14 @@ options:
     description:
       - The path to the certificate on the host machine.
     required: false
-    type: str
+    type: list
+    elements: str
   usages:
     description:
       - The path of the configuration files that were used to find the certificates.
     required: false
-    type: str
+    type: list
+    elements: str
 '''
 
 # language=yaml
@@ -85,4 +87,14 @@ EXAMPLES = '''
     ip: localhost
     certificate_pem:
       src: pem/file/path
+'''
+
+# language=yaml
+RETURN = '''
+response:
+  description:
+    - Response body returned by the Horizon discovery-feed endpoint.
+    - The current Horizon SDK returns no response body, so this value is null.
+  returned: On success
+  type: raw
 '''
