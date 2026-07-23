@@ -179,6 +179,7 @@ class HorizonCrypto:
             signing_methods = {
                 "secp256r1": "ES256",
                 "secp384r1": "ES384",
+                "secp521r1": "ES521",
             }
             try:
                 signing_method = signing_methods[key.curve.name]
