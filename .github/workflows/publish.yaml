@@ -158,7 +158,16 @@ jobs:
       - name: Configure mise-en-place
         uses: jdx/mise-action@e6a8b3978addb5a52f2b4cd9d91eafa7f0ab959d # v4.2.0
 
+      - name: Fetch Horizon test infrastructure secrets via Vault
+        uses: hashicorp/vault-action@9c2d817b85b9fff56bcab21cb74b485aee9e9d73 # v2.8.1
+        with:
+          url: ${{ vars.VAULT_ADDR }}
+          method: ${{ vars.VAULT_AUTH_METHOD }}
+          path: ${{ vars.VAULT_AUTH_PATH }}
+          secrets: |
+            ci/data/repositories/evertrust/horizon-ansible/ansible-galaxy api_token | ANSIBLE_GALAXY_API_TOKEN ;
+
       - name: Publish collection
         run: mise run publish
         env:
-          ANSIBLE_GALAXY_API_TOKEN: ${{ secrets.ANSIBLE_GALAXY_API_TOKEN }}
+          ANSIBLE_GALAXY_API_TOKEN: ${{ env.ANSIBLE_GALAXY_API_TOKEN }}
