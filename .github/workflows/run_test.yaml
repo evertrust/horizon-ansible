@@ -8,75 +8,28 @@ on:
   pull_request:
     branches:
       - main
+  workflow_dispatch:
+    inputs:
+      horizon_image:
+        description: Fully qualified quay.io Horizon image tag or digest
+        required: true
+        default: quay.io/evertrust/horizon:2.10.3
+        type: string
+      sdk_version:
+        description: Horizon SDK release line
+        required: true
+        default: "2.10.0"
+        type: choice
+        options:
+          - "2.8.0"
+          - "2.9.0"
+          - "2.10.0"
+
 jobs:
-  integration:
-    name: Latest licensed Horizon container (handwritten client)
-    needs: unit
-    permissions:
-      contents: read
-      id-token: write
+  build:
+    name: Build collection artifact
     runs-on: runs-on=${{ github.run_id }}/runner=evertrust
-    timeout-minutes: 60
-    steps:
-    - name: Configure Runs-On
-      uses: runs-on/action@4e5f72399b6b17f2e79c511c1b38a315a64d22dc # v2.2.0
-
-    - name: Checkout code
-      uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
-      with:
-        persist-credentials: false
-        submodules: true
-
-    - name: Configure mise-en-place
-      uses: jdx/mise-action@e6a8b3978addb5a52f2b4cd9d91eafa7f0ab959d # v4.2.0
-
-    - name: Fetch Horizon test infrastructure secrets via Vault
-      uses: hashicorp/vault-action@9c2d817b85b9fff56bcab21cb74b485aee9e9d73 # v2.8.1
-      with:
-        url: ${{ vars.VAULT_ADDR }}
-        method: ${{ vars.VAULT_AUTH_METHOD }}
-        path: ${{ vars.VAULT_AUTH_PATH }}
-        secrets: |
-          ci/data/repositories/evertrust/horizon-ansible/quay username | QUAY_USER ;
-          ci/data/repositories/evertrust/horizon-ansible/quay password | QUAY_TOKEN ;
-          ci/data/repositories/evertrust/horizon-ansible/horizon licence | HORIZON_LICENCE ;
-
-    - name: Log in to Quay registry
-      uses: docker/login-action@465a07811f14bebb1938fbed4728c6a1ff8901fc # v2.2.0
-      with:
-        registry: quay.io
-        username: ${{ env.QUAY_USER }}
-        password: ${{ env.QUAY_TOKEN }}
-
-    - name: Materialize Horizon licence
-      shell: bash
-      env:
-        HORIZON_LICENCE: ${{ env.HORIZON_LICENCE }}
-      run: |
-        set -euo pipefail
-        license_path="$RUNNER_TEMP/horizon-license.txt"
-        umask 077
-        printf '%s' "$HORIZON_LICENCE" > "$license_path"
-        echo "HORIZON_LICENSE_PATH=$license_path" >> "$GITHUB_ENV"
-
-    - name: Run licensed container integration tests
-      run: mise run container_integration_test
-
-    - name: Upload Ansible and Horizon logs
-      if: always()
-      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
-      with:
-        name: horizon-handwritten-integration-logs
-        path: tests/output/*.log
-        if-no-files-found: warn
-
-    - name: Remove Horizon licence
-      if: always()
-      run: rm -f "$RUNNER_TEMP/horizon-license.txt"
-
-  unit:
-    runs-on: runs-on=${{ github.run_id }}/runner=evertrust
-    timeout-minutes: 15
+    timeout-minutes: 20
     permissions:
       contents: read
     steps:
@@ -88,8 +41,166 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: Restore trusted uv cache
+        if: github.event_name != 'pull_request'
+        uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4.2.0
+        with:
+          path: ~/.cache/uv
+          key: run-test-trusted-uv-${{ runner.os }}-${{ runner.arch }}-build-${{ hashFiles('mise.toml', 'requirements.txt', 'tests/unit/requirements.txt') }}
+
       - name: Configure mise-en-place
         uses: jdx/mise-action@e6a8b3978addb5a52f2b4cd9d91eafa7f0ab959d # v4.2.0
+        with:
+          cache: ${{ github.event_name != 'pull_request' }}
+          cache_save: ${{ github.event_name != 'pull_request' }}
+          cache_key: run-test-trusted-build-{{platform}}-{{file_hash}}
 
-      - name: Run unit tests
-        run: mise run unit_test
+      - name: Build collection artifact
+        run: mise run build
+
+      - name: Upload collection artifact
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: horizon-collection
+          path: build/*.tar.gz
+          if-no-files-found: error
+
+  unit:
+    name: Static (${{ matrix.python }}, ${{ matrix.ansible }})
+    needs: build
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - python: "3.11"
+            ansible: ansible-core==2.19.11
+          - python: "3.12"
+            ansible: ansible-core==2.20.*
+          - python: "3.13"
+            ansible: ansible-core==2.19.*
+          - python: "3.14"
+            ansible: ansible-core==2.20.*
+    runs-on: runs-on=${{ github.run_id }}/runner=evertrust
+    timeout-minutes: 20
+    env:
+      MISE_PYTHON_VERSION: ${{ matrix.python }}
+      HORIZON_ANSIBLE_SPEC: ${{ matrix.ansible }}
+    permissions:
+      contents: read
+    steps:
+      - name: Configure Runs-On
+        uses: runs-on/action@4e5f72399b6b17f2e79c511c1b38a315a64d22dc # v2.2.0
+
+      - name: Checkout code
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          persist-credentials: false
+
+      - name: Download collection artifact
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: horizon-collection
+          path: build
+
+      - name: Restore trusted uv cache
+        if: github.event_name != 'pull_request'
+        uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4.2.0
+        with:
+          path: ~/.cache/uv
+          key: run-test-trusted-uv-${{ runner.os }}-${{ runner.arch }}-python-${{ matrix.python }}-ansible-${{ matrix.ansible }}-${{ hashFiles('mise.toml', 'requirements.txt', 'tests/unit/requirements.txt') }}
+
+      - name: Configure mise-en-place
+        uses: jdx/mise-action@e6a8b3978addb5a52f2b4cd9d91eafa7f0ab959d # v4.2.0
+        with:
+          cache: ${{ github.event_name != 'pull_request' }}
+          cache_save: ${{ github.event_name != 'pull_request' }}
+          cache_key: run-test-trusted-static-${{ matrix.python }}-${{ matrix.ansible }}-{{platform}}-{{file_hash}}
+
+      - name: Run unit and Ansible sanity tests
+        run: mise run static_test_artifact
+
+  integration:
+    name: Licensed Horizon container (SDK client)
+    needs:
+      - build
+      - unit
+    env:
+      HORIZON_IMAGE: ${{ github.event_name == 'workflow_dispatch' && inputs.horizon_image || 'quay.io/evertrust/horizon:2.10.3@sha256:ee768f89889332b1aedb9497db4ecaad11df7bc0ad8805b36423a3fa4786c981' }}
+      HORIZON_SDK_VERSION: ${{ github.event_name == 'workflow_dispatch' && inputs.sdk_version || '2.10.0' }}
+    permissions:
+      contents: read
+      id-token: write
+    runs-on: runs-on=${{ github.run_id }}/runner=evertrust
+    timeout-minutes: 60
+    steps:
+      - name: Configure Runs-On
+        uses: runs-on/action@4e5f72399b6b17f2e79c511c1b38a315a64d22dc # v2.2.0
+
+      - name: Checkout code
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          persist-credentials: false
+
+      - name: Download collection artifact
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: horizon-collection
+          path: build
+
+      - name: Restore trusted uv cache
+        if: github.event_name != 'pull_request'
+        uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4.2.0
+        with:
+          path: ~/.cache/uv
+          key: run-test-trusted-uv-${{ runner.os }}-${{ runner.arch }}-python-3.10-sdk-${{ env.HORIZON_SDK_VERSION }}-${{ hashFiles('mise.toml', 'tests/integration/requirements.lock') }}
+
+      - name: Configure mise-en-place
+        uses: jdx/mise-action@e6a8b3978addb5a52f2b4cd9d91eafa7f0ab959d # v4.2.0
+        with:
+          cache: ${{ github.event_name != 'pull_request' }}
+          cache_save: ${{ github.event_name != 'pull_request' }}
+          cache_key: run-test-trusted-integration-${{ env.HORIZON_SDK_VERSION }}-{{platform}}-{{file_hash}}
+
+      - name: Fetch Horizon test infrastructure secrets via Vault
+        uses: hashicorp/vault-action@9c2d817b85b9fff56bcab21cb74b485aee9e9d73 # v2.8.1
+        with:
+          url: ${{ vars.VAULT_ADDR }}
+          method: ${{ vars.VAULT_AUTH_METHOD }}
+          path: ${{ vars.VAULT_AUTH_PATH }}
+          secrets: |
+            ci/data/repositories/evertrust/horizon-ansible/quay username | QUAY_USER ;
+            ci/data/repositories/evertrust/horizon-ansible/quay password | QUAY_TOKEN ;
+            ci/data/repositories/evertrust/horizon-ansible/horizon licence | HORIZON_LICENCE ;
+
+      - name: Log in to Quay registry
+        uses: docker/login-action@465a07811f14bebb1938fbed4728c6a1ff8901fc # v2.2.0
+        with:
+          registry: quay.io
+          username: ${{ env.QUAY_USER }}
+          password: ${{ env.QUAY_TOKEN }}
+
+      - name: Materialize Horizon licence
+        shell: bash
+        env:
+          HORIZON_LICENCE: ${{ env.HORIZON_LICENCE }}
+        run: |
+          set -euo pipefail
+          license_path="$RUNNER_TEMP/horizon-license.txt"
+          umask 077
+          printf '%s' "$HORIZON_LICENCE" > "$license_path"
+          echo "HORIZON_LICENSE_PATH=$license_path" >> "$GITHUB_ENV"
+
+      - name: Run licensed container integration tests
+        run: mise run container_integration_test_artifact
+
+      - name: Upload Ansible and Horizon logs
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: horizon-sdk-integration-logs
+          path: tests/output/*.log
+          if-no-files-found: warn
+
+      - name: Remove Horizon licence
+        if: always()
+        run: rm -f "$RUNNER_TEMP/horizon-license.txt"

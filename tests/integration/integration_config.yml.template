@@ -1,3 +1,4 @@
 ---
-x_api_id: ${{ HORIZON_API_ID }}
-x_api_key: ${{ HORIZON_API_KEY }}
+endpoint: https://horizon.example.test
+x_api_id: replace-with-api-id
+x_api_key: replace-with-api-key

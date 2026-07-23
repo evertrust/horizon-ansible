@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # -*- coding: utf-8 -*-
 
 # Standard base includes and define this as a metaclass of type
@@ -8,27 +7,31 @@ __metaclass__ = type
 
 
 from ansible.errors import AnsibleError
-from ansible_collections.evertrust.horizon.plugins.module_utils.horizon_action import HorizonAction
-from ansible_collections.evertrust.horizon.plugins.module_utils.horizon_errors import HorizonError
+from ansible_collections.evertrust.horizon.plugins.plugin_utils.horizon_action import HorizonAction
+from ansible_collections.evertrust.horizon.plugins.plugin_utils.horizon_errors import HorizonError
 
 
 class ActionModule(HorizonAction):
     TRANSFERS_FILES = True
+    SUPPORTS_POP_AUTH = True
 
     def _args(self):
         return ["labels", "certificate_pem", "metadata", "owner", "team", "contact_email", "private_key"]
 
     def run(self, tmp=None, task_vars=None):
         result = super(ActionModule, self).run(tmp, task_vars)
+        if result.get("skipped"):
+            return result
 
         try:
-            client = self._get_client()
-            content = self._get_content()
-            response = client.update(**content)
+            with self._get_client() as client:
+                content = self._get_content()
+                response = client.update(**content)
 
-            if "certificate" in response:
-                result["certificate"] = response["certificate"]
-                result["chain"] = client.chain(result["certificate"]["certificate"])
+                if response.get("certificate") is not None:
+                    result["certificate"] = response["certificate"]
+                    result["chain"] = client.chain(result["certificate"]["certificate"])
+                result["changed"] = True
 
         except HorizonError as e:
             raise AnsibleError(e.full_message)

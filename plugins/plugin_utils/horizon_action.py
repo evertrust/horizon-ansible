@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # -*- coding: utf-8 -*-
 
 # Standard base includes and define this as a metaclass of type
@@ -7,11 +6,15 @@ from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
 from abc import ABC
-from ansible_collections.evertrust.horizon.plugins.module_utils.horizon import Horizon
+from ansible_collections.evertrust.horizon.plugins.plugin_utils.horizon import Horizon
 from ansible.plugins.action import ActionBase
 
 
 class HorizonAction(ActionBase, ABC):
+    MUTATES = True
+    SUPPORTS_POP_AUTH = False
+    _supports_check_mode = True
+
     SENSITIVE_ARG_NAMES = {
         "x_api_key",
         "client_key",
@@ -27,18 +30,33 @@ class HorizonAction(ActionBase, ABC):
 
     def run(self, tmp=None, task_vars=None):
         self._mark_no_log_for_sensitive_args()
-        return super(HorizonAction, self).run(tmp, task_vars)
+        result = super(HorizonAction, self).run(tmp, task_vars)
+        result.setdefault("changed", False)
+        if self._task.check_mode and self.MUTATES:
+            result.update({
+                "changed": True,
+                "skipped": True,
+                "msg": "Horizon mutation was not executed in check mode.",
+            })
+        return result
 
     def _args(self):
         return []
 
     def _auth_args(self):
-        return ["endpoint", "x_api_id", "x_api_key", "ca_bundle", "client_cert", "client_key", "private_key"]
+        return [
+            "endpoint", "x_api_id", "x_api_key", "ca_bundle", "client_cert", "client_key",
+            "connect_timeout", "read_timeout",
+        ]
 
     def _get_auth(self):
         auth = {}
         for arg in self._auth_args():
             auth[arg] = self._task.args.get(arg)
+        auth["allow_pop_only"] = (
+            self.SUPPORTS_POP_AUTH
+            and self._task.args.get("private_key") not in (None, "")
+        )
         return auth
 
     def _get_content(self):

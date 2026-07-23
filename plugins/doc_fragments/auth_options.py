@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # -*- coding: utf-8 -*-
 
 from __future__ import (absolute_import, division, print_function)
@@ -45,7 +44,19 @@ class ModuleDocFragment(object):
         type: str
       ca_bundle:
         description:
-          - Path of a CA bundle used to validate the Horizon instance SSL certificate. 
+          - Path of a CA bundle used to validate the Horizon instance SSL certificate.
         required: false
         type: path
+      connect_timeout:
+        description:
+          - Maximum number of seconds to wait for the controller to establish a connection to Horizon.
+        required: false
+        type: float
+        default: 10
+      read_timeout:
+        description:
+          - Maximum number of seconds to wait between response reads by the controller after connecting to Horizon.
+        required: false
+        type: float
+        default: 60
     '''

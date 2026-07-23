@@ -2,22 +2,22 @@
   become: yes
   tasks:
   - name: Updating APT cache
-    apt: update_cache=yes   
+    apt: update_cache=yes
 
   - name: Creating group "tomcat"
-    group: 
+    group:
       name: tomcat
 
   - name: Creating user "tomcat"
-    user: 
-      name: tomcat 
-      group: tomcat 
+    user:
+      name: tomcat
+      group: tomcat
       createhome: yes
     become: true
-  
+
   - name: Installing tomcat
-    apt: 
-      name: tomcat9 
+    apt:
+      name: tomcat9
       state: latest
 
   - name: Enrolling a certificate on Horizon for domain {{ domain }}
@@ -32,8 +32,9 @@
         cn.1: "{{ domain }}"
         ou.1: "Web Server"
       sans:
-        dnsname: "{{ domain }}"
-        dnsname: "www.{{ domain }}"
+        dnsname:
+          - "{{ domain }}"
+          - "www.{{ domain }}"
       labels:
         business_unit: "{{ business_unit }}"
         ansible_host: "{{ ansible_host }}"
@@ -61,15 +62,15 @@
       content: "{{ enrolled_certificate['p12'] | b64decode }}"
       dest: "/etc/tomcat9/ssl/{{ domain }}.p12"
       mode: '0660'
-      owner: tomcat 
-      group: tomcat 
-    
+      owner: tomcat
+      group: tomcat
+
   - name: Uploading the {{ domain }} certificate
     copy:
       content: "{{ enrolled_certificate['certificate']['certificate'] }}"
       dest: "/etc/tomcat9/ssl/{{ domain }}.crt"
       mode: '0660'
-      owner: tomcat 
+      owner: tomcat
       group: tomcat
 
   - name: Deploying the {{ domain }} index page
@@ -81,7 +82,7 @@
       mode: '0644'
 
   - name: Uploading the tomcat configuration
-    template: 
+    template:
       src: ../templates/tomcat.server.xml.j2
       dest: /etc/tomcat9/server.xml
 
@@ -91,6 +92,5 @@
       state: restarted
 
   - name: Waiting for the tomcat service to start
-    wait_for: 
+    wait_for:
       port: 8443
-

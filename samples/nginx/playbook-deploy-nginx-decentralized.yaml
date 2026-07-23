@@ -2,13 +2,13 @@
   become: yes
   tasks:
   - name: Updating APT cache
-    apt: update_cache=yes   
-  
+    apt: update_cache=yes
+
   - name: Installing nginx
-    apt: 
-      name: nginx 
+    apt:
+      name: nginx
       state: latest
-  
+
   - name: Get webra enroll template
     evertrust.horizon.horizon_template:
       endpoint: "{{ horizon_endpoint }}"
@@ -44,13 +44,13 @@
         cn.1: "{{ domain }}"
         ou.1: "Web Server"
       sans:
-        dnsname: 
+        dnsname:
           - "{{ domain }}"
           - "www.{{ domain }}"
       labels:
         business_unit: "{{ business_unit }}"
         ansible_host: "{{ ansible_host }}"
-      contact_email: "{{ contact_email }}"  
+      contact_email: "{{ contact_email }}"
       csr:
         src: "{{csr.filename}}"
     register: enrolled_certificate
@@ -70,7 +70,7 @@
       mode: '0660'
       owner: "www-data"
       group: "www-data"
-    
+
   - name: Uploading the {{ domain }} private key
     copy:
       content: "{{ privatekey.privatekey }}"
@@ -78,7 +78,7 @@
       mode: '0660'
       owner: "www-data"
       group: "www-data"
-    
+
   - name: Creating the {{ domain }} webroot directory
     file:
       path: /var/www/{{ domain }}
@@ -109,7 +109,7 @@
       mode: '0644'
 
   - name: Ensuring that {{ domain }} site exists
-    stat: 
+    stat:
       path: "/etc/nginx/sites-enabled/{{domain}}"
     register: stat_result
 

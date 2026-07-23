@@ -1,6 +1,6 @@
 namespace: evertrust
 name: horizon
-version: 1.5.1
+version: 2.0.0
 readme: README.md
 authors:
 - EverTrust R&D (@Evertrust)

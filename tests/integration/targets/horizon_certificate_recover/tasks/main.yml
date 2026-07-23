@@ -1,12 +1,29 @@
-- name: Recover a certificate by its pem file
+- name: Enroll an isolated certificate fixture for recovery tests
   no_log: true
-  evertrust.horizon.horizon_recover:
-
+  evertrust.horizon.horizon_enroll:
     endpoint: "{{ endpoint }}"
     x_api_id: "{{ x_api_id }}"
     x_api_key: "{{ x_api_key }}"
+    profile: "Ansible"
+    mode: "centralized"
+    key_type: "rsa-2048"
+    subject:
+      cn.1: "IntegrationTestCI-recover"
+  register: recover_fixture
 
-    certificate_pem:
-      src: "/tmp/PEM.pem"
-
+- name: Recover the isolated certificate
+  no_log: true
+  evertrust.horizon.horizon_recover:
+    endpoint: "{{ endpoint }}"
+    x_api_id: "{{ x_api_id }}"
+    x_api_key: "{{ x_api_key }}"
+    certificate_pem: "{{ recover_fixture.certificate.certificate }}"
     password: "Pass-W0rd"
+  register: recover_result
+
+- name: Verify recovery returned certificate material
+  ansible.builtin.assert:
+    that:
+      - recover_result.certificate is mapping
+      - recover_result.certificate.certificate | length > 0
+      - recover_result.chain | length > 0

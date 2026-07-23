@@ -1,23 +1,20 @@
-#!/usr/bin/python
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright: (c) 2025, Evertrust
+# GNU General Public License v3.0+
+# (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 # -*- coding: utf-8 -*-
 
 from __future__ import (absolute_import, division, print_function)
-
-from ansible.errors import AnsibleParserError, AnsibleError
-from ansible.plugins.inventory import BaseInventoryPlugin, Constructable
-from ansible_collections.evertrust.horizon.plugins.module_utils.horizon import Horizon
-from ansible_collections.evertrust.horizon.plugins.module_utils.horizon_errors import HorizonError, redact_horizon_error
 
 # language=yaml
 DOCUMENTATION = '''
 name: horizon_inventory
 author: Evertrust R&D (@EverTrust)
-plugin_type: inventory
 short_description: Horizon inventory plugin
 description:
     - Generate hosts inventory from Horizon using an HCQL query.
     - Use a YAML configuration file that ends with C(horizon_inventory.(yml|yaml)).
-extends_documentation_fragment: 
+extends_documentation_fragment:
     - evertrust.horizon.auth_options
     - evertrust.horizon.fields.options
 options:
@@ -43,7 +40,7 @@ x_api_id: "<horizon-id>"
 x_api_key: "<horizon-password>"
 
 query: "status is valid"
-fields: 
+fields:
   - labels
   - module
   - subjectAlternateNames
@@ -54,6 +51,11 @@ hostnames:
   - label.ansible_host
   - san.dns
 '''
+
+from ansible.errors import AnsibleParserError, AnsibleError
+from ansible.plugins.inventory import BaseInventoryPlugin, Constructable
+from ansible_collections.evertrust.horizon.plugins.plugin_utils.horizon import Horizon
+from ansible_collections.evertrust.horizon.plugins.plugin_utils.horizon_errors import HorizonError, redact_horizon_error
 
 
 class InventoryModule(BaseInventoryPlugin, Constructable):
@@ -143,7 +145,6 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
         super().parse(inventory, loader, path, cache=cache)
 
         self.config = self._read_config_data(path)
-        self.client = self._get_client()
 
         try:
             content = self._get_content()
@@ -153,15 +154,19 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
                 f'All correct options required: {e}'
             )
 
-        try: 
-            response = self.client.search(**content)
+        try:
+            with self._get_client() as client:
+                response = client.search(**content)
         except HorizonError as error:
             raise AnsibleError(redact_horizon_error(error, self._get_auth()))
 
         self._populate(response, self.config.get("hostnames"), content["fields"])
 
     def _auth_args(self):
-        return ["endpoint", "x_api_id", "x_api_key", "ca_bundle", "client_cert", "client_key"]
+        return [
+            "endpoint", "x_api_id", "x_api_key", "ca_bundle", "client_cert", "client_key",
+            "connect_timeout", "read_timeout",
+        ]
 
     def _get_auth(self):
         auth = {}
@@ -180,7 +185,6 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
 
     def _get_client(self):
         return Horizon(**self._get_auth())
-
 
     def get_hostnames(self, certificate, hostnames):
         """

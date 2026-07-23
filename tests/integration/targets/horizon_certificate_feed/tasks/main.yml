@@ -1,16 +1,51 @@
-- name: Feed a certificate by a file
+- name: Enroll an isolated certificate fixture for discovery feed tests
   no_log: true
-  evertrust.horizon.horizon_feed:
-
+  evertrust.horizon.horizon_enroll:
     endpoint: "{{ endpoint }}"
     x_api_id: "{{ x_api_id }}"
     x_api_key: "{{ x_api_key }}"
+    profile: "Ansible"
+    mode: "centralized"
+    key_type: "rsa-2048"
+    subject:
+      cn.1: "IntegrationTestCI-feed"
+  register: feed_fixture
 
-    certificate_pem:
-      src: "/tmp/PEM.pem"
+- name: Feed the isolated certificate
+  no_log: true
+  evertrust.horizon.horizon_feed:
+    endpoint: "{{ endpoint }}"
+    x_api_id: "{{ x_api_id }}"
+    x_api_key: "{{ x_api_key }}"
+    certificate_pem: "{{ feed_fixture.certificate.certificate }}"
     campaign: "Ansible"
     ip: 0.0.0.1
 
+- name: Read the fed certificate back from Horizon
+  no_log: true
+  ansible.builtin.set_fact:
+    fed_certificate_lookup: >-
+      {{ lookup('evertrust.horizon.horizon_lookup', endpoint=endpoint,
+                x_api_id=x_api_id, x_api_key=x_api_key,
+                certificate_pem=feed_fixture.certificate.certificate,
+                fields=['discoveryInfo', 'discoveryData'], wantlist=True) }}
+
+- name: Verify the campaign and host discovery data were persisted
+  vars:
+    fed_certificate: >-
+      {{ fed_certificate_lookup
+         if fed_certificate_lookup is mapping
+         else fed_certificate_lookup[0] }}
+  ansible.builtin.assert:
+    that:
+      - >-
+        fed_certificate.discoveryInfo
+        | selectattr('campaign', 'equalto', 'Ansible')
+        | list | length > 0
+      - >-
+        fed_certificate.discoveryData
+        | selectattr('ip', 'equalto', '0.0.0.1')
+        | list | length > 0
 
 - name: Feed a certificate without campaign
   no_log: true
@@ -20,22 +55,21 @@
     x_api_id: "{{ x_api_id }}"
     x_api_key: "{{ x_api_key }}"
 
-    certificate_pem:
-      src: "/tmp/PEM.pem"
+    certificate_pem: "{{ feed_fixture.certificate.certificate }}"
     ip: 0.0.0.1
 
   ignore_errors: true
-  register: error1
+  register: feed_without_campaign_result
 
 # Check error
-- name: Check error1
-  assert:
+- name: Verify feeding without a campaign fails
+  ansible.builtin.assert:
     that:
-      - error1 is failed
-      - "'Missing discovery campaign' in error1.msg"
+      - feed_without_campaign_result is failed
+      - "'Missing discovery campaign' in feed_without_campaign_result.msg"
 
 
-- name: Feed a certificate without ip
+- name: Feed a certificate without an IP address
   no_log: true
   evertrust.horizon.horizon_feed:
 
@@ -43,17 +77,16 @@
     x_api_id: "{{ x_api_id }}"
     x_api_key: "{{ x_api_key }}"
 
-    certificate_pem:
-      src: "/tmp/PEM.pem"
+    certificate_pem: "{{ feed_fixture.certificate.certificate }}"
     campaign: "Ansible"
 
   ignore_errors: true
-  register: error2
+  register: feed_without_ip_result
 
 # Check error
-- name: Check error2
-  assert:
+- name: Verify feeding without an IP address fails
+  ansible.builtin.assert:
     that:
-      - error2 is failed
-      - "'Missing certificate' in error2.msg"
-      - "'host ip' in error2.msg"
+      - feed_without_ip_result is failed
+      - "'Missing certificate' in feed_without_ip_result.msg"
+      - "'host ip' in feed_without_ip_result.msg"

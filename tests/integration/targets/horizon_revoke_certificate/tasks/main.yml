@@ -1,73 +1,102 @@
-- name: Revoke a certificate by its file
-  no_log: true
-  evertrust.horizon.horizon_revoke:
-
-    endpoint: "{{ endpoint }}"
-    x_api_id: "{{ x_api_id }}"
-    x_api_key: "{{ x_api_key }}"
-
-    certificate_pem:
-      src: "/tmp/PEM.pem"
-
-    revocation_reason: "unspecified"
-
-
-- name: Revoke an already revoked certificate by its file
-  no_log: true
-  evertrust.horizon.horizon_revoke:
-
-    endpoint: "{{ endpoint }}"
-    x_api_id: "{{ x_api_id }}"
-    x_api_key: "{{ x_api_key }}"
-
-    certificate_pem:
-      src: "/tmp/PEM.pem"
-
-    revocation_reason: "unspecified"
-
-  ignore_errors: true
-  register: error1
-
-# Check error
-- name: Check error1
-  assert:
-    that:
-      - error1 is failed
-      - "'Certificate is already revoked' in error1.msg"
-
-
-# Enroll a certificate for pop revoke
-- name: Certificate enroll
+- name: Enroll an isolated certificate fixture for authenticated revocation
   no_log: true
   evertrust.horizon.horizon_enroll:
-
     endpoint: "{{ endpoint }}"
     x_api_id: "{{ x_api_id }}"
     x_api_key: "{{ x_api_key }}"
-
     profile: "Ansible"
     mode: "centralized"
     key_type: "rsa-2048"
-
     subject:
-      cn.1: "IntegrationTestCI"
-      o.1: "Evertrust"
-      ou.1: "R&D"
+      cn.1: "IntegrationTestCI-revoke-authenticated"
+  register: authenticated_revoke_fixture
 
-  register: data
-
-- copy: content="{{ data.certificate.certificate }}" dest="/tmp/PEM2.pem"
-- copy: content="{{ data.key }}" dest="/tmp/KEY2.key"
-
-- name: Revoke a certificate by its file
+- name: Revoke the authenticated certificate
   no_log: true
   evertrust.horizon.horizon_revoke:
-
     endpoint: "{{ endpoint }}"
-
-    certificate_pem:
-      src: "/tmp/PEM2.pem"
-    private_key:
-      src: "/tmp/KEY2.key"
-
+    x_api_id: "{{ x_api_id }}"
+    x_api_key: "{{ x_api_key }}"
+    certificate_pem: "{{ authenticated_revoke_fixture.certificate.certificate }}"
     revocation_reason: "unspecified"
+  register: authenticated_revoke_result
+
+- name: Verify authenticated revocation returned certificate data
+  ansible.builtin.assert:
+    that:
+      - authenticated_revoke_result.certificate is mapping
+      - authenticated_revoke_result.certificate.certificate | length > 0
+
+- name: Revoke the already revoked certificate
+  no_log: true
+  evertrust.horizon.horizon_revoke:
+    endpoint: "{{ endpoint }}"
+    x_api_id: "{{ x_api_id }}"
+    x_api_key: "{{ x_api_key }}"
+    certificate_pem: "{{ authenticated_revoke_fixture.certificate.certificate }}"
+    revocation_reason: "unspecified"
+  ignore_errors: true
+  register: already_revoked_result
+
+- name: Verify duplicate revocation is rejected
+  ansible.builtin.assert:
+    that:
+      - already_revoked_result is failed
+      - "'Certificate is already revoked' in already_revoked_result.msg"
+
+- name: Enroll an isolated certificate fixture for proof-of-possession revocation
+  no_log: true
+  evertrust.horizon.horizon_enroll:
+    endpoint: "{{ endpoint }}"
+    x_api_id: "{{ x_api_id }}"
+    x_api_key: "{{ x_api_key }}"
+    profile: "Ansible"
+    mode: "centralized"
+    key_type: "rsa-2048"
+    subject:
+      cn.1: "IntegrationTestCI-revoke-pop"
+  register: pop_revoke_fixture
+
+- name: Revoke a certificate using proof of possession
+  no_log: true
+  evertrust.horizon.horizon_revoke:
+    endpoint: "{{ endpoint }}"
+    certificate_pem: "{{ pop_revoke_fixture.certificate.certificate }}"
+    private_key: "{{ pop_revoke_fixture.key }}"
+    revocation_reason: "unspecified"
+  register: pop_revoke_result
+
+- name: Verify proof-of-possession revocation returned certificate data
+  ansible.builtin.assert:
+    that:
+      - pop_revoke_result.certificate is mapping
+      - pop_revoke_result.certificate.certificate | length > 0
+
+- name: Enroll a P-384 certificate fixture for proof-of-possession revocation
+  no_log: true
+  evertrust.horizon.horizon_enroll:
+    endpoint: "{{ endpoint }}"
+    x_api_id: "{{ x_api_id }}"
+    x_api_key: "{{ x_api_key }}"
+    profile: "Ansible"
+    mode: "centralized"
+    key_type: "ec-secp384r1"
+    subject:
+      cn.1: "IntegrationTestCI-revoke-pop-p384"
+  register: p384_pop_revoke_fixture
+
+- name: Revoke the P-384 certificate using proof of possession
+  no_log: true
+  evertrust.horizon.horizon_revoke:
+    endpoint: "{{ endpoint }}"
+    certificate_pem: "{{ p384_pop_revoke_fixture.certificate.certificate }}"
+    private_key: "{{ p384_pop_revoke_fixture.key }}"
+    revocation_reason: "unspecified"
+  register: p384_pop_revoke_result
+
+- name: Verify P-384 proof-of-possession revocation returned certificate data
+  ansible.builtin.assert:
+    that:
+      - p384_pop_revoke_fixture.certificate.keyType == "ec-secp384r1"
+      - p384_pop_revoke_result.certificate is mapping
+      - p384_pop_revoke_result.certificate.certificate | length > 0
