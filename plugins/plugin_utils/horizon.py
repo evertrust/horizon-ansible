@@ -168,7 +168,8 @@ class Horizon:
         return False
 
     def enroll(self, profile, template, mode=None, csr=None, password=None, key_type=None, labels=None, metadata=None,
-               sans=None, subject=None, owner=None, team=None, contact_email=None):
+               sans=None, subject=None, owner=None, team=None, contact_email=None, requester_comment=None,
+               allow_pending=False):
         """
         Enroll a certificate
         :type profile: str
@@ -182,6 +183,8 @@ class Horizon:
         :type subject: dict
         :type owner: str
         :type team: str
+        :type requester_comment: str
+        :type allow_pending: bool
         :rtype: dict
         """
         if subject is None:
@@ -225,6 +228,8 @@ class Horizon:
             payload["template"]["contactEmail"] = {"value": metadata["contact_email"]}
         if contact_email is not None:
             payload["template"]["contactEmail"] = {"value": contact_email}
+        if requester_comment is not None:
+            payload["requesterComment"] = requester_comment
 
         request = self._one_of_model(
             horizon_sdk.RequestSubmitRequest,
@@ -232,7 +237,12 @@ class Horizon:
             payload,
             sensitive_values=[password],
         )
-        return self._submit(request, payload, sensitive_values=[password])
+        return self._submit(
+            request,
+            payload,
+            sensitive_values=[password],
+            allow_pending=allow_pending,
+        )
 
     def recover(self, certificate_pem, password, version):
         """
@@ -398,6 +408,9 @@ class Horizon:
             pop=pop,
             sensitive_values=[key if private_key is not None else None],
         )
+
+    def get_request(self, request_id):
+        return self._sdk_call(self.request_api.request_get, request_id)
 
     def webra_import(self, profile, certificate_pem, certificate_id, private_key, labels=None, metadata=None, owner=None, team=None, contact_email=None):
 
@@ -692,7 +705,7 @@ class Horizon:
             )
             raise AnsibleError("Unable to map Ansible arguments to the Horizon SDK request: %s" % message)
 
-    def _submit(self, request, payload, pop=None, sensitive_values=None):
+    def _submit(self, request, payload, pop=None, sensitive_values=None, allow_pending=False):
         response = self._sdk_call(
             self.request_api.request_submit,
             request,
@@ -701,7 +714,7 @@ class Horizon:
         )
 
         self.__get_warnings({"json": payload}, content=response)
-        if isinstance(response, dict) and response.get("status") == "pending":
+        if isinstance(response, dict) and response.get("status") == "pending" and not allow_pending:
             pending_context = (
                 "User '%s' doesn't have the rights to perform a '%s' request on profile '%s'."
                 % (response.get("requester"), response.get("workflow"), response.get("profile"))
@@ -1132,7 +1145,7 @@ class Horizon:
         warning = False
 
         if 'json' in args:
-            if 'template' in args['json'] and 'certificate' in content:
+            if 'template' in args['json'] and isinstance(content.get('certificate'), dict):
                 for arg in args['json']['template']:
                     if arg not in content['certificate'] and arg not in exception_list:
                         Display().warning('The value "%s" has not been returned by the API' % (arg))
