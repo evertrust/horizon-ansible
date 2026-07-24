@@ -234,12 +234,23 @@ def provision_horizon(endpoint):
                 name="Ansible enrollment requester",
             )
         )
-        horizon.SecurityPrincipalinfoApi(client).security_principal_info_add(
-            horizon.PrincipalInfo(
-                identifier=REQUESTER_API_ID,
-                enabled=True,
+        principal_response = (
+            horizon.SecurityPrincipalinfoApi(client).security_principal_info_add_without_preload_content(
+                horizon.PrincipalInfo(
+                    identifier=REQUESTER_API_ID,
+                    enabled=True,
+                )
             )
         )
+        try:
+            if principal_response.status != 201:
+                body = (principal_response.data or b"").decode(errors="replace")
+                raise RuntimeError(
+                    "Failed to create requester principal: HTTP %s %s"
+                    % (principal_response.status, body)
+                )
+        finally:
+            principal_response.release_conn()
         identity_api.security_identity_local_password_set(
             horizon.SetPasswordRequest(
                 identifier=REQUESTER_API_ID,
