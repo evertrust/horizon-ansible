@@ -3,6 +3,9 @@ name: Publish
 
 on:
   workflow_dispatch:
+  push:
+    tags:
+      - '*'
 
 permissions:
   contents: read
