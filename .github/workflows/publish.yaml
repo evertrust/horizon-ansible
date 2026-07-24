@@ -138,6 +138,8 @@ jobs:
   publish:
     name: Publish verified artifact
     needs: compatibility
+    permissions:
+      id-token: write
     runs-on: runs-on=${{ github.run_id }}/runner=evertrust
     timeout-minutes: 15
     steps:
