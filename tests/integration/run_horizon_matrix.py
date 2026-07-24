@@ -32,6 +32,8 @@ MONGODB_IMAGE = (
 )
 ADMIN_API_ID = "administrator"
 ADMIN_API_KEY = "sample_password"
+REQUESTER_API_ID = "ansible-requester"
+REQUESTER_API_KEY = "Ansible-Requester-42!"
 APPLICATION_SECRET = "This-is-a-long-string-used-for-1"
 KEYSET = (
     '{"primaryKeyId":654595919,"key":[{"keyData":'
@@ -185,8 +187,8 @@ def sdk_configuration(endpoint):
     return configuration
 
 
-def level():
-    return horizon.AuthorizationLevel(accessLevel="authorized")
+def level(access_level="authorized"):
+    return horizon.AuthorizationLevel(accessLevel=access_level)
 
 
 def provision_horizon(endpoint):
@@ -225,10 +227,30 @@ def provision_horizon(endpoint):
                 horizon.Team(name=team, displayName=localized, description=localized)
             )
 
+        identity_api = horizon.SecurityIdentityLocalApi(client)
+        identity_api.security_identity_local_add(
+            horizon.LocalIdentityOnAdd(
+                identifier=REQUESTER_API_ID,
+                name="Ansible enrollment requester",
+            )
+        )
+        horizon.SecurityPrincipalinfoApi(client).security_principal_info_add(
+            horizon.PrincipalInfo(
+                identifier=REQUESTER_API_ID,
+                enabled=True,
+            )
+        )
+        identity_api.security_identity_local_password_set(
+            horizon.SetPasswordRequest(
+                identifier=REQUESTER_API_ID,
+                password=REQUESTER_API_KEY,
+            )
+        )
+
         authorization = horizon.CertificateProfileAuthorizationLevels(
             enroll=level(),
             enrollApi=level(),
-            requestEnroll=level(),
+            requestEnroll=level("authenticated"),
             approveEnroll=level(),
             revoke=level(),
             requestRevoke=level(),
@@ -416,11 +438,16 @@ def build_and_install(source_root, work_root, environment, artifact=None):
     return artifact, collection_root
 
 
-def integration_targets(collection):
+def integration_targets(collection, selected_targets=None):
     targets_root = collection / "tests/integration/targets"
     targets = sorted(path.name for path in targets_root.iterdir() if (path / "tasks/main.yml").is_file())
     if not targets:
         raise RuntimeError("No integration targets were found in the installed artifact")
+    if selected_targets:
+        missing = sorted(set(selected_targets) - set(targets))
+        if missing:
+            raise RuntimeError("Unknown integration target(s): %s" % ", ".join(missing))
+        return selected_targets
     return targets
 
 
@@ -443,7 +470,16 @@ def image_log_label(image):
     ).strip("-")
 
 
-def run_image(image, license_path, application_path, collection_root, source_root, environment, run_id):
+def run_image(
+    image,
+    license_path,
+    application_path,
+    collection_root,
+    source_root,
+    environment,
+    run_id,
+    selected_targets=None,
+):
     network = mongodb = server = None
     collection = collection_root / "ansible_collections/evertrust/horizon"
     config_path = collection / "tests/integration/integration_config.yml"
@@ -462,6 +498,10 @@ def run_image(image, license_path, application_path, collection_root, source_roo
                 "endpoint": server.endpoint,
                 "x_api_id": ADMIN_API_ID,
                 "x_api_key": ADMIN_API_KEY,
+                "requester_x_api_id": REQUESTER_API_ID,
+                "requester_x_api_key": REQUESTER_API_KEY,
+                "approver_x_api_id": ADMIN_API_ID,
+                "approver_x_api_key": ADMIN_API_KEY,
             }) + "\n",
             encoding="utf-8",
         )
@@ -475,7 +515,7 @@ def run_image(image, license_path, application_path, collection_root, source_roo
                 [
                     ansible_test,
                     "integration",
-                    *integration_targets(collection),
+                    *integration_targets(collection, selected_targets),
                     "-v",
                     "--color",
                     "no",
@@ -517,6 +557,12 @@ def parse_args():
         type=Path,
         help="Use an existing collection artifact instead of building one in temporary storage",
     )
+    parser.add_argument(
+        "--target",
+        action="append",
+        dest="targets",
+        help="Run only this integration target (repeat for more than one target)",
+    )
     return parser.parse_args()
 
 
@@ -556,6 +602,7 @@ def main():
                 source_root,
                 environment,
                 run_id,
+                selected_targets=args.targets,
             )
         except Exception as exception:
             print("FAIL Horizon fixture setup (%s)" % type(exception).__name__)

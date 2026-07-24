@@ -2,3 +2,7 @@
 endpoint: https://horizon.example.test
 x_api_id: replace-with-api-id
 x_api_key: replace-with-api-key
+requester_x_api_id: replace-with-requester-api-id
+requester_x_api_key: replace-with-requester-api-key
+approver_x_api_id: replace-with-approver-api-id
+approver_x_api_key: replace-with-approver-api-key

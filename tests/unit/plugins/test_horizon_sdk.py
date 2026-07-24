@@ -286,6 +286,7 @@ class TestHorizonSDKClient(unittest.TestCase):
             owner="owner",
             team="team",
             contact_email="owner@example.test",
+            requester_comment="approval required",
         )
 
         request = client.request_api.request_submit.call_args.args[0].to_dict()
@@ -309,6 +310,32 @@ class TestHorizonSDKClient(unittest.TestCase):
         self.assertEqual(request["template"]["contactEmail"], {"value": "owner@example.test"})
         self.assertEqual(request["template"]["owner"], {"value": "owner"})
         self.assertEqual(request["template"]["team"], {"value": "team"})
+        self.assertEqual(request["requesterComment"], "approval required")
+
+    def test_enrollment_can_preserve_a_pending_request(self):
+        client = self.client()
+        pending = {
+            "_id": "request-id",
+            "workflow": "enroll",
+            "module": "webra",
+            "status": "pending",
+            "requester": "requester",
+            "profile": "profile",
+            "certificate": None,
+        }
+        self.prepare_submit(client, pending)
+        client.request_api.request_cancel = Mock()
+
+        response = client.enroll(
+            profile="profile",
+            template=self.template(),
+            mode="centralized",
+            subject={"cn.1": "example.test"},
+            allow_pending=True,
+        )
+
+        self.assertEqual(response, pending)
+        client.request_api.request_cancel.assert_not_called()
 
     def test_invalid_enrollment_key_type_preserves_legacy_error(self):
         client = self.client()

@@ -27,6 +27,50 @@
 
   register: centralized_enroll_result
 
+- name: Collect the centralized enrollment trust-chain subjects
+  ansible.builtin.set_fact:
+    centralized_chain_subjects: >-
+      {{ centralized_enroll_result.chain | map(attribute='dn') | list }}
+    centralized_chain_pems: >-
+      {{ centralized_enroll_result.chain | map(attribute='pem') | list }}
+
+- name: Verify centralized enrollment returned its trust chain
+  ansible.builtin.assert:
+    that:
+      - centralized_enroll_result.certificate is mapping
+      - centralized_enroll_result.certificate.certificate is
+        match('^-----BEGIN CERTIFICATE-----')
+      - centralized_enroll_result.chain is sequence
+      - centralized_enroll_result.chain is not string
+      - centralized_enroll_result.chain | length > 0
+      - >-
+        centralized_enroll_result.chain
+        | selectattr('pem', 'defined')
+        | list
+        | length == centralized_enroll_result.chain | length
+      - >-
+        centralized_enroll_result.chain
+        | map(attribute='pem')
+        | select('match', '^-----BEGIN CERTIFICATE-----')
+        | list
+        | length == centralized_enroll_result.chain | length
+      - centralized_enroll_result.certificate.certificate in centralized_chain_pems
+      - >-
+        centralized_enroll_result.chain
+        | selectattr('selfSigned', 'equalto', true)
+        | list
+        | length > 0
+
+- name: Verify every non-root trust-chain certificate has its issuer in the chain
+  ansible.builtin.assert:
+    that:
+      - item.selfSigned or item.issuerDn in centralized_chain_subjects
+    fail_msg: "The issuer of {{ item.dn }} is missing from the returned chain."
+    quiet: true
+  loop: "{{ centralized_enroll_result.chain }}"
+  loop_control:
+    label: "{{ item.dn }}"
+
 - name: Read the centralized certificate back from Horizon
   no_log: true
   ansible.builtin.set_fact:

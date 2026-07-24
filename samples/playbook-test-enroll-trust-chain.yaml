@@ -1,0 +1,90 @@
+---
+- name: Test the trust chain returned by Horizon enrollment
+  hosts: localhost
+  connection: local
+  gather_facts: false
+
+  vars:
+    horizon_endpoint: "{{ lookup('ansible.builtin.env', 'HORIZON_ENDPOINT') }}"
+    horizon_api_id: "{{ lookup('ansible.builtin.env', 'HORIZON_API_ID') }}"
+    horizon_api_key: "{{ lookup('ansible.builtin.env', 'HORIZON_API_KEY') }}"
+    horizon_ca_bundle: "{{ lookup('ansible.builtin.env', 'HORIZON_CA_BUNDLE') }}"
+    horizon_profile: "Ansible"
+    test_common_name: "AnsibleTrustChainTest"
+
+  pre_tasks:
+    - name: Verify the required environment variables are set
+      ansible.builtin.assert:
+        that:
+          - horizon_endpoint | length > 0
+          - horizon_api_id | length > 0
+          - horizon_api_key | length > 0
+        fail_msg: >-
+          Set HORIZON_ENDPOINT, HORIZON_API_ID, and HORIZON_API_KEY before
+          running this playbook.
+        quiet: true
+
+  tasks:
+    - name: Enroll one certificate and retrieve its trust chain
+      no_log: true
+      evertrust.horizon.horizon_enroll:
+        endpoint: "{{ horizon_endpoint }}"
+        x_api_id: "{{ horizon_api_id }}"
+        x_api_key: "{{ horizon_api_key }}"
+        ca_bundle: "{{ horizon_ca_bundle | default(omit, true) }}"
+        profile: "{{ horizon_profile }}"
+        mode: "centralized"
+        key_type: "rsa-2048"
+        subject:
+          cn.1: "{{ test_common_name }}"
+      register: enrollment
+
+    - name: Collect the returned certificate subjects
+      ansible.builtin.set_fact:
+        chain_subjects: "{{ enrollment.chain | map(attribute='dn') | list }}"
+        chain_pems: "{{ enrollment.chain | map(attribute='pem') | list }}"
+
+    - name: Verify enrollment returned a complete trust path
+      ansible.builtin.assert:
+        that:
+          - enrollment.certificate is mapping
+          - enrollment.certificate.certificate is
+            match('^-----BEGIN CERTIFICATE-----')
+          - enrollment.chain is sequence
+          - enrollment.chain is not string
+          - enrollment.chain | length > 0
+          - >-
+            enrollment.chain
+            | selectattr('pem', 'defined')
+            | list
+            | length == enrollment.chain | length
+          - >-
+            enrollment.chain
+            | map(attribute='pem')
+            | select('match', '^-----BEGIN CERTIFICATE-----')
+            | list
+            | length == enrollment.chain | length
+          - enrollment.certificate.certificate in chain_pems
+          - >-
+            enrollment.chain
+            | selectattr('selfSigned', 'equalto', true)
+            | list
+            | length > 0
+        fail_msg: "The enrollment did not return a complete trust path."
+
+    - name: Verify every non-root chain certificate has its issuer in the chain
+      ansible.builtin.assert:
+        that:
+          - item.selfSigned or item.issuerDn in chain_subjects
+        fail_msg: "The issuer of {{ item.dn }} is missing from the returned chain."
+        quiet: true
+      loop: "{{ enrollment.chain }}"
+      loop_control:
+        label: "{{ item.dn }}"
+
+    - name: Report the retrieved trust path
+      ansible.builtin.debug:
+        msg:
+          leaf: "{{ enrollment.certificate.dn }}"
+          trust_chain_length: "{{ enrollment.chain | length }}"
+          trust_chain_subjects: "{{ chain_subjects }}"

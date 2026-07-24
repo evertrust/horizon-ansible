@@ -192,6 +192,12 @@ set -eu
 : "${HORIZON_ENDPOINT:?HORIZON_ENDPOINT is required}"
 : "${HORIZON_API_ID:?HORIZON_API_ID is required}"
 : "${HORIZON_API_KEY:?HORIZON_API_KEY is required}"
+: "${HORIZON_REQUESTER_API_ID:?HORIZON_REQUESTER_API_ID is required}"
+: "${HORIZON_REQUESTER_API_KEY:?HORIZON_REQUESTER_API_KEY is required}"
+
+HORIZON_APPROVER_API_ID="${HORIZON_APPROVER_API_ID:-$HORIZON_API_ID}"
+HORIZON_APPROVER_API_KEY="${HORIZON_APPROVER_API_KEY:-$HORIZON_API_KEY}"
+export HORIZON_APPROVER_API_ID HORIZON_APPROVER_API_KEY
 
 collection_dir="$HOME/.ansible/collections/ansible_collections/evertrust/horizon"
 config_path="$collection_dir/tests/integration/integration_config.yml"
@@ -211,6 +217,10 @@ with open(sys.argv[1], "x", encoding="utf-8") as config:
             "endpoint": os.environ["HORIZON_ENDPOINT"],
             "x_api_id": os.environ["HORIZON_API_ID"],
             "x_api_key": os.environ["HORIZON_API_KEY"],
+            "requester_x_api_id": os.environ["HORIZON_REQUESTER_API_ID"],
+            "requester_x_api_key": os.environ["HORIZON_REQUESTER_API_KEY"],
+            "approver_x_api_id": os.environ["HORIZON_APPROVER_API_ID"],
+            "approver_x_api_key": os.environ["HORIZON_APPROVER_API_KEY"],
         },
         config,
     )
@@ -279,10 +289,17 @@ if [ "$#" -ne 1 ] || [ ! -f "$1" ]; then
   exit 1
 fi
 
-python tests/integration/run_horizon_matrix.py \
+artifact="$1"
+set -- python tests/integration/run_horizon_matrix.py \
   --license "$HORIZON_LICENSE_PATH" \
-  --artifact "$1" \
+  --artifact "$artifact" \
   --image "$HORIZON_IMAGE"
+
+if [ -n "${HORIZON_INTEGRATION_TARGET:-}" ]; then
+  set -- "$@" --target "$HORIZON_INTEGRATION_TARGET"
+fi
+
+"$@"
 """
 
 [tasks._unit_test]

@@ -1,0 +1,240 @@
+---
+- name: Submit an enrollment request as a restricted requester
+  no_log: true
+  evertrust.horizon.horizon_request_enroll:
+    endpoint: "{{ endpoint }}"
+    x_api_id: "{{ requester_x_api_id }}"
+    x_api_key: "{{ requester_x_api_key }}"
+    profile: "Ansible"
+    mode: "centralized"
+    key_type: "rsa-2048"
+    subject:
+      cn.1: "IntegrationTestPendingEnrollment"
+      o.1: "Evertrust"
+    requester_comment: "Validate this request through the Horizon SDK."
+  register: enrollment_request
+
+- name: Verify request_enroll returned a pending request
+  ansible.builtin.assert:
+    that:
+      - enrollment_request is changed
+      - enrollment_request.request_id | length > 0
+      - enrollment_request.status == "pending"
+      - enrollment_request.certificate is not defined
+
+- name: Stop waiting when an enrollment request remains pending
+  no_log: true
+  evertrust.horizon.horizon_get_certificate:
+    endpoint: "{{ endpoint }}"
+    x_api_id: "{{ requester_x_api_id }}"
+    x_api_key: "{{ requester_x_api_key }}"
+    request_id: "{{ enrollment_request.request_id }}"
+    timeout: 1
+    poll_interval: 1
+  register: pending_timeout
+  ignore_errors: true
+
+- name: Verify get_certificate reports its timeout
+  ansible.builtin.assert:
+    that:
+      - pending_timeout is failed
+      - "'Timed out waiting for enrollment request' in pending_timeout.msg"
+      - enrollment_request.request_id in pending_timeout.msg
+
+- name: Validate and approve the enrollment request through the Horizon SDK
+  no_log: true
+  ansible.builtin.command:
+    argv:
+      - "{{ ansible_playbook_python }}"
+      - "{{ role_path }}/files/manage_request.py"
+      - "approve"
+      - "{{ enrollment_request.request_id }}"
+      - "IntegrationTestPendingEnrollment"
+      - "Validate this request through the Horizon SDK."
+  environment:
+    HORIZON_ENDPOINT: "{{ endpoint }}"
+    HORIZON_API_ID: "{{ approver_x_api_id }}"
+    HORIZON_API_KEY: "{{ approver_x_api_key }}"
+  changed_when: true
+
+- name: Retrieve the approved certificate
+  no_log: true
+  evertrust.horizon.horizon_get_certificate:
+    endpoint: "{{ endpoint }}"
+    x_api_id: "{{ requester_x_api_id }}"
+    x_api_key: "{{ requester_x_api_key }}"
+    request_id: "{{ enrollment_request.request_id }}"
+    timeout: 30
+    poll_interval: 1
+  register: issued_certificate
+
+- name: Verify get_certificate returned the approved enrollment
+  ansible.builtin.assert:
+    that:
+      - issued_certificate is not changed
+      - issued_certificate.request_id == enrollment_request.request_id
+      - issued_certificate.certificate is mapping
+      - issued_certificate.certificate.certificate | length > 0
+      - issued_certificate.chain is sequence
+      - issued_certificate.chain | length > 0
+      - issued_certificate.p12 | length > 0
+      - issued_certificate.p12_password | length > 0
+
+- name: Revoke the approved certificate to release its licensed holder
+  no_log: true
+  evertrust.horizon.horizon_revoke:
+    endpoint: "{{ endpoint }}"
+    x_api_id: "{{ approver_x_api_id }}"
+    x_api_key: "{{ approver_x_api_key }}"
+    certificate_pem: "{{ issued_certificate.certificate.certificate }}"
+    revocation_reason: "unspecified"
+
+- name: Submit an enrollment request that will be denied
+  no_log: true
+  evertrust.horizon.horizon_request_enroll:
+    endpoint: "{{ endpoint }}"
+    x_api_id: "{{ requester_x_api_id }}"
+    x_api_key: "{{ requester_x_api_key }}"
+    profile: "Ansible"
+    mode: "centralized"
+    key_type: "rsa-2048"
+    subject:
+      cn.1: "IntegrationTestDeniedEnrollment"
+    requester_comment: "Exercise the denied request path."
+  register: denied_enrollment_request
+
+- name: Verify the request to deny is pending
+  ansible.builtin.assert:
+    that:
+      - denied_enrollment_request is changed
+      - denied_enrollment_request.request_id | length > 0
+      - denied_enrollment_request.status == "pending"
+
+- name: Validate and deny the enrollment request through the Horizon SDK
+  no_log: true
+  ansible.builtin.command:
+    argv:
+      - "{{ ansible_playbook_python }}"
+      - "{{ role_path }}/files/manage_request.py"
+      - "deny"
+      - "{{ denied_enrollment_request.request_id }}"
+      - "IntegrationTestDeniedEnrollment"
+      - "Exercise the denied request path."
+  environment:
+    HORIZON_ENDPOINT: "{{ endpoint }}"
+    HORIZON_API_ID: "{{ approver_x_api_id }}"
+    HORIZON_API_KEY: "{{ approver_x_api_key }}"
+  changed_when: true
+
+- name: Retrieve a denied enrollment request
+  no_log: true
+  evertrust.horizon.horizon_get_certificate:
+    endpoint: "{{ endpoint }}"
+    x_api_id: "{{ requester_x_api_id }}"
+    x_api_key: "{{ requester_x_api_key }}"
+    request_id: "{{ denied_enrollment_request.request_id }}"
+    timeout: 30
+    poll_interval: 1
+  register: denied_certificate
+  ignore_errors: true
+
+- name: Verify get_certificate reports the denied terminal status
+  ansible.builtin.assert:
+    that:
+      - denied_certificate is failed
+      - "'ended with status \\'denied\\'' in denied_certificate.msg"
+      - denied_enrollment_request.request_id in denied_certificate.msg
+
+- name: Submit a decentralized enrollment request with a generated key
+  no_log: true
+  evertrust.horizon.horizon_request_enroll:
+    endpoint: "{{ endpoint }}"
+    x_api_id: "{{ requester_x_api_id }}"
+    x_api_key: "{{ requester_x_api_key }}"
+    profile: "Ansible"
+    mode: "decentralized"
+    key_type: "rsa-2048"
+    subject:
+      cn.1: "IntegrationTestDecentralizedRequest"
+    sans:
+      dnsname: "request.example.test"
+    requester_comment: "Exercise generated CSR enrollment."
+  register: decentralized_enrollment_request
+
+- name: Verify request_enroll generated a private key for the pending request
+  ansible.builtin.assert:
+    that:
+      - decentralized_enrollment_request is changed
+      - decentralized_enrollment_request.request_id | length > 0
+      - decentralized_enrollment_request.status == "pending"
+      - decentralized_enrollment_request.key is
+        match("-----BEGIN RSA PRIVATE KEY-----")
+      - decentralized_enrollment_request.certificate is not defined
+      - decentralized_enrollment_request.p12 is not defined
+
+- name: Validate and approve the decentralized request through the Horizon SDK
+  no_log: true
+  ansible.builtin.command:
+    argv:
+      - "{{ ansible_playbook_python }}"
+      - "{{ role_path }}/files/manage_request.py"
+      - "approve"
+      - "{{ decentralized_enrollment_request.request_id }}"
+      - "IntegrationTestDecentralizedRequest"
+      - "Exercise generated CSR enrollment."
+  environment:
+    HORIZON_ENDPOINT: "{{ endpoint }}"
+    HORIZON_API_ID: "{{ approver_x_api_id }}"
+    HORIZON_API_KEY: "{{ approver_x_api_key }}"
+  changed_when: true
+
+- name: Retrieve the approved decentralized certificate
+  no_log: true
+  evertrust.horizon.horizon_get_certificate:
+    endpoint: "{{ endpoint }}"
+    x_api_id: "{{ requester_x_api_id }}"
+    x_api_key: "{{ requester_x_api_key }}"
+    request_id: "{{ decentralized_enrollment_request.request_id }}"
+    timeout: 30
+    poll_interval: 1
+  register: decentralized_certificate
+
+- name: Verify get_certificate returns a decentralized certificate without PKCS12
+  ansible.builtin.assert:
+    that:
+      - decentralized_certificate is not changed
+      - decentralized_certificate.request_id
+        == decentralized_enrollment_request.request_id
+      - decentralized_certificate.certificate.certificate | length > 0
+      - decentralized_certificate.chain is sequence
+      - decentralized_certificate.chain | length > 0
+      - decentralized_certificate.p12 is not defined
+      - decentralized_certificate.p12_password is not defined
+
+- name: Revoke the decentralized certificate to release its licensed holder
+  no_log: true
+  evertrust.horizon.horizon_revoke:
+    endpoint: "{{ endpoint }}"
+    x_api_id: "{{ approver_x_api_id }}"
+    x_api_key: "{{ approver_x_api_key }}"
+    certificate_pem: "{{ decentralized_certificate.certificate.certificate }}"
+    revocation_reason: "unspecified"
+
+- name: Request enrollment with an unknown profile
+  no_log: true
+  evertrust.horizon.horizon_request_enroll:
+    endpoint: "{{ endpoint }}"
+    x_api_id: "{{ requester_x_api_id }}"
+    x_api_key: "{{ requester_x_api_key }}"
+    profile: "UnknownIntegrationProfile"
+    mode: "centralized"
+    subject:
+      cn.1: "IntegrationTestUnknownProfile"
+  register: unknown_profile_request
+  ignore_errors: true
+
+- name: Verify request_enroll rejects an unknown profile
+  ansible.builtin.assert:
+    that:
+      - unknown_profile_request is failed
+      - "'Profile does not exist or is disabled' in unknown_profile_request.msg"

@@ -1,13 +1,13 @@
 ---
-- name: Create temporary directory for the {{ timeout_case.mode }} timeout server
+- name: Create temporary directory for the {{ timeout_case.module }} {{ timeout_case.mode }} timeout server
   ansible.builtin.tempfile:
     state: directory
     prefix: horizon-timeout-
   register: timeout_server_directory
 
-- name: Exercise the {{ timeout_case.mode }} timeout
+- name: Exercise the {{ timeout_case.module }} {{ timeout_case.mode }} timeout
   block:
-    - name: Start the {{ timeout_case.mode }} timeout server
+    - name: Start the {{ timeout_case.module }} {{ timeout_case.mode }} timeout server
       ansible.builtin.command:
         argv:
           - "{{ ansible_playbook_python }}"
@@ -20,19 +20,19 @@
       changed_when: false
       register: timeout_server_job
 
-    - name: Wait for the {{ timeout_case.mode }} timeout server to publish its port
+    - name: Wait for the {{ timeout_case.module }} {{ timeout_case.mode }} timeout server to publish its port
       ansible.builtin.wait_for:
         path: "{{ timeout_server_directory.path }}/port"
         timeout: 5
 
-    - name: Read the {{ timeout_case.mode }} timeout server port
+    - name: Read the {{ timeout_case.module }} {{ timeout_case.mode }} timeout server port
       ansible.builtin.slurp:
         src: "{{ timeout_server_directory.path }}/port"
       register: timeout_server_port
 
-    - name: Trigger the {{ timeout_case.mode }} timeout
+    - name: Trigger the {{ timeout_case.mode }} timeout through horizon_lookup
       ansible.builtin.set_fact:
-        timeout_lookup_result: >-
+        timeout_lookup_value: >-
           {{ lookup(
               'evertrust.horizon.horizon_lookup',
               endpoint=timeout_case.scheme ~ '://127.0.0.1:' ~ (timeout_server_port.content | b64decode | trim),
@@ -42,25 +42,61 @@
               read_timeout=0.2,
               certificate_pem='timeout-test'
           ) }}
-      register: timeout_result
+      register: timeout_lookup_result
       ignore_errors: true
+      when: timeout_case.module == "lookup"
 
-    - name: Verify the {{ timeout_case.mode }} timeout classification
+    - name: Trigger the {{ timeout_case.mode }} timeout through request_enroll
+      evertrust.horizon.horizon_request_enroll:
+        endpoint: "{{ timeout_case.scheme }}://127.0.0.1:{{ timeout_server_port.content | b64decode | trim }}"
+        x_api_id: "timeout-test"
+        x_api_key: "timeout-test"
+        connect_timeout: 0.2
+        read_timeout: 0.2
+        profile: "Ansible"
+        mode: "centralized"
+        key_type: "rsa-2048"
+        subject:
+          cn.1: "TimeoutRequest"
+      register: timeout_request_enroll_result
+      ignore_errors: true
+      when: timeout_case.module == "request_enroll"
+
+    - name: Trigger the {{ timeout_case.mode }} timeout through get_certificate
+      evertrust.horizon.horizon_get_certificate:
+        endpoint: "{{ timeout_case.scheme }}://127.0.0.1:{{ timeout_server_port.content | b64decode | trim }}"
+        x_api_id: "timeout-test"
+        x_api_key: "timeout-test"
+        connect_timeout: 0.2
+        read_timeout: 0.2
+        request_id: "timeout-request"
+        timeout: 1
+        poll_interval: 1
+      register: timeout_get_certificate_result
+      ignore_errors: true
+      when: timeout_case.module == "get_certificate"
+
+    - name: Verify the {{ timeout_case.module }} {{ timeout_case.mode }} timeout classification
       ansible.builtin.assert:
         that:
-          - timeout_result is failed
-          - timeout_case.error_code in timeout_result.msg
-          - "'certificate_get_pem' in timeout_result.msg"
+          - timeout_result_by_module[timeout_case.module] is failed
+          - timeout_case.error_code in timeout_result_by_module[timeout_case.module].msg
+          - timeout_case.expected_operation in timeout_result_by_module[timeout_case.module].msg
+      vars:
+        timeout_result_by_module:
+          lookup: "{{ timeout_lookup_result }}"
+          request_enroll: "{{ timeout_request_enroll_result }}"
+          get_certificate: "{{ timeout_get_certificate_result }}"
 
   always:
-    - name: Signal the {{ timeout_case.mode }} timeout server to exit
+    - name: Signal the {{ timeout_case.module }} {{ timeout_case.mode }} timeout server to exit
       ansible.builtin.file:
         path: "{{ timeout_server_directory.path }}/complete"
         state: touch
         mode: "0600"
       when: timeout_server_directory.path is defined
 
-    - name: Wait for the {{ timeout_case.mode }} timeout server to exit
+    - name: Wait for the {{ timeout_case.module }} {{ timeout_case.mode }} timeout server to exit
       ansible.builtin.async_status:
         jid: "{{ timeout_server_job.ansible_job_id }}"
       register: timeout_server_status
@@ -70,7 +106,7 @@
       failed_when: false
       when: timeout_server_job.ansible_job_id is defined
 
-    - name: Remove the {{ timeout_case.mode }} timeout server directory
+    - name: Remove the {{ timeout_case.module }} {{ timeout_case.mode }} timeout server directory
       ansible.builtin.file:
         path: "{{ timeout_server_directory.path }}"
         state: absent

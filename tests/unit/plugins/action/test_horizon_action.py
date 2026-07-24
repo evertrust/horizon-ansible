@@ -3,15 +3,20 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 import unittest
+from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
+import yaml
+from ansible.errors import AnsibleError
 from ansible_collections.evertrust.horizon.plugins.action import (
     horizon_enroll,
     horizon_feed,
+    horizon_get_certificate,
     horizon_import,
     horizon_recover,
     horizon_renew,
+    horizon_request_enroll,
     horizon_revoke,
     horizon_template,
     horizon_update,
@@ -23,9 +28,11 @@ from ansible_collections.evertrust.horizon.plugins.plugin_utils.horizon_errors i
 ACTION_MODULES = (
     horizon_enroll,
     horizon_feed,
+    horizon_get_certificate,
     horizon_import,
     horizon_recover,
     horizon_renew,
+    horizon_request_enroll,
     horizon_revoke,
     horizon_template,
     horizon_update,
@@ -44,6 +51,15 @@ MUTATING_CASES = (
     (
         horizon_feed,
         {"campaign": "campaign", "ip": "127.0.0.1", "certificate_pem": "certificate"},
+    ),
+    (
+        horizon_request_enroll,
+        {
+            "profile": "profile",
+            "subject": {"cn.1": "example.test"},
+            "mode": "centralized",
+            "password": "password",
+        },
     ),
     (
         horizon_import,
@@ -65,6 +81,14 @@ MUTATING_CASES = (
 
 ACTION_CASES = MUTATING_CASES + (
     (horizon_template, {"profile": "profile", "workflow": "enroll"}),
+    (
+        horizon_get_certificate,
+        {
+            "request_id": "request-id",
+            "timeout": 0,
+            "poll_interval": 5,
+        },
+    ),
 )
 
 POP_AUTH_MODULES = (
@@ -75,6 +99,19 @@ POP_AUTH_MODULES = (
 
 
 class TestHorizonAction(unittest.TestCase):
+
+    def test_enrollment_request_actions_are_in_the_horizon_action_group(self):
+        runtime_path = Path(__file__).resolve().parents[4] / "meta" / "runtime.yml"
+        runtime = yaml.safe_load(runtime_path.read_text())
+
+        self.assertIn(
+            "horizon_request_enroll",
+            runtime["action_groups"]["horizon"],
+        )
+        self.assertIn(
+            "horizon_get_certificate",
+            runtime["action_groups"]["horizon"],
+        )
 
     @staticmethod
     def action(args):
@@ -118,7 +155,15 @@ class TestHorizonAction(unittest.TestCase):
         }
         client.check_password_policy.return_value = "password"
         client.check_mode.return_value = "centralized"
-        client.enroll.return_value = {}
+        client.enroll.return_value = {"_id": "request-id", "status": "pending"}
+        client.get_request.return_value = {
+            "_id": "request-id",
+            "module": "webra",
+            "workflow": "enroll",
+            "status": "completed",
+            "certificate": {"certificate": "CERTIFICATE"},
+        }
+        client.chain.return_value = [{"pem": "CHAIN"}]
         client.feed.return_value = {"status": "success"}
         client.webra_import.return_value = {}
         client.recover.return_value = {}
@@ -210,6 +255,186 @@ class TestHorizonAction(unittest.TestCase):
 
         self.assertFalse(result["changed"])
         self.assertEqual(result["profile"], "profile")
+
+    @patch(
+        "ansible_collections.evertrust.horizon.plugins.plugin_utils.horizon_action.Horizon"
+    )
+    def test_request_enroll_preserves_the_pending_request(self, horizon):
+        client = horizon.return_value.__enter__.return_value
+        self.configure_client(client)
+        action = self.runnable_action(
+            horizon_request_enroll,
+            {
+                "profile": "profile",
+                "subject": {"cn.1": "example.test"},
+                "mode": "centralized",
+                "password": "password",
+                "requester_comment": "approval required",
+            },
+        )
+
+        result = action.run()
+
+        client.get_template.assert_called_once_with("profile", "enroll", "webra")
+        self.assertTrue(client.enroll.call_args.kwargs["allow_pending"])
+        self.assertEqual(
+            client.enroll.call_args.kwargs["requester_comment"],
+            "approval required",
+        )
+        self.assertEqual(client.enroll.call_args.kwargs["password"], "password")
+        self.assertEqual(client.enroll.call_args.kwargs["key_type"], "rsa-2048")
+        self.assertEqual(result["request_id"], "request-id")
+        self.assertEqual(result["status"], "pending")
+        self.assertTrue(result["changed"])
+
+    @patch(
+        "ansible_collections.evertrust.horizon.plugins.action.horizon_request_enroll.HorizonCrypto"
+    )
+    @patch(
+        "ansible_collections.evertrust.horizon.plugins.plugin_utils.horizon_action.Horizon"
+    )
+    def test_request_enroll_returns_a_locally_generated_private_key(self, horizon, crypto):
+        client = horizon.return_value.__enter__.return_value
+        self.configure_client(client)
+        client.check_mode.return_value = "decentralized"
+        crypto.generate_key_pair.return_value = ("private-key", "public-key")
+        crypto.generate_pckcs10.return_value = "generated-csr"
+        crypto.get_key_bytes.return_value = "private-key-pem"
+        action = self.runnable_action(
+            horizon_request_enroll,
+            {
+                "profile": "profile",
+                "subject": {"cn.1": "example.test"},
+                "mode": "decentralized",
+            },
+        )
+
+        result = action.run()
+
+        self.assertEqual(client.enroll.call_args.kwargs["csr"], "generated-csr")
+        self.assertEqual(result["key"], "private-key-pem")
+        self.assertNotIn("certificate", result)
+        self.assertNotIn("p12", result)
+        self.assertTrue(action._task.no_log)
+
+    @patch(
+        "ansible_collections.evertrust.horizon.plugins.plugin_utils.horizon_action.Horizon"
+    )
+    def test_get_certificate_returns_the_issued_certificate_and_pkcs12(self, horizon):
+        client = horizon.return_value.__enter__.return_value
+        client.get_request.return_value = {
+            "_id": "request-id",
+            "module": "webra",
+            "workflow": "enroll",
+            "status": "completed",
+            "certificate": {"certificate": "CERTIFICATE"},
+            "pkcs12": {"value": "PKCS12"},
+            "password": {"value": "p12-password"},
+        }
+        client.chain.return_value = [{"pem": "CHAIN"}]
+        action = self.runnable_action(
+            horizon_get_certificate,
+            {
+                "request_id": "request-id",
+                "timeout": 0,
+                "poll_interval": 5,
+            },
+        )
+
+        result = action.run()
+
+        self.assertFalse(result["changed"])
+        self.assertEqual(result["request_id"], "request-id")
+        self.assertEqual(result["status"], "completed")
+        self.assertEqual(result["certificate"], {"certificate": "CERTIFICATE"})
+        self.assertEqual(result["chain"], [{"pem": "CHAIN"}])
+        self.assertEqual(result["p12"], "PKCS12")
+        self.assertEqual(result["p12_password"], "p12-password")
+        self.assertTrue(action._task.no_log)
+
+    @patch(
+        "ansible_collections.evertrust.horizon.plugins.action.horizon_get_certificate.time.sleep"
+    )
+    @patch(
+        "ansible_collections.evertrust.horizon.plugins.plugin_utils.horizon_action.Horizon"
+    )
+    def test_get_certificate_polls_until_the_certificate_is_issued(self, horizon, sleep):
+        client = horizon.return_value.__enter__.return_value
+        client.get_request.side_effect = [
+            {
+                "_id": "request-id",
+                "module": "webra",
+                "workflow": "enroll",
+                "status": "pending",
+            },
+            {
+                "_id": "request-id",
+                "module": "webra",
+                "workflow": "enroll",
+                "status": "completed",
+                "certificate": {"certificate": "CERTIFICATE"},
+            },
+        ]
+        client.chain.return_value = [{"pem": "CHAIN"}]
+        action = self.runnable_action(
+            horizon_get_certificate,
+            {
+                "request_id": "request-id",
+                "timeout": 0,
+                "poll_interval": 7,
+            },
+        )
+
+        result = action.run()
+
+        self.assertEqual(result["status"], "completed")
+        self.assertEqual(client.get_request.call_count, 2)
+        sleep.assert_called_once_with(7)
+
+    @patch(
+        "ansible_collections.evertrust.horizon.plugins.plugin_utils.horizon_action.Horizon"
+    )
+    def test_get_certificate_fails_when_the_request_is_denied(self, horizon):
+        client = horizon.return_value.__enter__.return_value
+        client.get_request.return_value = {
+            "_id": "request-id",
+            "module": "webra",
+            "workflow": "enroll",
+            "status": "denied",
+        }
+        action = self.runnable_action(
+            horizon_get_certificate,
+            {
+                "request_id": "request-id",
+                "timeout": 0,
+                "poll_interval": 5,
+            },
+        )
+
+        with self.assertRaisesRegex(AnsibleError, "denied"):
+            action.run()
+
+    @patch(
+        "ansible_collections.evertrust.horizon.plugins.plugin_utils.horizon_action.Horizon"
+    )
+    def test_get_certificate_runs_in_check_mode_without_reporting_a_change(self, horizon):
+        client = horizon.return_value.__enter__.return_value
+        self.configure_client(client)
+        action = self.runnable_action(
+            horizon_get_certificate,
+            {
+                "request_id": "request-id",
+                "timeout": 0,
+                "poll_interval": 5,
+            },
+            check_mode=True,
+        )
+
+        result = action.run()
+
+        self.assertFalse(result["changed"])
+        self.assertNotIn("skipped", result)
+        client.get_request.assert_called_once_with("request-id")
 
     @patch(
         "ansible_collections.evertrust.horizon.plugins.plugin_utils.horizon_action.Horizon"
