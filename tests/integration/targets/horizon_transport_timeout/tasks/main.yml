@@ -4,9 +4,34 @@
   loop:
     - mode: connect
       scheme: http
+      module: lookup
       error_code: SDK-CONNECT-TIMEOUT
+      expected_operation: certificate_get_pem
     - mode: read
       scheme: http
+      module: lookup
       error_code: SDK-READ-TIMEOUT
+      expected_operation: certificate_get_pem
+    - mode: connect
+      scheme: http
+      module: request_enroll
+      error_code: SDK-CONNECT-TIMEOUT
+      expected_operation: request_template
+    - mode: read
+      scheme: http
+      module: request_enroll
+      error_code: SDK-READ-TIMEOUT
+      expected_operation: request_template
+    - mode: connect
+      scheme: http
+      module: get_certificate
+      error_code: SDK-CONNECT-TIMEOUT
+      expected_operation: request_get
+    - mode: read
+      scheme: http
+      module: get_certificate
+      error_code: SDK-READ-TIMEOUT
+      expected_operation: request_get
   loop_control:
     loop_var: timeout_case
+    label: "{{ timeout_case.module }} {{ timeout_case.mode }}"
