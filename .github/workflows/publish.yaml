@@ -54,15 +54,15 @@ jobs:
           - "2.9.0"
           - "2.10.0"
         image:
-          - quay.io/evertrust/horizon:2.8.10@sha256:d9181a2e9b372ac7e2955cc29142db1711084deeca86c415229e06cd42e11eec
-          - quay.io/evertrust/horizon:2.9.4@sha256:a1c79cea6183092e31033054cb46d88aa808d2f87458ff82cf4527a5b3b50fec
-          - quay.io/evertrust/horizon:2.10.4@sha256:dc19d51551453a94fc1ef3c99b6c68f15b41f7fd19ab546f4ac184022e9aa9a9
+          - harbor.infra.evertrust.io/library/horizon:2.8.10@sha256:d9181a2e9b372ac7e2955cc29142db1711084deeca86c415229e06cd42e11eec
+          - harbor.infra.evertrust.io/library/horizon:2.9.4@sha256:a1c79cea6183092e31033054cb46d88aa808d2f87458ff82cf4527a5b3b50fec
+          - harbor.infra.evertrust.io/library/horizon:2.10.4@sha256:dc19d51551453a94fc1ef3c99b6c68f15b41f7fd19ab546f4ac184022e9aa9a9
         include:
-          - image: quay.io/evertrust/horizon:2.8.10@sha256:d9181a2e9b372ac7e2955cc29142db1711084deeca86c415229e06cd42e11eec
+          - image: harbor.infra.evertrust.io/library/horizon:2.8.10@sha256:d9181a2e9b372ac7e2955cc29142db1711084deeca86c415229e06cd42e11eec
             horizon: "2.8.10"
-          - image: quay.io/evertrust/horizon:2.9.4@sha256:a1c79cea6183092e31033054cb46d88aa808d2f87458ff82cf4527a5b3b50fec
+          - image: harbor.infra.evertrust.io/library/horizon:2.9.4@sha256:a1c79cea6183092e31033054cb46d88aa808d2f87458ff82cf4527a5b3b50fec
             horizon: "2.9.4"
-          - image: quay.io/evertrust/horizon:2.10.4@sha256:dc19d51551453a94fc1ef3c99b6c68f15b41f7fd19ab546f4ac184022e9aa9a9
+          - image: harbor.infra.evertrust.io/library/horizon:2.10.4@sha256:dc19d51551453a94fc1ef3c99b6c68f15b41f7fd19ab546f4ac184022e9aa9a9
             horizon: "2.10.4"
     runs-on: runs-on=${{ github.run_id }}/runner=evertrust
     timeout-minutes: 60
@@ -94,16 +94,16 @@ jobs:
           method: ${{ vars.VAULT_AUTH_METHOD }}
           path: ${{ vars.VAULT_AUTH_PATH }}
           secrets: |
-            ci/data/repositories/evertrust/horizon-ansible/quay username | QUAY_USER ;
-            ci/data/repositories/evertrust/horizon-ansible/quay password | QUAY_TOKEN ;
+            ci/data/repositories/evertrust/horizon-ansible/registry username | REGISTRY_USERNAME ;
+            ci/data/repositories/evertrust/horizon-ansible/registry password | REGISTRY_PASSWORD ;
             ci/data/repositories/evertrust/horizon-ansible/horizon licence | HORIZON_LICENCE ;
 
-      - name: Log in to Quay registry
+      - name: Log in to Harbor registry
         uses: docker/login-action@465a07811f14bebb1938fbed4728c6a1ff8901fc # v2.2.0
         with:
-          registry: quay.io
-          username: ${{ env.QUAY_USER }}
-          password: ${{ env.QUAY_TOKEN }}
+          registry: harbor.infra.evertrust.io
+          username: ${{ env.REGISTRY_USERNAME }}
+          password: ${{ env.REGISTRY_PASSWORD }}
 
       - name: Materialize Horizon licence
         shell: bash
