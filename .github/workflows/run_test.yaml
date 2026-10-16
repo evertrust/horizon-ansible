@@ -13,7 +13,7 @@ on:
       horizon_image:
         description: Fully qualified Harbor Horizon image tag or digest
         required: true
-        default: harbor.infra.evertrust.io/library/horizon:2.10.4
+        default: ""
         type: string
       sdk_version:
         description: Horizon SDK release line
@@ -125,7 +125,6 @@ jobs:
       - build
       - unit
     env:
-      HORIZON_IMAGE: ${{ github.event_name == 'workflow_dispatch' && inputs.horizon_image || 'harbor.infra.evertrust.io/library/horizon:2.10.4@sha256:dc19d51551453a94fc1ef3c99b6c68f15b41f7fd19ab546f4ac184022e9aa9a9' }}
       HORIZON_SDK_VERSION: ${{ github.event_name == 'workflow_dispatch' && inputs.sdk_version || '2.10.0' }}
     permissions:
       contents: read
@@ -168,6 +167,7 @@ jobs:
           method: ${{ vars.VAULT_AUTH_METHOD }}
           path: ${{ vars.VAULT_AUTH_PATH }}
           secrets: |
+            ci/data/repositories/evertrust/horizon-ansible/registry host | REGISTRY_HOST ;
             ci/data/repositories/evertrust/horizon-ansible/registry username | REGISTRY_USERNAME ;
             ci/data/repositories/evertrust/horizon-ansible/registry password | REGISTRY_PASSWORD ;
             ci/data/repositories/evertrust/horizon-ansible/horizon licence | HORIZON_LICENCE ;
@@ -175,7 +175,7 @@ jobs:
       - name: Log in to Harbor registry
         uses: docker/login-action@465a07811f14bebb1938fbed4728c6a1ff8901fc # v2.2.0
         with:
-          registry: harbor.infra.evertrust.io
+          registry: ${{ env.REGISTRY_HOST }}
           username: ${{ env.REGISTRY_USERNAME }}
           password: ${{ env.REGISTRY_PASSWORD }}
 
@@ -191,6 +191,8 @@ jobs:
           echo "HORIZON_LICENSE_PATH=$license_path" >> "$GITHUB_ENV"
 
       - name: Run licensed container integration tests
+        env:
+          HORIZON_IMAGE: ${{ github.event_name == 'workflow_dispatch' && inputs.horizon_image || format('{0}/library/horizon:2.10.4@sha256:dc19d51551453a94fc1ef3c99b6c68f15b41f7fd19ab546f4ac184022e9aa9a9', env.REGISTRY_HOST) }}
         run: mise run container_integration_test_artifact
 
       - name: Upload Ansible and Horizon logs
