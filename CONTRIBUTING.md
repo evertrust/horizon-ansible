@@ -17,13 +17,13 @@ Run the licensed single-image integration suite with:
 
 ```shell
 HORIZON_LICENSE_PATH=/path/to/licence.txt \
-HORIZON_IMAGE=quay.io/evertrust/horizon:2.10.4 \
+HORIZON_IMAGE=harbor.infra.evertrust.io/library/horizon:2.10.4 \
 HORIZON_SDK_VERSION=2.10.0 \
 mise run container_integration_test
 ```
 
 The test workflow can also be started manually with a fully qualified
-`quay.io` image tag or digest and one of the supported SDK release lines.
+`harbor.infra.evertrust.io` image tag or digest and one of the supported SDK release lines.
 Each line resolves to its latest patch release. Manual tags are resolved and
 reported by digest during the run.
 
@@ -37,7 +37,7 @@ CI follows the Horizon SDK workflow's infrastructure setup: it reads the Quay
 credentials from `ci/data/repositories/evertrust/horizon-ansible/quay` and
 the `licence` field from
 `ci/data/repositories/evertrust/horizon-ansible/horizon`. It logs in to
-`quay.io` before pulling the images, writes the licence to a temporary
+`harbor.infra.evertrust.io` before pulling the images, writes the licence to a temporary
 mode-restricted file, and removes it after the run. Ansible and Horizon logs
 are retained as workflow artifacts.
 
